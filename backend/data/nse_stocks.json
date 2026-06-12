@@ -1,0 +1,3313 @@
+[
+  {
+    "symbol": "^NSEI",
+    "name": "Nifty 50",
+    "sector": "Index",
+    "industry": "Broad Market Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^NSEBANK",
+    "name": "Bank Nifty",
+    "sector": "Index",
+    "industry": "Banking Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^CNXIT",
+    "name": "Nifty IT",
+    "sector": "Index",
+    "industry": "IT Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^CNXPHARMA",
+    "name": "Nifty Pharma",
+    "sector": "Index",
+    "industry": "Pharma Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^CNXAUTO",
+    "name": "Nifty Auto",
+    "sector": "Index",
+    "industry": "Auto Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^CNXFMCG",
+    "name": "Nifty FMCG",
+    "sector": "Index",
+    "industry": "FMCG Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^CNXMETAL",
+    "name": "Nifty Metal",
+    "sector": "Index",
+    "industry": "Metal Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^CNXREALTY",
+    "name": "Nifty Realty",
+    "sector": "Index",
+    "industry": "Realty Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^CNXMIDCAP",
+    "name": "Nifty Midcap 100",
+    "sector": "Index",
+    "industry": "Midcap Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "^CNXSMALLCAP",
+    "name": "Nifty Smallcap 100",
+    "sector": "Index",
+    "industry": "Smallcap Index",
+    "index": "Index",
+    "type": "index"
+  },
+  {
+    "symbol": "NIFTYBEES.NS",
+    "name": "Nippon India Nifty BeES",
+    "sector": "ETF",
+    "industry": "Index ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "BANKBEES.NS",
+    "name": "Nippon India Bank BeES",
+    "sector": "ETF",
+    "industry": "Sectoral ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "GOLDBEES.NS",
+    "name": "Nippon India Gold BeES",
+    "sector": "ETF",
+    "industry": "Commodity ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "SILVERBEES.NS",
+    "name": "Nippon India Silver BeES",
+    "sector": "ETF",
+    "industry": "Commodity ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "ICICIB22.NS",
+    "name": "ICICI Prudential Nifty Next 50",
+    "sector": "ETF",
+    "industry": "Index ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "MOM100.NS",
+    "name": "Motilal Oswal Nifty Midcap 100 ETF",
+    "sector": "ETF",
+    "industry": "Index ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "NETFMID150.NS",
+    "name": "Nippon India Nifty Midcap 150 BeES",
+    "sector": "ETF",
+    "industry": "Index ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "ITETF.NS",
+    "name": "Nippon India Nifty IT ETF",
+    "sector": "ETF",
+    "industry": "Sectoral ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "PHARMABEES.NS",
+    "name": "Nippon India Nifty Pharma BeES",
+    "sector": "ETF",
+    "industry": "Sectoral ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "AUTOBEES.NS",
+    "name": "Nippon India Nifty Auto ETF",
+    "sector": "ETF",
+    "industry": "Sectoral ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "PSUBNKBEES.NS",
+    "name": "Nippon India Nifty PSU Bank BeES",
+    "sector": "ETF",
+    "industry": "Sectoral ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "JUNIORBEES.NS",
+    "name": "Nippon India Junior BeES",
+    "sector": "ETF",
+    "industry": "Index ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "MON100.NS",
+    "name": "Motilal Oswal NASDAQ 100 ETF",
+    "sector": "ETF",
+    "industry": "International ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "MAFANG.NS",
+    "name": "Mirae Asset NYSE FANG+ ETF",
+    "sector": "ETF",
+    "industry": "International ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "CPSEETF.NS",
+    "name": "Nippon India CPSE ETF",
+    "sector": "ETF",
+    "industry": "PSU ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "BHARAT22ETF.NS",
+    "name": "ICICI Prudential Bharat 22 ETF",
+    "sector": "ETF",
+    "industry": "PSU ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "SETFNN50.NS",
+    "name": "SBI Nifty Next 50 ETF",
+    "sector": "ETF",
+    "industry": "Index ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "LICNFNHGP.NS",
+    "name": "LIC Nifty 100 ETF",
+    "sector": "ETF",
+    "industry": "Index ETF",
+    "index": "ETF",
+    "type": "etf"
+  },
+  {
+    "symbol": "RELIANCE.NS",
+    "index": "Nifty 50",
+    "name": "Reliance Industries Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Refining & Marketing"
+  },
+  {
+    "symbol": "TCS.NS",
+    "index": "Nifty 50",
+    "name": "Tata Consultancy Services Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "HDFCBANK.NS",
+    "index": "Nifty 50",
+    "name": "HDFC Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "BHARTIARTL.NS",
+    "index": "Nifty 50",
+    "name": "Bharti Airtel Limited",
+    "sector": "Communication Services",
+    "industry": "Telecom Services"
+  },
+  {
+    "symbol": "ICICIBANK.NS",
+    "index": "Nifty 50",
+    "name": "ICICI Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "INFOSYS.NS",
+    "index": "Nifty 50",
+    "name": "INFOSYS",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "SBIN.NS",
+    "index": "Nifty 50",
+    "name": "State Bank of India",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "HINDUNILVR.NS",
+    "index": "Nifty 50",
+    "name": "Hindustan Unilever Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products"
+  },
+  {
+    "symbol": "BAJFINANCE.NS",
+    "index": "Nifty 50",
+    "name": "Bajaj Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "AXISBANK.NS",
+    "index": "Nifty 50",
+    "name": "Axis Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "KOTAKBANK.NS",
+    "index": "Nifty 50",
+    "name": "Kotak Mahindra Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "LT.NS",
+    "index": "Nifty 50",
+    "name": "Larsen & Toubro Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "HCLTECH.NS",
+    "index": "Nifty 50",
+    "name": "HCL Technologies Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "MARUTI.NS",
+    "index": "Nifty 50",
+    "name": "Maruti Suzuki India Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers"
+  },
+  {
+    "symbol": "SUNPHARMA.NS",
+    "index": "Nifty 50",
+    "name": "Sun Pharmaceutical Industries Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "ASIANPAINT.NS",
+    "index": "Nifty 50",
+    "name": "Asian Paints Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "TITAN.NS",
+    "index": "Nifty 50",
+    "name": "Titan Company Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Luxury Goods"
+  },
+  {
+    "symbol": "NESTLEIND.NS",
+    "index": "Nifty 50",
+    "name": "Nestl\u00e9 India Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "WIPRO.NS",
+    "index": "Nifty 50",
+    "name": "Wipro Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "ONGC.NS",
+    "index": "Nifty 50",
+    "name": "Oil and Natural Gas Corporation Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Integrated"
+  },
+  {
+    "symbol": "NTPC.NS",
+    "index": "Nifty 50",
+    "name": "NTPC Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Regulated Electric"
+  },
+  {
+    "symbol": "POWERGRID.NS",
+    "index": "Nifty 50",
+    "name": "Power Grid Corporation of India Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Regulated Electric"
+  },
+  {
+    "symbol": "ULTRACEMCO.NS",
+    "index": "Nifty 50",
+    "name": "UltraTech Cement Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "JSWSTEEL.NS",
+    "index": "Nifty 50",
+    "name": "JSW Steel Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "TATASTEEL.NS",
+    "index": "Nifty 50",
+    "name": "Tata Steel Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "TECHM.NS",
+    "index": "Nifty 50",
+    "name": "Tech Mahindra Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "ADANIENT.NS",
+    "index": "Nifty 50",
+    "name": "Adani Enterprises Limited",
+    "sector": "Energy",
+    "industry": "Thermal Coal"
+  },
+  {
+    "symbol": "ADANIPORTS.NS",
+    "index": "Nifty 50",
+    "name": "Adani Ports and Special Economic Zone Limited",
+    "sector": "Industrials",
+    "industry": "Marine Shipping"
+  },
+  {
+    "symbol": "COALINDIA.NS",
+    "index": "Nifty 50",
+    "name": "Coal India Limited",
+    "sector": "Energy",
+    "industry": "Thermal Coal"
+  },
+  {
+    "symbol": "BAJAJ-AUTO.NS",
+    "index": "Nifty 50",
+    "name": "Bajaj Auto Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers"
+  },
+  {
+    "symbol": "BAJAJFINSV.NS",
+    "index": "Nifty 50",
+    "name": "Bajaj Finserv Ltd.",
+    "sector": "Financial Services",
+    "industry": "Financial Conglomerates"
+  },
+  {
+    "symbol": "DRREDDY.NS",
+    "index": "Nifty 50",
+    "name": "Dr. Reddy's Laboratories Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "EICHERMOT.NS",
+    "index": "Nifty 50",
+    "name": "Eicher Motors Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers"
+  },
+  {
+    "symbol": "GRASIM.NS",
+    "index": "Nifty 50",
+    "name": "Grasim Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "HEROMOTOCO.NS",
+    "index": "Nifty 50",
+    "name": "Hero MotoCorp Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers"
+  },
+  {
+    "symbol": "HINDALCO.NS",
+    "index": "Nifty 50",
+    "name": "Hindalco Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Aluminum"
+  },
+  {
+    "symbol": "INDUSINDBK.NS",
+    "index": "Nifty 50",
+    "name": "IndusInd Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "ITC.NS",
+    "index": "Nifty 50",
+    "name": "ITC Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Tobacco"
+  },
+  {
+    "symbol": "JIOFIN.NS",
+    "index": "Nifty 50",
+    "name": "Jio Financial Services Limited",
+    "sector": "Financial Services",
+    "industry": "Asset Management"
+  },
+  {
+    "symbol": "M&M.NS",
+    "index": "Nifty 50",
+    "name": "Mahindra & Mahindra Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers"
+  },
+  {
+    "symbol": "APOLLOHOSP.NS",
+    "index": "Nifty 50",
+    "name": "Apollo Hospitals Enterprise Limited",
+    "sector": "Healthcare",
+    "industry": "Medical Care Facilities"
+  },
+  {
+    "symbol": "BPCL.NS",
+    "index": "Nifty 50",
+    "name": "Bharat Petroleum Corporation Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Refining & Marketing"
+  },
+  {
+    "symbol": "BRITANNIA.NS",
+    "index": "Nifty 50",
+    "name": "Britannia Industries Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "CIPLA.NS",
+    "index": "Nifty 50",
+    "name": "Cipla Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "DIVISLAB.NS",
+    "index": "Nifty 50",
+    "name": "Divi's Laboratories Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "TATACONSUM.NS",
+    "index": "Nifty 50",
+    "name": "Tata Consumer Products Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "TRENT.NS",
+    "index": "Nifty 50",
+    "name": "Trent Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Apparel Retail"
+  },
+  {
+    "symbol": "SHRIRAMFIN.NS",
+    "index": "Nifty 50",
+    "name": "Shriram Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "SBILIFE.NS",
+    "index": "Nifty 50",
+    "name": "SBI Life Insurance Company Limited",
+    "sector": "Financial Services",
+    "industry": "Insurance - Life"
+  },
+  {
+    "symbol": "HDFCLIFE.NS",
+    "index": "Nifty 50",
+    "name": "HDFC Life Insurance Company Limited",
+    "sector": "Financial Services",
+    "industry": "Insurance - Life"
+  },
+  {
+    "symbol": "ADANIGREEN.NS",
+    "index": "Nifty Next 50",
+    "name": "Adani Green Energy Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Renewable"
+  },
+  {
+    "symbol": "ADANITRANS.NS",
+    "index": "Nifty Next 50",
+    "name": "ADANITRANS",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "AMBUJACEM.NS",
+    "index": "Nifty Next 50",
+    "name": "Ambuja Cements Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "BANDHANBNK.NS",
+    "index": "Nifty Next 50",
+    "name": "Bandhan Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "BERGEPAINT.NS",
+    "index": "Nifty Next 50",
+    "name": "Berger Paints India Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "BEL.NS",
+    "index": "Nifty Next 50",
+    "name": "Bharat Electronics Limited",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense"
+  },
+  {
+    "symbol": "CHOLAFIN.NS",
+    "index": "Nifty Next 50",
+    "name": "Cholamandalam Investment and Finance Company Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "COLPAL.NS",
+    "index": "Nifty Next 50",
+    "name": "Colgate-Palmolive (India) Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products"
+  },
+  {
+    "symbol": "DABUR.NS",
+    "index": "Nifty Next 50",
+    "name": "Dabur India Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products"
+  },
+  {
+    "symbol": "DLF.NS",
+    "index": "Nifty Next 50",
+    "name": "DLF Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "GAIL.NS",
+    "index": "Nifty Next 50",
+    "name": "GAIL (India) Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Regulated Gas"
+  },
+  {
+    "symbol": "GODREJCP.NS",
+    "index": "Nifty Next 50",
+    "name": "Godrej Consumer Products Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products"
+  },
+  {
+    "symbol": "HAVELLS.NS",
+    "index": "Nifty Next 50",
+    "name": "Havells India Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "ICICIGI.NS",
+    "index": "Nifty Next 50",
+    "name": "ICICI Lombard General Insurance Company Limited",
+    "sector": "Financial Services",
+    "industry": "Insurance - Diversified"
+  },
+  {
+    "symbol": "ICICIPRULI.NS",
+    "index": "Nifty Next 50",
+    "name": "ICICI Prudential Life Insurance Company Limited",
+    "sector": "Financial Services",
+    "industry": "Insurance - Life"
+  },
+  {
+    "symbol": "INDUSTOWER.NS",
+    "index": "Nifty Next 50",
+    "name": "Indus Towers Limited",
+    "sector": "Communication Services",
+    "industry": "Telecom Services"
+  },
+  {
+    "symbol": "IRCTC.NS",
+    "index": "Nifty Next 50",
+    "name": "Indian Railway Catering & Tourism Corporation Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Travel Services"
+  },
+  {
+    "symbol": "JINDALSTEL.NS",
+    "index": "Nifty Next 50",
+    "name": "Jindal Steel Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "JUBLFOOD.NS",
+    "index": "Nifty Next 50",
+    "name": "Jubilant FoodWorks Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Restaurants"
+  },
+  {
+    "symbol": "LICINDIAETF.NS",
+    "index": "Nifty Next 50",
+    "name": "LICINDIAETF",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "LUPIN.NS",
+    "index": "Nifty Next 50",
+    "name": "Lupin Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "MANKIND.NS",
+    "index": "Nifty Next 50",
+    "name": "Mankind Pharma Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "MCDOWELL-N.NS",
+    "index": "Nifty Next 50",
+    "name": "MCDOWELL-N",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "MUTHOOTFIN.NS",
+    "index": "Nifty Next 50",
+    "name": "Muthoot Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "NAUKRI.NS",
+    "index": "Nifty Next 50",
+    "name": "Info Edge (India) Limited",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information"
+  },
+  {
+    "symbol": "OBEROIRLTY.NS",
+    "index": "Nifty Next 50",
+    "name": "Oberoi Realty Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "OFSS.NS",
+    "index": "Nifty Next 50",
+    "name": "Oracle Financial Services Software Limited",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure"
+  },
+  {
+    "symbol": "PAGEIND.NS",
+    "index": "Nifty Next 50",
+    "name": "Page Industries Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Apparel Manufacturing"
+  },
+  {
+    "symbol": "PATANJALI.NS",
+    "index": "Nifty Next 50",
+    "name": "Patanjali Foods Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "PERSISTENT.NS",
+    "index": "Nifty Next 50",
+    "name": "Persistent Systems Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "PIDILITIND.NS",
+    "index": "Nifty Next 50",
+    "name": "Pidilite Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "PIIND.NS",
+    "index": "Nifty Next 50",
+    "name": "PI Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Agricultural Inputs"
+  },
+  {
+    "symbol": "PGHH.NS",
+    "index": "Nifty Next 50",
+    "name": "Procter & Gamble Hygiene and Health Care Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products"
+  },
+  {
+    "symbol": "POLYCAB.NS",
+    "index": "Nifty Next 50",
+    "name": "Polycab India Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "RECLTD.NS",
+    "index": "Nifty Next 50",
+    "name": "REC Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "SAIL.NS",
+    "index": "Nifty Next 50",
+    "name": "Steel Authority of India Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "SHREECEM.NS",
+    "index": "Nifty Next 50",
+    "name": "Shree Cement Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "SIEMENS.NS",
+    "index": "Nifty Next 50",
+    "name": "Siemens Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "SRF.NS",
+    "index": "Nifty Next 50",
+    "name": "SRF Limited",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "TATACOMM.NS",
+    "index": "Nifty Next 50",
+    "name": "Tata Communications Limited",
+    "sector": "Communication Services",
+    "industry": "Telecom Services"
+  },
+  {
+    "symbol": "TORNTPHARM.NS",
+    "index": "Nifty Next 50",
+    "name": "Torrent Pharmaceuticals Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "TVSMOTOR.NS",
+    "index": "Nifty Next 50",
+    "name": "TVS Motor Company Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers"
+  },
+  {
+    "symbol": "UBL.NS",
+    "index": "Nifty Next 50",
+    "name": "United Breweries Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Brewers"
+  },
+  {
+    "symbol": "UNITDSPR.NS",
+    "index": "Nifty Next 50",
+    "name": "UNITED SPIRITS LIMITED",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Wineries & Distilleries"
+  },
+  {
+    "symbol": "VBL.NS",
+    "index": "Nifty Next 50",
+    "name": "Varun Beverages Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Non-Alcoholic"
+  },
+  {
+    "symbol": "VEDL.NS",
+    "index": "Nifty Next 50",
+    "name": "Vedanta Limited",
+    "sector": "Basic Materials",
+    "industry": "Other Industrial Metals & Mining"
+  },
+  {
+    "symbol": "VOLTAS.NS",
+    "index": "Nifty Next 50",
+    "name": "Voltas Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Furnishings, Fixtures & Appliances"
+  },
+  {
+    "symbol": "ZOMATO.NS",
+    "index": "Nifty Next 50",
+    "name": "ZOMATO",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "ZYDUSLIFE.NS",
+    "index": "Nifty Next 50",
+    "name": "Zydus Lifesciences Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "NHPC.NS",
+    "index": "Nifty Next 50",
+    "name": "NHPC Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Renewable"
+  },
+  {
+    "symbol": "ABCAPITAL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Aditya Birla Capital Limited",
+    "sector": "Financial Services",
+    "industry": "Financial Conglomerates"
+  },
+  {
+    "symbol": "ABFRL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Aditya Birla Fashion and Retail Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Apparel Manufacturing"
+  },
+  {
+    "symbol": "AIAENG.NS",
+    "index": "Nifty Midcap 150",
+    "name": "AIA Engineering Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "AJANTPHARM.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Ajanta Pharma Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "ALKEM.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Alkem Laboratories Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "ANGELONE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Angel One Limited",
+    "sector": "Financial Services",
+    "industry": "Capital Markets"
+  },
+  {
+    "symbol": "APLAPOLLO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "APL Apollo Tubes Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "APOLLOTYRE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Apollo Tyres Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "ASHOKLEY.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Ashok Leyland Limited",
+    "sector": "Industrials",
+    "industry": "Farm & Heavy Construction Machinery"
+  },
+  {
+    "symbol": "ASTRAL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Astral Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "ATUL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Atul Ltd",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "AUBANK.NS",
+    "index": "Nifty Midcap 150",
+    "name": "AU Small Finance Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "AUROPHARMA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Aurobindo Pharma Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "AVENUES.NS",
+    "index": "Nifty Midcap 150",
+    "name": "AVENUES",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "BALKRISIND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Balkrishna Industries Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "BATAINDIA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Bata India Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Footwear & Accessories"
+  },
+  {
+    "symbol": "BHARATFORG.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Bharat Forge Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "BHEL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Bharat Heavy Electricals Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "BIOCON.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Biocon Limited",
+    "sector": "Healthcare",
+    "industry": "Biotechnology"
+  },
+  {
+    "symbol": "BLUEDART.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Blue Dart Express Limited",
+    "sector": "Industrials",
+    "industry": "Integrated Freight & Logistics"
+  },
+  {
+    "symbol": "BOSCHLTD.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Bosch Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "BSE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "BSE Limited",
+    "sector": "Financial Services",
+    "industry": "Financial Data & Stock Exchanges"
+  },
+  {
+    "symbol": "CAMS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Computer Age Management Services Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "CANFINHOME.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Can Fin Homes Limited",
+    "sector": "Financial Services",
+    "industry": "Mortgage Finance"
+  },
+  {
+    "symbol": "CASTROLIND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Castrol India Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Refining & Marketing"
+  },
+  {
+    "symbol": "CESC.NS",
+    "index": "Nifty Midcap 150",
+    "name": "CESC Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Regulated Electric"
+  },
+  {
+    "symbol": "CGPOWER.NS",
+    "index": "Nifty Midcap 150",
+    "name": "CG Power and Industrial Solutions Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "CHAMBLFERT.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Chambal Fertilisers and Chemicals Limited",
+    "sector": "Basic Materials",
+    "industry": "Agricultural Inputs"
+  },
+  {
+    "symbol": "COFORGE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Coforge Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "CONCOR.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Container Corporation of India Limited",
+    "sector": "Industrials",
+    "industry": "Railroads"
+  },
+  {
+    "symbol": "CRISIL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "CRISIL Limited",
+    "sector": "Financial Services",
+    "industry": "Financial Data & Stock Exchanges"
+  },
+  {
+    "symbol": "CROMPTON.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Crompton Greaves Consumer Electricals Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Furnishings, Fixtures & Appliances"
+  },
+  {
+    "symbol": "CUB.NS",
+    "index": "Nifty Midcap 150",
+    "name": "City Union Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "CUMMINSIND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Cummins India Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "DEEPAKNTR.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Deepak Nitrite Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "DELHIVERY.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Delhivery Limited",
+    "sector": "Industrials",
+    "industry": "Integrated Freight & Logistics"
+  },
+  {
+    "symbol": "DELTACORP.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Delta Corp Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Resorts & Casinos"
+  },
+  {
+    "symbol": "DIXON.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Dixon Technologies (India) Limited",
+    "sector": "Technology",
+    "industry": "Consumer Electronics"
+  },
+  {
+    "symbol": "EIDPARRY.NS",
+    "index": "Nifty Midcap 150",
+    "name": "E.I.D.- Parry (India) Limited",
+    "sector": "Basic Materials",
+    "industry": "Agricultural Inputs"
+  },
+  {
+    "symbol": "ELGIEQUIP.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Elgi Equipments Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "EMAMILTD.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Emami Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products"
+  },
+  {
+    "symbol": "ENDURANCE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Endurance Technologies Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "ENGINERSIN.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Engineers India Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "ESCORTS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Escorts Kubota Limited",
+    "sector": "Industrials",
+    "industry": "Farm & Heavy Construction Machinery"
+  },
+  {
+    "symbol": "EXIDEIND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Exide Industries Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "FEDERALBNK.NS",
+    "index": "Nifty Midcap 150",
+    "name": "The Federal Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "FINPIPE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Finolex Industries Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "FLUOROCHEM.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Gujarat Fluorochemicals Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "FORTIS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Fortis Healthcare Limited",
+    "sector": "Healthcare",
+    "industry": "Medical Care Facilities"
+  },
+  {
+    "symbol": "GLENMARK.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Glenmark Pharmaceuticals Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "GMRINFRA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "GMRINFRA",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "GNFC.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Gujarat Narmada Valley Fertilizers & Chemicals Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "GODFRYPHLP.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Godfrey Phillips India Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Tobacco"
+  },
+  {
+    "symbol": "GODREJIND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Godrej Industries Limited",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "GPPL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Gujarat Pipavav Port Limited",
+    "sector": "Industrials",
+    "industry": "Marine Shipping"
+  },
+  {
+    "symbol": "GRANULES.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Granules India Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "GSPL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Gujarat State Petronet Limited",
+    "sector": "",
+    "industry": ""
+  },
+  {
+    "symbol": "HAPPSTMNDS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Happiest Minds Technologies Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "HFCL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "HFCL Limited",
+    "sector": "Technology",
+    "industry": "Communication Equipment"
+  },
+  {
+    "symbol": "HINDCOPPER.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Hindustan Copper Limited",
+    "sector": "Basic Materials",
+    "industry": "Copper"
+  },
+  {
+    "symbol": "HINDPETRO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Hindustan Petroleum Corporation Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Refining & Marketing"
+  },
+  {
+    "symbol": "HONAUT.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Honeywell Automation India Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "IDFCFIRSTB.NS",
+    "index": "Nifty Midcap 150",
+    "name": "IDFC First Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "IEX.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Indian Energy Exchange Limited",
+    "sector": "Financial Services",
+    "industry": "Capital Markets"
+  },
+  {
+    "symbol": "IFCI.NS",
+    "index": "Nifty Midcap 150",
+    "name": "IFCI Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "IIFL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "IIFL Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "INDHOTEL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "The Indian Hotels Company Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Lodging"
+  },
+  {
+    "symbol": "INDIAMART.NS",
+    "index": "Nifty Midcap 150",
+    "name": "IndiaMART InterMESH Limited",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information"
+  },
+  {
+    "symbol": "INDIANB.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Indian Bank",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "INDIGO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "InterGlobe Aviation Limited",
+    "sector": "Industrials",
+    "industry": "Airlines"
+  },
+  {
+    "symbol": "IOC.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Indian Oil Corporation Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Refining & Marketing"
+  },
+  {
+    "symbol": "IPCALAB.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Ipca Laboratories Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "IRFC.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Indian Railway Finance Corporation Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "JKCEMENT.NS",
+    "index": "Nifty Midcap 150",
+    "name": "J.K. Cement Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "JKPAPER.NS",
+    "index": "Nifty Midcap 150",
+    "name": "JK Paper Limited",
+    "sector": "Basic Materials",
+    "industry": "Paper & Paper Products"
+  },
+  {
+    "symbol": "JMFINANCIAL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "JMFINANCIAL",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "JSL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Jindal Stainless Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "JUBLINGREA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Jubilant Ingrevia Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "KAJARIACER.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Kajaria Ceramics Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "KALPATPOWR.NS",
+    "index": "Nifty Midcap 150",
+    "name": "KALPATPOWR",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "KANSAINER.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Kansai Nerolac Paints Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "KARURVYSYA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "The Karur Vysya Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "KEI.NS",
+    "index": "Nifty Midcap 150",
+    "name": "KEI Industries Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "KPITTECH.NS",
+    "index": "Nifty Midcap 150",
+    "name": "KPIT Technologies Limited",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure"
+  },
+  {
+    "symbol": "KRBL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "KRBL Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "KSCL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Kaveri Seed Company Limited",
+    "sector": "Basic Materials",
+    "industry": "Agricultural Inputs"
+  },
+  {
+    "symbol": "LAURUSLABS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Laurus Labs Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "LICHSGFIN.NS",
+    "index": "Nifty Midcap 150",
+    "name": "LIC Housing Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Mortgage Finance"
+  },
+  {
+    "symbol": "LINDEINDIA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Linde India Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "LTIM.NS",
+    "index": "Nifty Midcap 150",
+    "name": "LTIM",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "LTTS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "L&T Technology Services Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "LUXIND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Lux Industries Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Apparel Manufacturing"
+  },
+  {
+    "symbol": "MAHSEAMLES.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Maharashtra Seamless Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "MANAPPURAM.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Manappuram Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "MARICO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Marico Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products"
+  },
+  {
+    "symbol": "MCX.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Multi Commodity Exchange of India Limited",
+    "sector": "Financial Services",
+    "industry": "Financial Data & Stock Exchanges"
+  },
+  {
+    "symbol": "METROPOLIS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Metropolis Healthcare Limited",
+    "sector": "Healthcare",
+    "industry": "Diagnostics & Research"
+  },
+  {
+    "symbol": "MFSL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Max Financial Services Limited",
+    "sector": "Financial Services",
+    "industry": "Insurance - Life"
+  },
+  {
+    "symbol": "MGL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Mahanagar Gas Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Regulated Gas"
+  },
+  {
+    "symbol": "MINDTREE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "MINDTREE",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "MOTILALOFS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Motilal Oswal Financial Services Limited",
+    "sector": "Financial Services",
+    "industry": "Capital Markets"
+  },
+  {
+    "symbol": "MRF.NS",
+    "index": "Nifty Midcap 150",
+    "name": "MRF Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "NATCOPHARM.NS",
+    "index": "Nifty Midcap 150",
+    "name": "NATCO Pharma Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "NAVINFLUOR.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Navin Fluorine International Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "NCC.NS",
+    "index": "Nifty Midcap 150",
+    "name": "NCC Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "NETWORK18.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Network18 Media & Investments Limited",
+    "sector": "Communication Services",
+    "industry": "Entertainment"
+  },
+  {
+    "symbol": "NLCINDIA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "NLC India Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Regulated Electric"
+  },
+  {
+    "symbol": "NMDC.NS",
+    "index": "Nifty Midcap 150",
+    "name": "NMDC Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "NUVOCO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Nuvoco Vistas Corporation Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "OIL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Oil India Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Integrated"
+  },
+  {
+    "symbol": "OLECTRA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Olectra Greentech Limited",
+    "sector": "Industrials",
+    "industry": "Farm & Heavy Construction Machinery"
+  },
+  {
+    "symbol": "PNBHOUSING.NS",
+    "index": "Nifty Midcap 150",
+    "name": "PNB Housing Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Mortgage Finance"
+  },
+  {
+    "symbol": "POLICYBZR.NS",
+    "index": "Nifty Midcap 150",
+    "name": "PB Fintech Limited",
+    "sector": "Financial Services",
+    "industry": "Insurance Brokers"
+  },
+  {
+    "symbol": "POLYMED.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Poly Medicure Limited",
+    "sector": "Healthcare",
+    "industry": "Medical Instruments & Supplies"
+  },
+  {
+    "symbol": "PRAJIND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Praj Industries Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "PRINCEPIPE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Prince Pipes and Fittings Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "PSB.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Punjab & Sind Bank",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "PVRINOX.NS",
+    "index": "Nifty Midcap 150",
+    "name": "PVR INOX Limited",
+    "sector": "Communication Services",
+    "industry": "Entertainment"
+  },
+  {
+    "symbol": "RADICO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Radico Khaitan Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Wineries & Distilleries"
+  },
+  {
+    "symbol": "RAILTEL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "RailTel Corporation of India Limited",
+    "sector": "Communication Services",
+    "industry": "Telecom Services"
+  },
+  {
+    "symbol": "RAJESHEXPO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Rajesh Exports Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Luxury Goods"
+  },
+  {
+    "symbol": "RAMCOCEM.NS",
+    "index": "Nifty Midcap 150",
+    "name": "The Ramco Cements Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "RATNAMANI.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Ratnamani Metals & Tubes Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "RAYMOND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Raymond Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "REDINGTON.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Redington Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "RELAXO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Relaxo Footwears Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Footwear & Accessories"
+  },
+  {
+    "symbol": "RKFORGE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Ramkrishna Forgings Limited",
+    "sector": "Industrials",
+    "industry": "Metal Fabrication"
+  },
+  {
+    "symbol": "ROSSARI.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Rossari Biotech Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "ROUTE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Route Mobile Limited",
+    "sector": "Communication Services",
+    "industry": "Telecom Services"
+  },
+  {
+    "symbol": "RVNL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Rail Vikas Nigam Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "SAFARI.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Safari Industries (India) Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Footwear & Accessories"
+  },
+  {
+    "symbol": "SANOFI.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sanofi India Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - General"
+  },
+  {
+    "symbol": "SAPPHIRE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sapphire Foods India Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Restaurants"
+  },
+  {
+    "symbol": "SCHAEFFLER.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Schaeffler India Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "SHYAMMETL.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Shyam Metalics and Energy Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "SKFINDIA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "SKF India Limited",
+    "sector": "Industrials",
+    "industry": "Tools & Accessories"
+  },
+  {
+    "symbol": "SOBHA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sobha Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "SOLARA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Solara Active Pharma Sciences Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "SONACOMS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sona BLW Precision Forgings Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "STARHEALTH.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Star Health and Allied Insurance Company Limited",
+    "sector": "Financial Services",
+    "industry": "Insurance - Life"
+  },
+  {
+    "symbol": "STLTECH.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sterlite Technologies Limited",
+    "sector": "Technology",
+    "industry": "Communication Equipment"
+  },
+  {
+    "symbol": "SUMICHEM.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sumitomo Chemical India Limited",
+    "sector": "Basic Materials",
+    "industry": "Agricultural Inputs"
+  },
+  {
+    "symbol": "SUNDARMFIN.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sundaram Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "SUNDRMFAST.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sundram Fasteners Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "SUNTV.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Sun TV Network Limited",
+    "sector": "Communication Services",
+    "industry": "Broadcasting"
+  },
+  {
+    "symbol": "SUPPETRO.NS",
+    "index": "Nifty Midcap 150",
+    "name": "SUPPETRO",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "SUPREMEIND.NS",
+    "index": "Nifty Midcap 150",
+    "name": "The Supreme Industries Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "SUZLON.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Suzlon Energy Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "SWANENERGY.NS",
+    "index": "Nifty Midcap 150",
+    "name": "SWANENERGY",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "SYMPHONY.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Symphony Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Furnishings, Fixtures & Appliances"
+  },
+  {
+    "symbol": "TANLA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Tanla Platforms Limited",
+    "sector": "Technology",
+    "industry": "Software - Application"
+  },
+  {
+    "symbol": "TATAELXSI.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Tata Elxsi Limited",
+    "sector": "Technology",
+    "industry": "Software - Application"
+  },
+  {
+    "symbol": "TATAINVEST.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Tata Investment Corporation Limited",
+    "sector": "Financial Services",
+    "industry": "Asset Management"
+  },
+  {
+    "symbol": "TATAPOWER.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Tata Power Company Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Independent Power Producers"
+  },
+  {
+    "symbol": "TCNSBRANDS.NS",
+    "index": "Nifty Midcap 150",
+    "name": "TCNSBRANDS",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "TEAMLEASE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "TeamLease Services Limited",
+    "sector": "Industrials",
+    "industry": "Staffing & Employment Services"
+  },
+  {
+    "symbol": "THERMAX.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Thermax Limited",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "TIINDIA.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Tube Investments of India Limited",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "TIMKEN.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Timken India Limited",
+    "sector": "Industrials",
+    "industry": "Tools & Accessories"
+  },
+  {
+    "symbol": "TRIDENT.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Trident Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing"
+  },
+  {
+    "symbol": "TRITURBINE.NS",
+    "index": "Nifty Midcap 150",
+    "name": "Triveni Turbine Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "TTKPRESTIG.NS",
+    "index": "Nifty Midcap 150",
+    "name": "TTK Prestige Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Furnishings, Fixtures & Appliances"
+  },
+  {
+    "symbol": "AARTIDRUGS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Aarti Drugs Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "AARTIIND.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Aarti Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "ACCELYA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Accelya Solutions India Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "ACE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Action Construction Equipment Limited",
+    "sector": "Industrials",
+    "industry": "Farm & Heavy Construction Machinery"
+  },
+  {
+    "symbol": "ACRYSIL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "ACRYSIL",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "ADANIPOWER.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Adani Power Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Independent Power Producers"
+  },
+  {
+    "symbol": "ADFFOODS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "ADF Foods Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "AEGISCHEM.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "AEGISCHEM",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "AFFLE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Affle 3i Limited",
+    "sector": "Communication Services",
+    "industry": "Advertising Agencies"
+  },
+  {
+    "symbol": "AGROPHOS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Agro Phos (India) Limited",
+    "sector": "Basic Materials",
+    "industry": "Agricultural Inputs"
+  },
+  {
+    "symbol": "AIIL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Authum Investment & Infrastructure Limited",
+    "sector": "Financial Services",
+    "industry": "Capital Markets"
+  },
+  {
+    "symbol": "AJAXENG.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "AJAXENG",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "AKZOINDIA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "JSW Dulux Ltd",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "ALEMBICLTD.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Alembic Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "ALEXISR.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "ALEXISR",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "ALKYLAMINE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Alkyl Amines Chemicals Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "ALLCARGO.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Allcargo Logistics Limited",
+    "sector": "Industrials",
+    "industry": "Integrated Freight & Logistics"
+  },
+  {
+    "symbol": "ALMONDZ.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Almondz Global Securities Limited",
+    "sector": "Financial Services",
+    "industry": "Capital Markets"
+  },
+  {
+    "symbol": "ALOKINDS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Alok Industries Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing"
+  },
+  {
+    "symbol": "AMARAJABAT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "AMARAJABAT",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "AMBER.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Amber Enterprises India Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Furnishings, Fixtures & Appliances"
+  },
+  {
+    "symbol": "AMCREDIFO.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "AMCREDIFO",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "AMIORG.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "AMIORG",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "ANANTRAJ.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Anant Raj Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "ANDHRSUGAR.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "The Andhra Sugars Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "ANURAS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Anupam Rasayan India Ltd",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "APARINDS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "APAR Industries Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "APCOTEXIND.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Apcotex Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "APTECHT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Aptech Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Education & Training Services"
+  },
+  {
+    "symbol": "ARCHIDPLY.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Archidply Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Lumber & Wood Production"
+  },
+  {
+    "symbol": "ARCOTECH.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Arcotech Limited",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "ARSHIYA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Arshiya Limited",
+    "sector": "Industrials",
+    "industry": "Integrated Freight & Logistics"
+  },
+  {
+    "symbol": "ARVIND.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Arvind Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing"
+  },
+  {
+    "symbol": "ASAHIINDIA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Asahi India Glass Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "ASALCBR.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Associated Alcohols & Breweries Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Wineries & Distilleries"
+  },
+  {
+    "symbol": "ASHIANA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Ashiana Housing Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "ASHIMASYN.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Ashima Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "ASIANTILES.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Asian Granito India Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "ASKAUTOLTD.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "ASK AUTOMOTIVE LIMITED",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "ASTRAZEN.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "AstraZeneca Pharma India Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "ATGL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Adani Total Gas Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Regulated Gas"
+  },
+  {
+    "symbol": "AUTOAXLES.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Automotive Axles Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "AVANTIFEED.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Avanti Feeds Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "AXISCADES.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "AXISCADES Technologies Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "BAJAJHIND.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bajaj Hindusthan Sugar Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Confectioners"
+  },
+  {
+    "symbol": "BAJAJHLDNG.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bajaj Holdings & Investment Limited",
+    "sector": "Financial Services",
+    "industry": "Asset Management"
+  },
+  {
+    "symbol": "BALMLAWRIE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Balmer Lawrie & Co. Ltd.",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "BANARISUG.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bannari Amman Sugars Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Confectioners"
+  },
+  {
+    "symbol": "BANCOINDIA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Banco Products (India) Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "BASF.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "BASF India Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "BAYERCROP.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bayer CropScience Limited",
+    "sector": "Basic Materials",
+    "industry": "Agricultural Inputs"
+  },
+  {
+    "symbol": "BBTC.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "The Bombay Burmah Trading Corporation Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "BEARDSELL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Beardsell Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "BEDMUTHA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bedmutha Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "BEML.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "BEML Limited",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "BFINVEST.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "BF Investment Limited",
+    "sector": "Financial Services",
+    "industry": "Asset Management"
+  },
+  {
+    "symbol": "BGRENERGY.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "BGR Energy Systems Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "BHAGERIA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bhageria Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "BHAGINFOTEC.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "BHAGINFOTEC",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "BHARATWIRE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bharat Wire Ropes Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "BHEEMITE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "BHEEMITE",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "BIKAJI.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bikaji Foods International Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "BIRLACORPN.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Birla Corporation Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "BLISSGVS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Bliss GVS Pharma Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "BOROLTD.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Borosil Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Furnishings, Fixtures & Appliances"
+  },
+  {
+    "symbol": "BORORENEW.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Borosil Renewables Limited",
+    "sector": "Technology",
+    "industry": "Solar"
+  },
+  {
+    "symbol": "BRIGADE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Brigade Enterprises Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "BSOFT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Birlasoft Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "CAPLIPOINT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Caplin Point Laboratories Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "CARBORUNIV.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Carborundum Universal Limited",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "CCL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "CCL Products (India) Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "CENTENKA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Century Enka Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing"
+  },
+  {
+    "symbol": "CENTEXT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Century Extrusions Limited",
+    "sector": "Basic Materials",
+    "industry": "Aluminum"
+  },
+  {
+    "symbol": "CENTRUM.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Centrum Capital Limited",
+    "sector": "Financial Services",
+    "industry": "Financial Conglomerates"
+  },
+  {
+    "symbol": "CERA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Cera Sanitaryware Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "CHEMFAB.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Chemfab Alkalis Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "CHEMPLASTS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Chemplast Sanmar Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "CHEVIOT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Cheviot Company Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing"
+  },
+  {
+    "symbol": "CIEINDIA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "CIE Automotive India Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "CLEAN.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Clean Science and Technology Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "CLNINDIA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "CLNINDIA",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "CMICABLES.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "CMI Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "COCHINSHIP.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Cochin Shipyard Limited",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense"
+  },
+  {
+    "symbol": "COMPUSOFT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Compucom Software Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Education & Training Services"
+  },
+  {
+    "symbol": "CONFIPET.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Confidence Petroleum India Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Refining & Marketing"
+  },
+  {
+    "symbol": "CONTROLPR.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Control Print Limited",
+    "sector": "Industrials",
+    "industry": "Business Equipment & Supplies"
+  },
+  {
+    "symbol": "CORDS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "CORDS",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "CRAFTSMAN.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Craftsman Automation Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "CREDITACC.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "CreditAccess Grameen Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "DALBHARAT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Dalmia Bharat Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "DAMODARIND.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Damodar Industries Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing"
+  },
+  {
+    "symbol": "DATAMATICS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Datamatics Global Services Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "DCB.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "DCB Bank Limited",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "DCW.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "DCW Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "DELCRED.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "DELCRED",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "DHUNSERI.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "DHUNSERI",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "DIGISPICE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "DiGiSPICE Technologies Limited",
+    "sector": "Financial Services",
+    "industry": "Financial Conglomerates"
+  },
+  {
+    "symbol": "DOLLAR.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Dollar Industries Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Apparel Manufacturing"
+  },
+  {
+    "symbol": "DPWIRES.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "D.P. Wires Limited",
+    "sector": "Industrials",
+    "industry": "Metal Fabrication"
+  },
+  {
+    "symbol": "DREDGECORP.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Dredging Corporation of India Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "DWARKESH.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Dwarikesh Sugar Industries Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Confectioners"
+  },
+  {
+    "symbol": "DYNAMATECH.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Dynamatic Technologies Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "ECLERX.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "eClerx Services Limited",
+    "sector": "Technology",
+    "industry": "Information Technology Services"
+  },
+  {
+    "symbol": "EDELWEISS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Edelweiss Financial Services Limited",
+    "sector": "Financial Services",
+    "industry": "Financial Conglomerates"
+  },
+  {
+    "symbol": "ELGI.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "ELGI",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "EMS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "EMS",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "EPIGRAL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Epigral Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "EQUITASBNK.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Equitas Small Finance Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "ESABINDIA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "ESAB India Limited",
+    "sector": "Industrials",
+    "industry": "Tools & Accessories"
+  },
+  {
+    "symbol": "FINEORG.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Fine Organic Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "FINOLEX.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "FINOLEX",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "FMGOETZE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Federal-Mogul Goetze (India) Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "FOSECOIND.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Foseco India Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "FUSION.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Fusion Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "GALAXYSURF.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Galaxy Surfactants Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "GARFIBRES.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Garware Technical Fibres Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing"
+  },
+  {
+    "symbol": "GATEWAY.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Gateway Distriparks Limited",
+    "sector": "Industrials",
+    "industry": "Integrated Freight & Logistics"
+  },
+  {
+    "symbol": "GENUSPOWER.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Genus Power Infrastructures Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "GHCL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "GHCL Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "GLOBUSSPR.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Globus Spirits Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Wineries & Distilleries"
+  },
+  {
+    "symbol": "GMMPFAUDLR.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "GMM Pfaudler Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "GOCOLORS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Go Fashion (India) Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Apparel Retail"
+  },
+  {
+    "symbol": "GODREJAGRO.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Godrej Agrovet Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "GOLDIAM.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Goldiam International Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Luxury Goods"
+  },
+  {
+    "symbol": "GPIL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Godawari Power & Ispat Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "GREENPLY.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Greenply Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Lumber & Wood Production"
+  },
+  {
+    "symbol": "GREENPANEL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Greenpanel Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Lumber & Wood Production"
+  },
+  {
+    "symbol": "GESHIP.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "The Great Eastern Shipping Company Limited",
+    "sector": "Industrials",
+    "industry": "Marine Shipping"
+  },
+  {
+    "symbol": "GSFC.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Gujarat State Fertilizers & Chemicals Limited",
+    "sector": "Basic Materials",
+    "industry": "Agricultural Inputs"
+  },
+  {
+    "symbol": "GTPL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "GTPL Hathway Limited",
+    "sector": "Communication Services",
+    "industry": "Entertainment"
+  },
+  {
+    "symbol": "GUJALKALI.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Gujarat Alkalies and Chemicals Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "GULFOILLUB.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Gulf Oil Lubricants India Limited",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals"
+  },
+  {
+    "symbol": "GULFPETRO.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "GP Petroleums Limited",
+    "sector": "Energy",
+    "industry": "Oil & Gas Refining & Marketing"
+  },
+  {
+    "symbol": "HAPPYFORGE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "HAPPY FORGINGS LIMITED",
+    "sector": "Industrials",
+    "industry": "Metal Fabrication"
+  },
+  {
+    "symbol": "HARDWYN.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Hardwyn India Limited",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment"
+  },
+  {
+    "symbol": "HARIOMPIPE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Hariom Pipe Industries Limited",
+    "sector": "Basic Materials",
+    "industry": "Steel"
+  },
+  {
+    "symbol": "HCC.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Hindustan Construction Company Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "HEGDE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "HEGDE",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "HEIDELBERG.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "HeidelbergCement India Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "HEG.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "HEG Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "HEMIPROP.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Hemisphere Properties India Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Diversified"
+  },
+  {
+    "symbol": "HERITGFOOD.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Heritage Foods Limited",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods"
+  },
+  {
+    "symbol": "HIKAL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Hikal Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "HIMS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "HIMS",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "HINDWAREAP.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Hindware Home Innovation Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Furnishings, Fixtures & Appliances"
+  },
+  {
+    "symbol": "HNDFDS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Hindustan Foods Limited",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "HOMEFIRST.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Home First Finance Company India Limited",
+    "sector": "Financial Services",
+    "industry": "Mortgage Finance"
+  },
+  {
+    "symbol": "HPL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "HPL Electric & Power Limited",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts"
+  },
+  {
+    "symbol": "HTMEDIA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "HT Media Limited",
+    "sector": "Communication Services",
+    "industry": "Publishing"
+  },
+  {
+    "symbol": "HUBTOWN.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Hubtown Limited",
+    "sector": "Real Estate",
+    "industry": "Real Estate - Development"
+  },
+  {
+    "symbol": "HUHTAMAKI.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Huhtamaki India Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Packaging & Containers"
+  },
+  {
+    "symbol": "IBREALEST.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Equinox India Developments Limited",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "ICRA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "ICRA Limited",
+    "sector": "Financial Services",
+    "industry": "Financial Data & Stock Exchanges"
+  },
+  {
+    "symbol": "IDBI.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "IDBI Bank Limited",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional"
+  },
+  {
+    "symbol": "IDFC.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "IDFC",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "IGPL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "I G Petrochemicals Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "IIFLSEC.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "IIFLSEC",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "IMFA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Indian Metals and Ferro Alloys Limited",
+    "sector": "Basic Materials",
+    "industry": "Other Industrial Metals & Mining"
+  },
+  {
+    "symbol": "INDIACEM.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "The India Cements Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "INDIAGLYCO.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "India Glycols Limited",
+    "sector": "Basic Materials",
+    "industry": "Chemicals"
+  },
+  {
+    "symbol": "INDIAINFO.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "INDIAINFO",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "INDNIPPON.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "India Nippon Electricals Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "INDORAMA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Indo Rama Synthetics (India) Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing"
+  },
+  {
+    "symbol": "INDOSTAR.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "IndoStar Capital Finance Limited",
+    "sector": "Financial Services",
+    "industry": "Credit Services"
+  },
+  {
+    "symbol": "INFIBEAM.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "INFIBEAM",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "INTELLECT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Intellect Design Arena Limited",
+    "sector": "Technology",
+    "industry": "Software - Application"
+  },
+  {
+    "symbol": "INTERGLOBE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "INTERGLOBE",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "IOL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "IOL",
+    "sector": "Unknown Sector",
+    "industry": "Unknown Industry"
+  },
+  {
+    "symbol": "ISGEC.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Isgec Heavy Engineering Limited",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery"
+  },
+  {
+    "symbol": "ITI.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "ITI Limited",
+    "sector": "Technology",
+    "industry": "Communication Equipment"
+  },
+  {
+    "symbol": "JBCHEPHARM.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "J. B. Chemicals & Pharmaceuticals Limited",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic"
+  },
+  {
+    "symbol": "JBMA.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "JBM Auto Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "JETAIRWAYS.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Jet Airways (India) Limited",
+    "sector": "Industrials",
+    "industry": "Airlines"
+  },
+  {
+    "symbol": "JKIL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "J. Kumar Infraprojects Limited",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction"
+  },
+  {
+    "symbol": "JKLAKSHMI.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "JK Lakshmi Cement Limited",
+    "sector": "Basic Materials",
+    "industry": "Building Materials"
+  },
+  {
+    "symbol": "JKTYRE.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "JK Tyre & Industries Limited",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts"
+  },
+  {
+    "symbol": "JPASSOCIAT.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Jaiprakash Associates Limited",
+    "sector": "Industrials",
+    "industry": "Conglomerates"
+  },
+  {
+    "symbol": "JPPOWER.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Jaiprakash Power Ventures Limited",
+    "sector": "Utilities",
+    "industry": "Utilities - Independent Power Producers"
+  },
+  {
+    "symbol": "JUSTDIAL.NS",
+    "index": "Nifty Smallcap 250",
+    "name": "Just Dial Limited",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information"
+  }
+]

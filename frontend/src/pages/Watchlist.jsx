@@ -1,0 +1,463 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
+
+const Watchlist = () => {
+  const navigate = useNavigate();
+  const [watchlists, setWatchlists] = useState([]);
+  const [activeWatchlist, setActiveWatchlist] = useState(null);
+  const [stocks, setStocks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stocksLoading, setStocksLoading] = useState(false);
+  const [newWatchlistName, setNewWatchlistName] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [addSymbol, setAddSymbol] = useState("");
+  const [addNotes, setAddNotes] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [error, setError] = useState("");
+
+  // Fetch all watchlists on load
+  useEffect(() => {
+    fetchWatchlists();
+  }, []);
+
+  // Fetch stocks when active watchlist changes
+  useEffect(() => {
+    if (activeWatchlist) {
+      fetchWatchlistStocks(activeWatchlist.id);
+    }
+  }, [activeWatchlist]);
+
+  const fetchWatchlists = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/watchlists/");
+      setWatchlists(res.data);
+      if (res.data.length > 0 && !activeWatchlist) {
+        setActiveWatchlist(res.data[0]);
+      }
+    } catch (e) {
+      setError("Failed to load watchlists");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchWatchlistStocks = async (id) => {
+    try {
+      setStocksLoading(true);
+      const res = await api.get(`/watchlists/${id}/stocks`);
+      setStocks(res.data.stocks || []);
+    } catch (e) {
+      setStocks([]);
+    } finally {
+      setStocksLoading(false);
+    }
+  };
+
+  const createWatchlist = async () => {
+    if (!newWatchlistName.trim()) return;
+    try {
+      await api.post("/watchlists/", { 
+        name: newWatchlistName 
+      });
+      setNewWatchlistName("");
+      setShowCreateForm(false);
+      fetchWatchlists();
+    } catch (e) {
+      setError("Failed to create watchlist");
+    }
+  };
+
+  const deleteWatchlist = async (id) => {
+    if (!confirm("Delete this watchlist?")) return;
+    try {
+      await api.delete(`/watchlists/${id}`);
+      setActiveWatchlist(null);
+      setStocks([]);
+      fetchWatchlists();
+    } catch (e) {
+      setError("Failed to delete watchlist");
+    }
+  };
+
+  const addStock = async () => {
+    if (!addSymbol.trim() || !activeWatchlist) return;
+    try {
+      await api.post(
+        `/watchlists/${activeWatchlist.id}/stocks`,
+        { 
+          symbol: addSymbol.toUpperCase(),
+          notes: addNotes
+        }
+      );
+      setAddSymbol("");
+      setAddNotes("");
+      setShowAddForm(false);
+      fetchWatchlistStocks(activeWatchlist.id);
+    } catch (e) {
+      setError(
+        e.response?.data?.detail || 
+        "Failed to add stock"
+      );
+    }
+  };
+
+  const removeStock = async (stockId) => {
+    if (!activeWatchlist) return;
+    try {
+      await api.delete(
+        `/watchlists/${activeWatchlist.id}/stocks/${stockId}`
+      );
+      fetchWatchlistStocks(activeWatchlist.id);
+    } catch (e) {
+      setError("Failed to remove stock");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 p-6">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Header */}
+        <div className="flex justify-between 
+                        items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold 
+                           text-white">
+              👁️ Watchlists
+            </h1>
+            <p className="text-gray-400 text-sm mt-1">
+              Track stocks you're watching
+            </p>
+          </div>
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="bg-orange-500 hover:bg-orange-600 
+                       text-white px-4 py-2 rounded-xl 
+                       text-sm font-medium"
+          >
+            + New Watchlist
+          </button>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-900/30 border 
+                          border-red-700 rounded-xl 
+                          p-3 mb-4 flex justify-between">
+            <p className="text-red-400 text-sm">
+              {error}
+            </p>
+            <button
+              onClick={() => setError("")}
+              className="text-red-400 hover:text-red-300"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Create Watchlist Form */}
+        {showCreateForm && (
+          <div className="bg-gray-800 rounded-xl 
+                          p-4 mb-4">
+            <p className="text-white font-medium mb-2">
+              New Watchlist Name
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newWatchlistName}
+                onChange={e => setNewWatchlistName(
+                  e.target.value
+                )}
+                onKeyDown={e => e.key === 'Enter' && 
+                  createWatchlist()}
+                placeholder="e.g. Swing Trades, 
+                             Long Term..."
+                className="flex-1 bg-gray-700 text-white 
+                           px-3 py-2 rounded-lg text-sm
+                           border border-gray-600 
+                           focus:border-orange-500 
+                           outline-none"
+              />
+              <button
+                onClick={createWatchlist}
+                className="bg-orange-500 text-white 
+                           px-4 py-2 rounded-lg text-sm"
+              >
+                Create
+              </button>
+              <button
+                onClick={() => setShowCreateForm(false)}
+                className="text-gray-400 px-3 py-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-4">
+          
+          {/* Watchlist Sidebar */}
+          <div className="w-48 flex-shrink-0">
+            <div className="bg-gray-800 rounded-xl p-2">
+              {loading ? (
+                <p className="text-gray-400 text-sm p-2">
+                  Loading...
+                </p>
+              ) : watchlists.length === 0 ? (
+                <p className="text-gray-400 text-sm p-2">
+                  No watchlists yet
+                </p>
+              ) : (
+                watchlists.map(wl => (
+                  <div
+                    key={wl.id}
+                    onClick={() => setActiveWatchlist(wl)}
+                    className={`flex justify-between 
+                               items-center p-2 rounded-lg 
+                               cursor-pointer mb-1 ${
+                      activeWatchlist?.id === wl.id
+                        ? 'bg-orange-500/20 border border-orange-500/50'
+                        : 'hover:bg-gray-700'
+                    }`}
+                  >
+                    <div>
+                      <p className={`text-sm font-medium ${
+                        activeWatchlist?.id === wl.id
+                          ? 'text-orange-400'
+                          : 'text-white'
+                      }`}>
+                        {wl.name}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        {wl.stock_count} stocks
+                      </p>
+                    </div>
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        deleteWatchlist(wl.id);
+                      }}
+                      className="text-gray-600 
+                                 hover:text-red-400 
+                                 text-xs ml-1"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Stocks Panel */}
+          <div className="flex-1">
+            {!activeWatchlist ? (
+              <div className="bg-gray-800 rounded-xl 
+                              p-8 text-center">
+                <p className="text-gray-400">
+                  Select or create a watchlist
+                </p>
+              </div>
+            ) : (
+              <div className="bg-gray-800 rounded-xl p-4">
+                
+                {/* Watchlist Header */}
+                <div className="flex justify-between 
+                                items-center mb-4">
+                  <h2 className="text-white font-bold 
+                                 text-lg">
+                    {activeWatchlist.name}
+                  </h2>
+                  <button
+                    onClick={() => setShowAddForm(true)}
+                    className="bg-green-600 hover:bg-green-700 
+                               text-white px-3 py-1.5 
+                               rounded-lg text-sm"
+                  >
+                    + Add Stock
+                  </button>
+                </div>
+
+                {/* Add Stock Form */}
+                {showAddForm && (
+                  <div className="bg-gray-700 rounded-xl 
+                                  p-3 mb-4">
+                    <p className="text-white text-sm 
+                                  font-medium mb-2">
+                      Add Stock to Watchlist
+                    </p>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={addSymbol}
+                        onChange={e => setAddSymbol(
+                          e.target.value.toUpperCase()
+                        )}
+                        placeholder="Symbol (e.g. RELIANCE)"
+                        className="flex-1 bg-gray-600 
+                                   text-white px-3 py-2 
+                                   rounded-lg text-sm
+                                   border border-gray-500
+                                   focus:border-green-500
+                                   outline-none"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={addNotes}
+                        onChange={e => setAddNotes(
+                          e.target.value
+                        )}
+                        placeholder="Notes (optional)"
+                        className="flex-1 bg-gray-600 
+                                   text-white px-3 py-2 
+                                   rounded-lg text-sm
+                                   border border-gray-500
+                                   focus:border-green-500
+                                   outline-none"
+                      />
+                      <button
+                        onClick={addStock}
+                        className="bg-green-600 text-white 
+                                   px-4 py-2 rounded-lg 
+                                   text-sm"
+                      >
+                        Add
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAddForm(false);
+                          setAddSymbol("");
+                          setAddNotes("");
+                        }}
+                        className="text-gray-400 px-3"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Stocks Table */}
+                {stocksLoading ? (
+                  <p className="text-gray-400 text-sm 
+                                text-center py-8 
+                                animate-pulse">
+                    Loading stocks...
+                  </p>
+                ) : stocks.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 text-sm">
+                      No stocks in this watchlist
+                    </p>
+                    <p className="text-gray-500 text-xs mt-1">
+                      Click "+ Add Stock" to get started
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    {/* Table Header */}
+                    <div className="grid grid-cols-5 
+                                    gap-2 px-3 py-2 
+                                    text-gray-400 text-xs 
+                                    font-medium border-b 
+                                    border-gray-700 mb-2">
+                      <span>STOCK</span>
+                      <span className="text-right">
+                        PRICE
+                      </span>
+                      <span className="text-right">
+                        CHG%
+                      </span>
+                      <span>NOTES</span>
+                      <span></span>
+                    </div>
+
+                    {/* Stock Rows */}
+                    {stocks.map(stock => (
+                      <div
+                        key={stock.id}
+                        className="grid grid-cols-5 
+                                   gap-2 px-3 py-3 
+                                   rounded-lg hover:bg-gray-700/50
+                                   cursor-pointer
+                                   border-b border-gray-700/50
+                                   items-center"
+                        onClick={() => {
+                          const s = stock.symbol.toUpperCase();
+                          const isETF = s.includes('BEES') || s.includes('ETF') || s.includes('MON100');
+                          navigate(isETF ? `/etf/${stock.symbol}` : `/stock/${stock.symbol}`);
+                        }}
+                      >
+                        {/* Name */}
+                        <div>
+                          <p className="text-white 
+                                        font-medium text-sm">
+                            {stock.name}
+                          </p>
+                          <p className="text-gray-500 
+                                        text-xs">
+                            {stock.symbol}
+                          </p>
+                        </div>
+
+                        {/* Price */}
+                        <p className="text-white text-sm 
+                                      text-right font-medium">
+                          {stock.price 
+                            ? `₹${stock.price.toLocaleString('en-IN')}`
+                            : 'N/A'
+                          }
+                        </p>
+
+                        {/* Change */}
+                        <p className={`text-sm text-right 
+                                      font-medium ${
+                          stock.change_pct > 0
+                            ? 'text-green-400'
+                            : stock.change_pct < 0
+                            ? 'text-red-400'
+                            : 'text-gray-400'
+                        }`}>
+                          {stock.change_pct > 0 ? '+' : ''}
+                          {stock.change_pct}%
+                        </p>
+
+                        {/* Notes */}
+                        <p className="text-gray-400 
+                                      text-xs truncate">
+                          {stock.notes || '—'}
+                        </p>
+
+                        {/* Remove */}
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            removeStock(stock.id);
+                          }}
+                          className="text-gray-600 
+                                     hover:text-red-400 
+                                     text-sm text-right"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Watchlist;

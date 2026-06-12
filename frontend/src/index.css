@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0d1117] text-[#e6edf3];
+  }
+}
+
+@layer utilities {
+  .animate-flash-green {
+    animation: flashGreen 0.5s ease-out;
+  }
+  .animate-flash-red {
+    animation: flashRed 0.5s ease-out;
+  }
+}
+
+@keyframes flashGreen {
+  0% { background-color: transparent; }
+  50% { background-color: rgba(0, 200, 83, 0.3); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flashRed {
+  0% { background-color: transparent; }
+  50% { background-color: rgba(255, 23, 68, 0.3); }
+  100% { background-color: transparent; }
+}
