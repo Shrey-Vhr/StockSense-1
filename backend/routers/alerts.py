@@ -57,5 +57,25 @@ async def delete_alert(id: int, db: Session = Depends(get_db), current_user: Use
     return {"status": "success"}
 
 @router.get("/triggered")
-async def get_triggered_alerts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return db.query(Alert).filter(Alert.user_id == current_user.id, Alert.is_triggered == True).order_by(Alert.created_at.desc()).limit(20).all()
+async def get_triggered_alerts(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    triggered = db.query(Alert).filter(
+        Alert.user_id == current_user.id,
+        Alert.is_triggered == True,
+        Alert.notified == False
+    ).all()
+    
+    result = []
+    for a in triggered:
+        result.append({
+            'id': a.id,
+            'symbol': a.symbol,
+            'message': f"{a.symbol.replace('.NS','')} "
+                       f"{a.alert_type} {a.condition} {a.value}"
+        })
+        a.notified = True
+    
+    db.commit()
+    return result

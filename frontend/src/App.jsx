@@ -12,6 +12,12 @@ import Layout from './components/Layout/Layout'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
 import SplashScreen from './components/SplashScreen'
 import { useState, useEffect } from 'react'
+import { useNotifications } from "./hooks/useNotifications";
+
+function NotificationManager() {
+  useNotifications();
+  return null;
+}
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -31,6 +37,7 @@ function App() {
       }}
     >
       {showSplash && <SplashScreen />}
+      <NotificationManager />
       <Routes>
         <Route path="/login" element={<Login />} />
         

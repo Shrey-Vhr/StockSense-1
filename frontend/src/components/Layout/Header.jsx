@@ -23,6 +23,24 @@ const Header = ({ toggleSidebar }) => {
   
   const [alerts, setAlerts] = useState([]);
   const [showAlerts, setShowAlerts] = useState(false);
+  const [hasAlerts, setHasAlerts] = useState(false);
+
+  useEffect(() => {
+    const checkPending = async () => {
+      try {
+        const res = await api.get("/alerts/triggered");
+        if (res.data && res.data.length > 0) {
+          setHasAlerts(true);
+          // Update the local list so dropdown shows them too
+          setAlerts(prev => [...res.data, ...prev].slice(0, 20));
+          setTimeout(() => setHasAlerts(false), 10000);
+        }
+      } catch (e) {}
+    };
+    checkPending();
+    const interval = setInterval(checkPending, 60000);
+    return () => clearInterval(interval);
+  }, []);
   
   const navigate = useNavigate();
   const searchRef = useRef(null);
@@ -199,7 +217,7 @@ const Header = ({ toggleSidebar }) => {
         <div className="relative">
           <button onClick={() => setShowAlerts(!showAlerts)} className="text-gray-400 hover:text-white transition-colors relative p-2">
             <Bell size={20} />
-            {alerts.length > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#ff1744] rounded-full animate-pulse border border-[#0d1117]"></span>}
+            {(alerts.length > 0 || hasAlerts) && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#ff1744] rounded-full animate-pulse border border-[#0d1117]"></span>}
           </button>
           
           {showAlerts && (

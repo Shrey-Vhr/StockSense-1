@@ -12,4 +12,5 @@ class Alert(Base):
     condition = Column(String, nullable=False) # e.g. '>', '<'
     value = Column(Float, nullable=False)
     is_triggered = Column(Boolean, default=False)
+    notified = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
