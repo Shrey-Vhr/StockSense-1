@@ -1,4 +1,5 @@
 # StockSense
+<<<<<<< HEAD
 
 StockSense is an AI-powered swing trading terminal for the Indian Stock Market (NSE). It combines quantitative technical filters, fundamental health scores, and real-time news sentiment, orchestrating them all through Anthropic's Claude 3.5 (Opus) to generate highly confident trade setups.
 
