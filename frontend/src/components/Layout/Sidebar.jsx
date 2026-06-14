@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { LayoutDashboard, BarChart2, LineChart, PieChart, Newspaper, BrainCircuit, LogOut, X, TrendingUp, Eye } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -55,23 +56,37 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
-          {navItems.map((item) => (
-            <NavLink
+          {navItems.map((item, i) => (
+            <motion.div
               key={item.name}
-              to={item.path}
-              className={({ isActive }) => `
-                group flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-150
-                ${isActive
-                  ? 'bg-emerald-500/10 text-emerald-400 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.25)]'
-                  : 'text-gray-400 hover:bg-surface-800 hover:text-gray-100'}
-              `}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ 
+                duration: 0.3, 
+                delay: 0.05 + i * 0.05 
+              }}
             >
-              <item.icon
-                size={19}
-                className="transition-transform duration-150 group-hover:scale-110"
-              />
-              <span className="font-medium text-sm">{item.name}</span>
-            </NavLink>
+              <NavLink
+                to={item.path}
+                className={({ isActive }) => `
+                  group flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-150
+                  ${isActive
+                    ? 'bg-emerald-500/10 text-emerald-400 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.25)]'
+                    : 'text-gray-400 hover:bg-surface-800 hover:text-gray-100'}
+                `}
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <item.icon
+                    size={19}
+                    className="transition-transform duration-150 group-hover:scale-110"
+                  />
+                </motion.div>
+                <span className="font-medium text-sm">{item.name}</span>
+              </NavLink>
+            </motion.div>
           ))}
         </nav>
 

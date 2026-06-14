@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import api from "../utils/api";
 
 const PatternAnalysis = ({ symbol }) => {
@@ -57,8 +58,14 @@ const PatternAnalysis = ({ symbol }) => {
         
         <div className="space-y-2">
           {patterns.map((pattern, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={{ opacity: 0, x: -15 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ 
+                duration: 0.25, 
+                delay: i * 0.06 
+              }}
               className={`p-3 rounded-lg border ${
                 pattern.type === 'bullish'
                   ? 'bg-green-900/20 border-green-700/40'
@@ -98,7 +105,7 @@ const PatternAnalysis = ({ symbol }) => {
               <p className="text-gray-400 text-xs mt-1">
                 {pattern.signal}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
 import { Activity, BookOpen, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, ShieldAlert, AlertTriangle, BellPlus, X, BarChart2, Building2, Brain } from 'lucide-react';
@@ -706,7 +707,12 @@ const StockDetail = () => {
 
       {/* Price Header */}
       {quote && (
-        <div className="flex justify-between items-start px-6 py-4 bg-surface-850 border-b border-surface-800">
+        <motion.div
+          className="flex justify-between items-start px-6 py-4 bg-surface-850 border-b border-surface-800"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold text-gray-50 tracking-tight">{cleanSymbol.replace('.NS', '')}</h1>
@@ -714,7 +720,7 @@ const StockDetail = () => {
                 onClick={addToWatchlist}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-800 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-all ml-3"
               >
-                {watchlistAdded ? 'âœ“ Watchlisted' : '+ Watchlist'}
+                {watchlistAdded ? '✓ Watchlisted' : '+ Watchlist'}
               </button>
             </div>
             <p className="text-gray-500 text-sm mt-0.5 font-mono">{companyName || symbol}</p>
@@ -734,7 +740,7 @@ const StockDetail = () => {
               <BellPlus size={14} className="mr-1" /> Create Alert
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Alert Modal */}
@@ -842,7 +848,14 @@ const StockDetail = () => {
 
       {/* Tab Content */}
       <div className="bg-surface-850 border border-surface-800 rounded-xl p-6 min-h-[400px]">
-
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
         {/* TECHNICAL TAB */}
         {activeTab === 'technical' && techData && (
           <div className="space-y-8">
@@ -854,36 +867,33 @@ const StockDetail = () => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
-                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">Trend</div>
-                <div className={`text-sm font-semibold mt-1.5 ${techData.trend?.status.includes('Up') ? 'text-emerald-400' : 'text-red-400'}`}>{techData.trend?.status}</div>
-              </div>
-              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
-                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">RSI (14)</div>
-                <div className="text-gray-100 font-semibold text-sm mt-1.5">{techData.momentum?.rsi?.value?.toFixed(1) || 'N/A'} <span className="text-xs font-sans text-gray-500">({techData.momentum?.rsi?.signal})</span></div>
-              </div>
-              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
-                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">MACD</div>
-                <div className="text-gray-100 font-semibold text-sm mt-1.5">{techData.momentum?.macd?.crossover}</div>
-              </div>
-              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
-                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">Volume</div>
-                <div className="text-gray-100 font-semibold text-sm mt-1.5">{techData.volume?.relative_volume?.toFixed(1) || 'N/A'}x <span className="text-xs font-sans text-gray-500">Avg</span></div>
-              </div>
-              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
-                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">News Sentiment</div>
-                {sentiment ? (
-                  <div className={`font-bold mt-1 ${
-                    sentiment.overall_sentiment === 'Positive' ? 'text-[#00c853]'
-                    : sentiment.overall_sentiment === 'Negative' ? 'text-[#ff1744]'
-                    : 'text-gray-300'
-                  }`}>
-                    {sentiment.overall_sentiment} ({sentiment.score}/10)
+              {[
+                { label: 'Trend', value: techData.trend?.status, isGood: techData.trend?.status?.includes('Up'), customFormat: null },
+                { label: 'RSI (14)', value: `${techData.momentum?.rsi?.value?.toFixed(1) || 'N/A'} `, suffix: techData.momentum?.rsi?.signal ? `(${techData.momentum?.rsi?.signal})` : '' },
+                { label: 'MACD', value: techData.momentum?.macd?.crossover },
+                { label: 'Volume', value: `${techData.volume?.relative_volume?.toFixed(1) || 'N/A'}x `, suffix: 'Avg' },
+                { label: 'News Sentiment', value: sentiment ? `${sentiment.overall_sentiment} (${sentiment.score}/10)` : 'N/A', isGood: sentiment?.overall_sentiment === 'Positive' ? true : sentiment?.overall_sentiment === 'Negative' ? false : null }
+              ].map((metric, i) => (
+                <motion.div
+                  key={i}
+                  className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    duration: 0.3, 
+                    delay: 0.1 + i * 0.07 
+                  }}
+                  whileHover={{ 
+                    borderColor: 'rgba(16,185,129,0.2)',
+                    y: -1
+                  }}
+                >
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">{metric.label}</div>
+                  <div className={`text-sm font-semibold mt-1.5 ${metric.isGood === true ? 'text-emerald-400' : metric.isGood === false ? 'text-red-400' : 'text-gray-100'}`}>
+                    {metric.value} {metric.suffix && <span className="text-xs font-sans text-gray-500">{metric.suffix}</span>}
                   </div>
-                ) : (
-                  <div className="font-bold mt-1 text-gray-500 text-sm">N/A</div>
-                )}
-              </div>
+                </motion.div>
+              ))}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1185,7 +1195,7 @@ const StockDetail = () => {
                       {fundData.weaknesses && fundData.weaknesses.length > 0 ? (
                         fundData.weaknesses.map((w, i) => (
                           <li key={i} className="flex items-start">
-                            <span className="text-[#ff1744] mr-2">âŒ</span>
+                            <span className="text-[#ff1744] mr-2">â Œ</span>
                             <span className="text-gray-300 text-sm">{w}</span>
                           </li>
                         ))
@@ -1364,7 +1374,7 @@ const StockDetail = () => {
                       {sentiment.positive_count} Positive
                     </span>
                     <span className="text-red-400 text-sm">
-                      âŒ {sentiment.negative_count} Negative
+                      â Œ {sentiment.negative_count} Negative
                     </span>
                     <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                       {sentiment.neutral_count} Neutral
@@ -1500,7 +1510,12 @@ const StockDetail = () => {
                 </div>
 
                 {/* Trade Setup */}
-                <div>
+                <motion.div
+                  className="bg-surface-850 border border-surface-800 p-6 rounded-xl mt-6"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                >
                   <h3 className="text-lg font-bold text-white mb-4 flex items-center"><Target className="mr-2 text-[#10b981]" size={20} /> Proposed Swing Trade Setup</h3>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-surface-900 border border-surface-800 p-4 rounded-lg text-center">
@@ -1525,7 +1540,7 @@ const StockDetail = () => {
                       <div className="text-[#10b981] font-mono font-bold">{aiAnalysis.trade_setup.risk_reward}</div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Deep Dive Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1577,6 +1592,8 @@ const StockDetail = () => {
             )}
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );
