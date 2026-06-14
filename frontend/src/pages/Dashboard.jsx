@@ -6,6 +6,7 @@ import api from '../utils/api';
 import useStore from '../store/useStore';
 import SectorHeatmap from '../components/Dashboard/SectorHeatmap';
 import useCountUp from '../hooks/useCountUp';
+import { DashboardSkeleton } from '../components/Skeleton';
 
 const AnimatedPrice = ({ value }) => {
   const animated = useCountUp(
@@ -133,24 +134,7 @@ const Dashboard = () => {
   };
 
   if (isLoading.dashboard && !marketOverview) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto space-y-6 animate-pulse">
-        <div className="h-8 bg-surface-850 rounded w-48 mb-6"></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1,2,3].map(i => (
-            <div key={i} className="bg-surface-850 border border-surface-800 rounded-2xl p-5 h-32"></div>
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 h-40"></div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 h-40"></div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 h-64"></div>
-          </div>
-          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 h-[600px]"></div>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
+import { WatchlistSkeleton } from '../components/Skeleton';
 
 const Watchlist = () => {
   const navigate = useNavigate();
@@ -116,6 +117,8 @@ const Watchlist = () => {
     }
   };
 
+  if (loading) return <WatchlistSkeleton />;
+
   return (
     <div className="min-h-screen bg-surface-950 p-6">
       <div className="max-w-6xl mx-auto">
@@ -197,11 +200,7 @@ const Watchlist = () => {
           {/* Watchlist Sidebar */}
           <div className="w-48 flex-shrink-0">
             <div className="bg-surface-850 border border-surface-800 rounded-2xl p-2">
-              {loading ? (
-                <p className="text-gray-400 text-sm p-2">
-                  Loading...
-                </p>
-              ) : watchlists.length === 0 ? (
+              {watchlists.length === 0 ? (
                 <p className="text-gray-400 text-sm p-2">
                   No watchlists yet
                 </p>

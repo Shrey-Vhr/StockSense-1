@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import api from '../utils/api';
 import useStore from '../store/useStore';
+import { ScreenerSkeleton } from '../components/Skeleton';
 
 
 // ─── Preset Templates ───────────────────────────────────────────────────────
@@ -279,6 +280,10 @@ const Screener = () => {
     : [];
 
   // ─── Render ──────────────────────────────────────────────────────────────
+  if (isLoading.screener && screenerResults.length === 0) {
+    return <ScreenerSkeleton />;
+  }
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-5 h-full flex flex-col">
 

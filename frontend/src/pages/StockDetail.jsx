@@ -6,6 +6,7 @@ import { Activity, BookOpen, BrainCircuit, Newspaper, TrendingUp, TrendingDown, 
 import api from '../utils/api';
 import useStore from '../store/useStore';
 import PatternAnalysis from '../components/PatternAnalysis';
+import { StockDetailSkeleton } from '../components/Skeleton';
 
 const formatPeerValue = (val, prefix='', suffix='', decimals=1) => {
   if (val === null || val === undefined) return '-';
@@ -696,6 +697,10 @@ const StockDetail = () => {
 
   const isUp = quote && quote.change_percent >= 0;
   const companyName = quote?.company_name || quote?.name || fundData?.company_name;
+
+  if (chartLoading && !historicalData) {
+    return <StockDetailSkeleton />;
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
