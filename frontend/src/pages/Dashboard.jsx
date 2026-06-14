@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, RefreshCw, ChevronRight, Activity, Newspaper, BarChart2 } from 'lucide-react';
 import api from '../utils/api';
@@ -153,7 +154,14 @@ const Dashboard = () => {
       {/* Top Indices Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {safeArray(marketOverview).slice(0, 3).map((idx, i) => (
-          <div key={i} className="bg-surface-850 border border-surface-800 rounded-2xl p-5 hover:border-emerald-500/30 hover:shadow-glow transition-all duration-200 group">
+          <motion.div 
+            key={i} 
+            className="bg-surface-850 border border-surface-800 rounded-2xl p-5 hover:border-emerald-500/30 hover:shadow-glow transition-all duration-200 group"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: i * 0.1, ease: 'easeOut' }}
+            whileHover={{ y: -2 }}
+          >
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-gray-200 font-semibold text-base group-hover:text-emerald-400 transition-colors">{idx.symbol === '^NSEI' ? 'Nifty 50' : idx.symbol === '^NSEBANK' ? 'BankNifty' : idx.symbol}</h3>
@@ -170,7 +178,7 @@ const Dashboard = () => {
                  <div key={j} className={`w-full ${idx.change_percent >= 0 ? 'bg-emerald-400' : 'bg-red-400'} rounded-t-sm`} style={{ height: `${Math.random() * 100}%` }}></div>
                ))}
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
@@ -178,7 +186,12 @@ const Dashboard = () => {
         {/* Left Column - Movers */}
         <div className="lg:col-span-2 space-y-6">
           {/* Top Gainers */}
-          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5">
+          <motion.div 
+            className="bg-surface-850 border border-surface-800 rounded-2xl p-5"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
             <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2 mb-4">
               <span className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                 ↗
@@ -188,23 +201,31 @@ const Dashboard = () => {
             <div className="relative">
               <div className="flex overflow-x-auto pb-4 space-x-4 custom-scrollbar">
                 {safeArray(topGainers).map((stock) => (
-                  <div 
+                  <motion.div 
                     key={stock.symbol} 
                     onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    className="flex-shrink-0 bg-surface-850 border border-surface-800 rounded-xl p-4 min-w-[140px] hover:border-emerald-500/30 hover:bg-surface-800 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                    className="flex-shrink-0 bg-surface-850 border border-surface-800 rounded-xl p-4 min-w-[140px] hover:bg-surface-800 cursor-pointer"
+                    whileHover={{ y: -4, borderColor: 'rgba(16,185,129,0.4)' }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
                   >
                     <div className="font-bold text-gray-100 text-sm">{stock.symbol.replace('.NS', '')}</div>
                     <div className="text-gray-500 text-xs mt-1">₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toFixed(2) ?? 'N/A'}</div>
                     <div className="text-emerald-400 font-semibold text-sm mt-2">+{stock.change_percent?.toFixed(2)}%</div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
               <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-surface-850 to-transparent pointer-events-none" />
             </div>
-          </div>
+          </motion.div>
 
           {/* Top Losers */}
-          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5">
+          <motion.div 
+            className="bg-surface-850 border border-surface-800 rounded-2xl p-5"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
+          >
             <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2 mb-4">
               <span className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
                 ↘
@@ -214,20 +235,23 @@ const Dashboard = () => {
             <div className="relative">
               <div className="flex overflow-x-auto pb-4 space-x-4 custom-scrollbar">
                 {safeArray(topLosers).map((stock) => (
-                  <div 
+                  <motion.div 
                     key={stock.symbol} 
                     onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    className="flex-shrink-0 bg-surface-850 border border-surface-800 rounded-xl p-4 min-w-[140px] hover:border-emerald-500/30 hover:bg-surface-800 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                    className="flex-shrink-0 bg-surface-850 border border-surface-800 rounded-xl p-4 min-w-[140px] hover:bg-surface-800 cursor-pointer"
+                    whileHover={{ y: -4, borderColor: 'rgba(16,185,129,0.4)' }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
                   >
                     <div className="font-bold text-gray-100 text-sm">{stock.symbol.replace('.NS', '')}</div>
                     <div className="text-gray-500 text-xs mt-1">₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toFixed(2) ?? 'N/A'}</div>
                     <div className="text-red-400 font-semibold text-sm mt-2">{stock.change_percent?.toFixed(2)}%</div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
               <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-surface-850 to-transparent pointer-events-none" />
             </div>
-          </div>
+          </motion.div>
           
           {/* Indices & ETFs Quick Access */}
           <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5">
@@ -296,7 +320,12 @@ const Dashboard = () => {
 
         {/* Right Column - News */}
         <div className="space-y-6">
-          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 h-full">
+          <motion.div 
+            className="bg-surface-850 border border-surface-800 rounded-2xl p-5 h-full"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
             <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2 mb-4">
               <span className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                 📰
@@ -322,7 +351,7 @@ const Dashboard = () => {
                 </a>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
