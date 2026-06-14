@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from datetime import date
 from pydantic import BaseModel
+import yfinance as yf
 
 from database import get_db
 from models.user import User
@@ -187,8 +188,11 @@ async def get_performance(db: Session = Depends(get_db), current_user: User = De
             worst_pnl = pnl_pct
             worst_perf = {"symbol": h.symbol, "pnl_percent": pnl_pct}
             
-        # Mock sector, normally from DB
-        sector = "General" 
+        try:
+            info = yf.Ticker(h.symbol).info
+            sector = info.get('sector', 'General')
+        except:
+            sector = 'General'
         sector_alloc[sector] = sector_alloc.get(sector, 0) + cur
             
     total_pnl = total_cur - total_inv

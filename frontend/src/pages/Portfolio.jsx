@@ -14,47 +14,52 @@ const Portfolio = () => {
   
   const [aiReview, setAiReview] = useState(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [performance, setPerformance] = useState(null);
   
   // Real-time prices map to avoid constant fetching
   const [currentPrices, setCurrentPrices] = useState({});
 
-  // Mock fetch holdings if empty (in a real app, this comes from backend DB)
+  // Fetch holdings from backend
   useEffect(() => {
-    if (portfolioHoldings.length === 0) {
-      // Setup some dummy data if empty to show UI
-      const dummy = [
-        { id: 1, symbol: 'RELIANCE.NS', quantity: 50, avgPrice: 2800, sector: 'Energy' },
-        { id: 2, symbol: 'TCS.NS', quantity: 20, avgPrice: 3800, sector: 'IT' },
-        { id: 3, symbol: 'HDFCBANK.NS', quantity: 100, avgPrice: 1450, sector: 'Financial Services' }
-      ];
-      setPortfolioHoldings(dummy);
-    }
-  }, []);
-
-  // Update current prices for holdings
-  useEffect(() => {
-    const updatePrices = async () => {
-      if (portfolioHoldings.length === 0) return;
-      const prices = { ...currentPrices };
-      
-      for (const h of portfolioHoldings) {
-        if (!prices[h.symbol]) {
-          try {
-            const res = await api.get(`/stocks/quote/${h.symbol}`);
-            prices[h.symbol] = res.data.current_price;
-          } catch (e) {
-             // fallback
-             prices[h.symbol] = h.avgPrice * (1 + (Math.random() * 0.1 - 0.05));
-          }
-        }
+    const fetchHoldings = async () => {
+      try {
+        const res = await api.get('/portfolio')
+        setPortfolioHoldings(res.data)
+      } catch (e) {
+        console.error('Failed to fetch holdings', e)
       }
-      setCurrentPrices(prices);
-    };
-    
-    updatePrices();
-    const interval = setInterval(updatePrices, 60000); // refresh every minute
-    return () => clearInterval(interval);
-  }, [portfolioHoldings]);
+    }
+    fetchHoldings()
+  }, [])
+
+  // Refresh holdings every 60s
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const res = await api.get('/portfolio')
+      setPortfolioHoldings(res.data)
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Fetch performance metrics
+  useEffect(() => {
+    const fetchPerf = async () => {
+      try {
+        const res = await api.get('/portfolio/performance')
+        setPerformance(res.data)
+      } catch(e) {}
+    }
+    fetchPerf()
+  }, [portfolioHoldings])
+
+  const handleRemove = async (id) => {
+    try {
+      await api.delete(`/portfolio/remove/${id}`)
+      setPortfolioHoldings(portfolioHoldings.filter(h => h.id !== id))
+    } catch (e) {
+      alert('Failed to remove holding')
+    }
+  }
 
   const handleAddHolding = async (e) => {
     e.preventDefault();
@@ -63,20 +68,18 @@ const Portfolio = () => {
     let cleanSymbol = symbol.toUpperCase();
     if (!cleanSymbol.includes('.NS')) cleanSymbol += '.NS';
 
-    // Fetch sector
-    let sector = 'Unknown';
     try {
-      const fund = await api.get(`/analysis/fundamental/${cleanSymbol}`);
-      sector = fund.data.sector || 'Unknown';
-    } catch(e) {}
-
-    addHolding({
-      id: Date.now(),
-      symbol: cleanSymbol,
-      quantity: Number(quantity),
-      avgPrice: Number(buyPrice),
-      sector
-    });
+      await api.post('/portfolio/add', {
+        symbol: cleanSymbol,
+        quantity: Number(quantity),
+        avg_buy_price: Number(buyPrice)
+      })
+      const res = await api.get('/portfolio')
+      setPortfolioHoldings(res.data)
+    } catch (e) {
+      alert('Failed to add holding')
+      return
+    }
     
     setSymbol('');
     setQuantity('');
@@ -84,24 +87,7 @@ const Portfolio = () => {
     setShowAddForm(false);
   };
 
-  // Calculations
-  let totalInvested = 0;
-  let currentValue = 0;
-  const sectorAllocations = {};
 
-  portfolioHoldings.forEach(h => {
-    const invested = h.quantity * h.avgPrice;
-    const current = h.quantity * (currentPrices[h.symbol] || h.avgPrice);
-    
-    totalInvested += invested;
-    currentValue += current;
-    
-    if (!sectorAllocations[h.sector]) sectorAllocations[h.sector] = 0;
-    sectorAllocations[h.sector] += current;
-  });
-
-  const totalPnL = currentValue - totalInvested;
-  const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
 
   const handleAIReview = async () => {
     setIsAiLoading(true);
@@ -110,8 +96,8 @@ const Portfolio = () => {
       const payload = portfolioHoldings.map(h => ({
         symbol: h.symbol,
         quantity: h.quantity,
-        avg_price: h.avgPrice,
-        current_price: currentPrices[h.symbol] || h.avgPrice
+        avg_price: h.avg_buy_price,
+        current_price: h.current_price || h.avg_buy_price
       }));
       const res = await api.post('/ai/portfolio-review', payload);
       setAiReview(res.data.portfolio_review);
@@ -173,20 +159,20 @@ const Portfolio = () => {
           <div className="text-gray-400 text-sm mb-1 flex items-center">
             <DollarSign size={16} className="mr-1"/> Current Value
           </div>
-          <div className="text-3xl font-bold font-mono text-white">₹{currentValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+          <div className="text-3xl font-bold font-mono text-white">₹{(performance?.current_value ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
         </div>
         
         <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
           <div className="text-gray-400 text-sm mb-1">Total Invested</div>
-          <div className="text-3xl font-bold font-mono text-gray-300">₹{totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+          <div className="text-3xl font-bold font-mono text-gray-300">₹{(performance?.total_invested ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
         </div>
         
         <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
           <div className="text-gray-400 text-sm mb-1">Overall P&L</div>
-          <div className={`text-3xl font-bold font-mono flex items-center ${totalPnL >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
-            {totalPnL >= 0 ? '+' : ''}₹{Math.abs(totalPnL).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          <div className={`text-3xl font-bold font-mono flex items-center ${(performance?.total_pnl ?? 0) >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+            {(performance?.total_pnl ?? 0) >= 0 ? '+' : ''}₹{Math.abs(performance?.total_pnl ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
             <span className="text-sm ml-3 bg-[#0d1117] px-2 py-1 rounded-full border border-current">
-              {totalPnLPct >= 0 ? '+' : ''}{totalPnLPct.toFixed(2)}%
+              {(performance?.total_pnl_percent ?? 0) >= 0 ? '+' : ''}{(performance?.total_pnl_percent ?? 0).toFixed(2)}%
             </span>
           </div>
         </div>
@@ -254,9 +240,9 @@ const Portfolio = () => {
               </thead>
               <tbody className="divide-y divide-[#30363d]">
                 {portfolioHoldings.map(h => {
-                  const cp = currentPrices[h.symbol] || h.avgPrice;
-                  const pnl = (cp - h.avgPrice) * h.quantity;
-                  const pnlPct = ((cp - h.avgPrice) / h.avgPrice) * 100;
+                  const cp = h.current_price || h.avg_buy_price;
+                  const pnl = h.pnl || 0;
+                  const pnlPct = h.avg_buy_price > 0 ? ((cp - h.avg_buy_price) / h.avg_buy_price) * 100 : 0;
                   const isProfit = pnl >= 0;
 
                   return (
@@ -266,7 +252,7 @@ const Portfolio = () => {
                         <div className="text-xs text-gray-500">{h.sector}</div>
                       </td>
                       <td className="p-4 text-right font-mono text-gray-300">{h.quantity}</td>
-                      <td className="p-4 text-right font-mono text-gray-300">₹{h.avgPrice.toFixed(2)}</td>
+                      <td className="p-4 text-right font-mono text-gray-300">₹{(h.avg_buy_price || 0).toFixed(2)}</td>
                       <td className="p-4 text-right font-mono text-white transition-all duration-500">₹{cp.toFixed(2)}</td>
                       <td className="p-4 text-right transition-all duration-500">
                         <div className={`font-mono font-bold ${isProfit ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
@@ -277,7 +263,7 @@ const Portfolio = () => {
                         </div>
                       </td>
                       <td className="p-4 text-center">
-                        <button onClick={() => removeHolding(h.id)} className="text-gray-500 hover:text-red-400 text-xs uppercase font-bold tracking-wider">
+                        <button onClick={() => handleRemove(h.id)} className="text-gray-500 hover:text-red-400 text-xs uppercase font-bold tracking-wider">
                           Sell
                         </button>
                       </td>
@@ -298,8 +284,8 @@ const Portfolio = () => {
         <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-5">
           <h2 className="text-lg font-bold text-white mb-4">Sector Allocation</h2>
           <div className="space-y-4">
-            {Object.entries(sectorAllocations).sort((a,b) => b[1]-a[1]).map(([sector, val], idx) => {
-              const pct = (val / currentValue) * 100;
+            {Object.entries(performance?.sector_allocation || {}).sort((a,b) => b[1]-a[1]).map(([sector, val], idx) => {
+              const pct = (val / (performance?.current_value || 1)) * 100;
               // Generate some consistent colors
               const colors = ['bg-[#10b981]', 'bg-[#00c853]', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500'];
               const colorClass = colors[idx % colors.length];
