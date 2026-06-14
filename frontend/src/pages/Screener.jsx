@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   SlidersHorizontal, Play, Plus, X, Save, FolderOpen, Trash2,
@@ -412,7 +413,11 @@ const Screener = () => {
               return (
                 <div
                   key={idx}
-                  className="px-5 py-3 flex flex-col md:flex-row items-start md:items-center gap-3 hover:bg-[#1c2333]/40 transition-colors group"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="px-5 py-3 flex flex-col md:flex-row items-start md:items-center gap-3 hover:bg-[#1c2333]/40 transition-colors group overflow-hidden"
                 >
                   {/* Index */}
                   <span className="text-xs text-gray-600 font-mono min-w-[24px]">{idx + 1}.</span>
