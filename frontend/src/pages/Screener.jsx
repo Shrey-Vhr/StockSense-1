@@ -150,6 +150,9 @@ const Screener = () => {
   // Preset dropdown
   const [showPresetDropdown, setShowPresetDropdown] = useState(false);
 
+  // Run status
+  const [hasRunOnce, setHasRunOnce] = useState(false);
+
   // ─── Fetch indicator catalogue on mount ──────────────────────────────────
   useEffect(() => {
     const fetchCatalogue = async () => {
@@ -186,6 +189,7 @@ const Screener = () => {
   const runScreener = useCallback(async () => {
     if (conditions.length === 0) return;
     setLoading('screener', true);
+    setHasRunOnce(true);
     try {
       const res = await api.post('/screener/run', {
         conditions,
@@ -280,7 +284,7 @@ const Screener = () => {
     : [];
 
   // ─── Render ──────────────────────────────────────────────────────────────
-  if (isLoading.screener && screenerResults.length === 0) {
+  if (isLoading.screener && !hasRunOnce) {
     return <ScreenerSkeleton />;
   }
 
@@ -554,18 +558,22 @@ const Screener = () => {
         <button
           onClick={runScreener}
           disabled={isLoading.screener || conditions.length === 0}
-          className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors ml-auto shadow-glow disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors ml-auto shadow-glow disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isLoading.screener ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Screening…
-            </>
+            <span className="flex items-center gap-2">
+              <motion.div
+                className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+              />
+              Scanning...
+            </span>
           ) : (
-            <>
-              <Play size={16} />
+            <span className="flex items-center gap-2">
+              <Play size={15} />
               Run Screener
-            </>
+            </span>
           )}
         </button>
       </div>
