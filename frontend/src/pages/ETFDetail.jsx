@@ -175,7 +175,7 @@ const ETFDetail = () => {
     };
   }, [historicalData]);
 
-  if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-[#10b981] w-10 h-10" /></div>;
+  if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-emerald-400 w-10 h-10" /></div>;
   if (error) return <div className="p-10 text-red-500">{error}</div>;
   if (!data) return null;
 
@@ -211,12 +211,12 @@ const ETFDetail = () => {
       </div>
 
       {/* 2. CHART */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4">
+      <div className="bg-surface-850 border border-surface-800 rounded-xl p-4">
         <div className="relative w-full">
-          <div className="absolute top-2 left-2 z-10 text-xs font-mono bg-[#161b22]/80 p-3 rounded-lg border border-[#30363d] shadow-lg backdrop-blur-sm pointer-events-none">
+          <div className="absolute top-2 left-2 z-10 text-xs font-mono bg-surface-850/80 p-3 rounded-lg border border-surface-800 shadow-lg backdrop-blur-sm pointer-events-none">
             <div className="text-white mb-2 font-bold uppercase tracking-wider text-[10px]">EMAs</div>
             <div className="space-y-1">
-              {legendData.ema20 && <div className="flex items-center text-[#10b981]"><span className="w-2 h-2 rounded-full bg-[#10b981] mr-2"></span>EMA 20: {legendData.ema20}</div>}
+              {legendData.ema20 && <div className="flex items-center text-emerald-400"><span className="w-2 h-2 rounded-full bg-[#10b981] mr-2"></span>EMA 20: {legendData.ema20}</div>}
               {legendData.ema50 && <div className="flex items-center text-[#2196f3]"><span className="w-2 h-2 rounded-full bg-[#2196f3] mr-2"></span>EMA 50: {legendData.ema50}</div>}
               {legendData.ema200 && <div className="flex items-center text-[#ff5252]"><span className="w-2 h-2 rounded-full bg-[#ff5252] mr-2"></span>EMA 200: {legendData.ema200}</div>}
             </div>
@@ -229,20 +229,20 @@ const ETFDetail = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* 3. ETF METRICS */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
               <p className="text-gray-400 text-xs">Expense Ratio</p>
               <p className="text-white font-bold">
                 {data.expense_ratio ? `${data.expense_ratio}%` : 'N/A'}
               </p>
               <p className="text-xs text-gray-500 mt-1">Annual cost</p>
             </div>
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
               <p className="text-gray-400 text-xs">Tracks</p>
               <p className="text-white font-bold text-sm mt-1">
                 {data.underlying_index || 'N/A'}
               </p>
             </div>
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
               <p className="text-gray-400 text-xs">Fund House</p>
               <p className="text-white font-bold text-sm mt-1">
                 {data.fund_house || 'N/A'}
@@ -251,46 +251,46 @@ const ETFDetail = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
-              <div className="text-gray-400 text-xs mb-1">NAV</div>
-              <div className="text-white font-mono font-bold">{data.nav ? `₹${data.nav}` : 'N/A'}</div>
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">NAV</div>
+              <div className="text-gray-100 font-bold text-lg mt-1 font-mono">{data.nav ? `₹${data.nav}` : 'N/A'}</div>
             </div>
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
-              <div className="text-gray-400 text-xs mb-1">Prem/Discount to NAV</div>
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">Prem/Discount to NAV</div>
               <div className={`font-mono font-bold ${data.premium_discount_pct > 0 ? 'text-[#ff1744]' : 'text-[#00c853]'}`}>
                 {data.premium_discount_pct != null ? `${data.premium_discount_pct}%` : 'N/A'}
               </div>
             </div>
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
-              <div className="text-gray-400 text-xs mb-1">AUM</div>
-              <div className="text-white font-mono font-bold">
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">AUM</div>
+              <div className="text-gray-100 font-bold text-lg mt-1 font-mono">
                 {data.aum ? `₹${(data.aum / 10000000).toFixed(2)} Cr` : 'N/A'}
               </div>
             </div>
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
-              <div className="text-gray-400 text-xs mb-1">Volume Ratio</div>
-              <div className="text-white font-mono font-bold">{data.volume_ratio ? `${data.volume_ratio}x` : 'N/A'}</div>
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">Volume Ratio</div>
+              <div className="text-gray-100 font-bold text-lg mt-1 font-mono">{data.volume_ratio ? `${data.volume_ratio}x` : 'N/A'}</div>
             </div>
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
-              <div className="text-gray-400 text-xs mb-1">RSI (14)</div>
-              <div className="text-white font-mono font-bold">{data.rsi}</div>
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">RSI (14)</div>
+              <div className="text-gray-100 font-bold text-lg mt-1 font-mono">{data.rsi}</div>
             </div>
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
-              <div className="text-gray-400 text-xs mb-1">52W High</div>
-              <div className="text-white font-mono font-bold">₹{data.high_52w}</div>
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">52W High</div>
+              <div className="text-gray-100 font-bold text-lg mt-1 font-mono">₹{data.high_52w}</div>
             </div>
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
-              <div className="text-gray-400 text-xs mb-1">52W Low</div>
-              <div className="text-white font-mono font-bold">₹{data.low_52w}</div>
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">52W Low</div>
+              <div className="text-gray-100 font-bold text-lg mt-1 font-mono">₹{data.low_52w}</div>
             </div>
           </div>
 
           {/* 4. RETURNS TABLE */}
-          <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d] overflow-x-auto">
+          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4 overflow-x-auto">
             <h3 className="text-lg font-bold text-white mb-4">Rolling Returns</h3>
             <table className="w-full text-left font-mono">
               <thead>
-                <tr className="border-b border-[#30363d] text-gray-500">
+                <tr className="border-b border-surface-800 text-gray-500">
                   <th className="pb-2">1 Week</th>
                   <th className="pb-2">1 Month</th>
                   <th className="pb-2">3 Month</th>
@@ -312,24 +312,24 @@ const ETFDetail = () => {
 
           {/* 8. ETF COMPARISON (TRACKING ERROR) */}
           {data.underlying_index && data.underlying_index_return_6m != null && (
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d] mt-6">
+            <div className="bg-surface-850 p-4 rounded-xl border border-surface-800 mt-6">
               <h3 className="text-lg font-bold text-white mb-3 flex items-center">
                 <Target className="mr-2" size={18} /> ETF Comparison
               </h3>
               <div className="space-y-3 font-mono text-sm">
-                <div className="flex justify-between items-center bg-[#0d1117] p-3 rounded border border-[#30363d]">
+                <div className="flex justify-between items-center bg-surface-900 p-3 rounded border border-surface-800">
                   <span className="text-gray-400">{data.underlying_index} (6M):</span>
                   <span className={`font-bold ${data.underlying_index_return_6m >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
                     {data.underlying_index_return_6m}%
                   </span>
                 </div>
-                <div className="flex justify-between items-center bg-[#0d1117] p-3 rounded border border-[#30363d]">
+                <div className="flex justify-between items-center bg-surface-900 p-3 rounded border border-surface-800">
                   <span className="text-gray-400">{data.symbol.replace('.NS', '')} (6M):</span>
                   <span className={`font-bold ${data.returns['6_month'] >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
                     {data.returns['6_month'] != null ? `${data.returns['6_month']}%` : 'N/A'}
                   </span>
                 </div>
-                <div className="flex justify-between items-center bg-[#0d1117] p-3 rounded border border-[#30363d]">
+                <div className="flex justify-between items-center bg-surface-900 p-3 rounded border border-surface-800">
                   <span className="text-gray-400">Tracking Difference:</span>
                   <span className={`font-bold ${data.tracking_difference >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
                     {data.tracking_difference != null ? `${data.tracking_difference > 0 ? '+' : ''}${data.tracking_difference}%` : 'N/A'}
@@ -342,21 +342,21 @@ const ETFDetail = () => {
 
         <div className="space-y-6">
           {/* 6. ETF-SPECIFIC VERDICT */}
-          <div className={`p-6 rounded-xl border border-${data.verdict_color === 'green' ? '[#00c853]' : data.verdict_color === 'red' ? '[#ff1744]' : '[#10b981]'} bg-[#161b22]`}>
+          <div className={`p-6 rounded-xl border border-${data.verdict_color === 'green' ? '[#00c853]' : data.verdict_color === 'red' ? '[#ff1744]' : '[#10b981]'} bg-surface-850`}>
             <h3 className="text-xl font-bold text-white mb-2">ETF Verdict</h3>
-            <p className={`text-lg ${data.verdict_color === 'green' ? 'text-[#00c853]' : data.verdict_color === 'red' ? 'text-[#ff1744]' : 'text-[#10b981]'}`}>
+            <p className={`text-lg ${data.verdict_color === 'green' ? 'text-[#00c853]' : data.verdict_color === 'red' ? 'text-[#ff1744]' : 'text-emerald-400'}`}>
               {data.verdict}
             </p>
             <p className="text-sm text-gray-300 mt-2">
-              💡 {data.action}
+              {data.action}
             </p>
           </div>
 
           {/* 5. PREMIUM/DISCOUNT INDICATOR */}
           {data.premium_discount_pct != null && (
-            <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
               <h3 className="text-lg font-bold text-white mb-3 flex items-center"><Info className="mr-2" size={18} /> Premium / Discount</h3>
-              <div className="bg-[#0d1117] p-3 rounded">
+              <div className="bg-surface-900 p-3 rounded">
                 <span className="text-gray-400 text-sm">Status: </span>
                 {data.premium_discount_pct > 0 ? (
                    <span className="text-[#ff1744] font-bold">Trading {data.premium_discount_pct}% above NAV</span>
@@ -370,15 +370,15 @@ const ETFDetail = () => {
           )}
 
           {/* 7. SIP GUIDANCE */}
-          <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
+          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
             <h3 className="text-lg font-bold text-white mb-2 flex items-center"><Target className="mr-2" size={18} /> SIP Guidance</h3>
             <p className="text-sm text-gray-400 mb-2">
               For long-term SIP investors: <br />
               <span className="text-white font-mono">RSI &lt; 45 + Price &gt; EMA 200 = Excellent entry</span>
             </p>
-            <div className="text-sm bg-[#0d1117] p-2 rounded">
+            <div className="text-sm bg-surface-900 p-2 rounded">
               Current status: <br/> 
-              <span className="font-mono text-[#10b981]">
+              <span className="font-mono text-emerald-400">
                 RSI = {data.rsi}, {data.above_ema200 ? 'Above' : 'Below'} EMA 200
               </span>
             </div>

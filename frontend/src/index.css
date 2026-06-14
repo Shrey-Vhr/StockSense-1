@@ -64,3 +64,39 @@ body {
   50% { background-color: rgba(255, 23, 68, 0.3); }
   100% { background-color: transparent; }
 }
+
+/* Smooth page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms ease-out, 
+              transform 200ms ease-out;
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 150ms ease, 
+              box-shadow 150ms ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+/* Emerald glow on focus */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 200ms ease-out;
+}
