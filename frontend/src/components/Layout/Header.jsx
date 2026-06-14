@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Menu, Bell, Activity, Circle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
@@ -199,30 +200,41 @@ const Header = ({ toggleSidebar }) => {
               className="bg-surface-850 border border-surface-800 text-sm rounded-full pl-10 pr-4 py-2 w-48 lg:w-72 text-gray-100 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40 transition-all placeholder-gray-500"
             />
           </form>
-          {showDropdown && searchResults.length > 0 && (
-            <div className="absolute top-full mt-2 w-full bg-surface-850 border border-surface-800 rounded-xl shadow-card overflow-hidden z-50 max-h-80 overflow-y-auto">
-              {searchResults.map((result, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => handleResultClick(result)}
-                  className="p-3 hover:bg-surface-800 cursor-pointer border-b border-surface-800 last:border-b-0 transition-colors flex justify-between items-center"
-                >
-                  <div className="flex items-center">
-                    <span className="mr-2 text-lg">
-                      {result.type === 'index' ? '📊' : result.type === 'etf' ? '💹' : '📈'}
-                    </span>
-                    <div>
-                      <div className="font-bold text-emerald-400">
-                        {result.symbol.replace('.NS', '')} {result.type && <span className="text-xs text-gray-500 capitalize ml-1">({result.type})</span>}
+          <AnimatePresence>
+            {showDropdown && searchResults.length > 0 && (
+              <motion.div
+                className="absolute top-full mt-2 w-full bg-surface-850 border border-surface-800 rounded-xl shadow-card overflow-hidden z-50 max-h-80 overflow-y-auto"
+                initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                transition={{ duration: 0.15 }}
+              >
+                {searchResults.map((result, idx) => (
+                  <motion.div
+                    key={idx}
+                    onClick={() => handleResultClick(result)}
+                    className="p-3 hover:bg-surface-800 cursor-pointer border-b border-surface-800 last:border-b-0 transition-colors flex justify-between items-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: idx * 0.03 }}
+                  >
+                    <div className="flex items-center">
+                      <span className="mr-2 text-lg">
+                        {result.type === 'index' ? '📊' : result.type === 'etf' ? '💹' : '📈'}
+                      </span>
+                      <div>
+                        <div className="font-bold text-emerald-400">
+                          {result.symbol.replace('.NS', '')} {result.type && <span className="text-xs text-gray-500 capitalize ml-1">({result.type})</span>}
+                        </div>
+                        <div className="text-xs text-gray-400">{result.name}</div>
                       </div>
-                      <div className="text-xs text-gray-400">{result.name}</div>
                     </div>
-                  </div>
-                  <div className="text-xs text-gray-500">{result.sector}</div>
-                </div>
-              ))}
-            </div>
-          )}
+                    <div className="text-xs text-gray-500">{result.sector}</div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="relative">
@@ -233,35 +245,43 @@ const Header = ({ toggleSidebar }) => {
             )}
           </button>
 
-          {showAlerts && (
-            <div className="absolute right-0 mt-2 w-80 bg-surface-850 border border-surface-800 rounded-xl shadow-card z-50 overflow-hidden animate-fade-in">
-              <div className="flex justify-between items-center p-3 border-b border-surface-800 bg-surface-900">
-                <h3 className="font-bold text-gray-100 flex items-center text-sm">
-                  <Activity size={16} className="mr-2 text-emerald-400"/> Notifications
-                </h3>
-                {alerts.length > 0 && (
-                  <button onClick={() => {setAlerts([]); setShowAlerts(false);}} className="text-xs text-gray-400 hover:text-gray-100">
-                    Clear All
-                  </button>
-                )}
-              </div>
-              <div className="max-h-80 overflow-y-auto">
-                {alerts.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500 text-sm">No recent alerts.</div>
-                ) : (
-                  alerts.map((a, i) => (
-                    <div key={i} className="p-3 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/60 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <span className="font-bold text-emerald-400 text-sm">{a.symbol}</span>
-                        <span className="text-xs text-gray-500">Just now</span>
+          <AnimatePresence>
+            {showAlerts && (
+              <motion.div
+                className="absolute right-0 mt-2 w-80 bg-surface-850 border border-surface-800 rounded-xl shadow-card z-50 overflow-hidden"
+                initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                transition={{ duration: 0.15 }}
+              >
+                <div className="flex justify-between items-center p-3 border-b border-surface-800 bg-surface-900">
+                  <h3 className="font-bold text-gray-100 flex items-center text-sm">
+                    <Activity size={16} className="mr-2 text-emerald-400"/> Notifications
+                  </h3>
+                  {alerts.length > 0 && (
+                    <button onClick={() => {setAlerts([]); setShowAlerts(false);}} className="text-xs text-gray-400 hover:text-gray-100">
+                      Clear All
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {alerts.length === 0 ? (
+                    <div className="p-6 text-center text-gray-500 text-sm">No recent alerts.</div>
+                  ) : (
+                    alerts.map((a, i) => (
+                      <div key={i} className="p-3 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/60 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <span className="font-bold text-emerald-400 text-sm">{a.symbol}</span>
+                          <span className="text-xs text-gray-500">Just now</span>
+                        </div>
+                        <p className="text-sm text-gray-300 mt-1">{a.message}</p>
                       </div>
-                      <p className="text-sm text-gray-300 mt-1">{a.message}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>
