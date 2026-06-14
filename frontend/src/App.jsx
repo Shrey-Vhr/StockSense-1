@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
+import PageTransition from './components/PageTransition'
 import Dashboard from './pages/Dashboard'
 import StockDetail from './pages/StockDetail'
 import Screener from './pages/Screener'
@@ -38,23 +40,25 @@ function App() {
     >
       {showSplash && <SplashScreen />}
       <NotificationManager />
+      <AnimatePresence mode="wait">
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
         
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="stock/:symbol" element={<StockDetail />} />
-            <Route path="index/:symbol" element={<IndexDetail />} />
-            <Route path="etf/:symbol" element={<ETFDetail />} />
-            <Route path="screener" element={<Screener />} />
-            <Route path="portfolio" element={<Portfolio />} />
-            <Route path="news" element={<News />} />
-            <Route path="watchlist" element={<Watchlist />} />
+            <Route index element={<PageTransition><Dashboard /></PageTransition>} />
+            <Route path="stock/:symbol" element={<PageTransition><StockDetail /></PageTransition>} />
+            <Route path="index/:symbol" element={<PageTransition><IndexDetail /></PageTransition>} />
+            <Route path="etf/:symbol" element={<PageTransition><ETFDetail /></PageTransition>} />
+            <Route path="screener" element={<PageTransition><Screener /></PageTransition>} />
+            <Route path="portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
+            <Route path="news" element={<PageTransition><News /></PageTransition>} />
+            <Route path="watchlist" element={<PageTransition><Watchlist /></PageTransition>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>
       </Routes>
+      </AnimatePresence>
     </BrowserRouter>
   )
 }
