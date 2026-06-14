@@ -34,7 +34,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       )}
 
       <div className={`
-        fixed top-0 left-0 h-full w-56 bg-surface-900 border-r border-surface-800 z-50
+        fixed top-0 left-0 h-full w-56 bg-surface-900/95 border-r border-surface-800 z-50
         transform transition-transform duration-300 ease-in-out flex flex-col
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         md:relative md:h-screen
