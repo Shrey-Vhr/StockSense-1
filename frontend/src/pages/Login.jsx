@@ -1,149 +1,332 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { LineChart, Eye, EyeOff, TrendingUp, 
+         Shield, Zap } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { Eye, EyeOff, TrendingUp, AlertCircle, Loader2, LineChart } from 'lucide-react';
 
 const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login, register, isLoading, error, isAuthenticated, clearError } = useAuth();
-  
-  const from = location.state?.from?.pathname || '/';
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate(from, { replace: true });
-    }
-    // Clear error when switching modes
-    clearError();
-  }, [isAuthenticated, navigate, from, isLogin, clearError]);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (error) clearError();
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLogin) {
-      await login(formData.email, formData.password);
-    } else {
-      await register(formData.name, formData.email, formData.password);
+    setLoading(true);
+    setError('');
+    try {
+      await login(email, password);
+      navigate('/');
+    } catch (err) {
+      setError(
+        err.response?.data?.detail || 
+        'Invalid credentials'
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
-      <div className="bg-surface-850 border border-surface-800 rounded-2xl p-8 w-full max-w-md shadow-card">
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-glow">
-            <LineChart className="text-white w-6 h-6"/>
+    <div className="min-h-screen bg-surface-950 
+                    flex">
+      
+      {/* Left Panel — Branding */}
+      <div className="hidden lg:flex lg:w-1/2 
+                      bg-surface-900 border-r 
+                      border-surface-800 flex-col 
+                      justify-between p-12 
+                      relative overflow-hidden">
+        
+        {/* Background gradient orbs */}
+        <div className="absolute top-0 left-0 
+                        w-96 h-96 
+                        bg-emerald-500/5 
+                        rounded-full blur-3xl 
+                        -translate-x-1/2 
+                        -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 
+                        w-96 h-96 
+                        bg-emerald-500/5 
+                        rounded-full blur-3xl 
+                        translate-x-1/2 
+                        translate-y-1/2" />
+        
+        {/* Logo */}
+        <div className="flex items-center gap-3 
+                        relative z-10">
+          <div className="w-10 h-10 rounded-xl 
+                          bg-gradient-to-br 
+                          from-emerald-400 
+                          to-emerald-600 
+                          flex items-center 
+                          justify-center 
+                          shadow-glow">
+            <LineChart className="text-white w-5 h-5" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-100">StockSense</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {isLogin ? 'Sign in to your account' : 'Create a new account'}
-          </p>
+          <span className="text-xl font-bold 
+                           text-gray-100 
+                           tracking-tight">
+            StockSense
+          </span>
         </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-lg flex items-start space-x-3 animate-pulse text-sm">
-                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                <span>{error}</span>
+        {/* Main copy */}
+        <div className="relative z-10">
+          <h1 className="text-4xl font-bold 
+                         text-gray-50 
+                         leading-tight mb-4">
+            Intelligent Stock
+            <br />
+            <span className="bg-clip-text 
+                             text-transparent 
+                             bg-gradient-to-r 
+                             from-emerald-300 
+                             to-emerald-500">
+              Analysis for India
+            </span>
+          </h1>
+          <p className="text-gray-400 text-base 
+                        leading-relaxed mb-10">
+            AI-powered insights, real-time data, 
+            and institutional-grade analysis 
+            for the Indian stock market.
+          </p>
+          
+          {/* Feature pills */}
+          <div className="space-y-3">
+            {[
+              { 
+                icon: TrendingUp, 
+                text: '469 NSE stocks screened in real-time'
+              },
+              { 
+                icon: Shield, 
+                text: 'Pattern detection across 16 chart patterns'
+              },
+              { 
+                icon: Zap, 
+                text: 'AI-powered news sentiment analysis'
+              },
+            ].map((f, i) => (
+              <div key={i} 
+                   className="flex items-center 
+                              gap-3">
+                <div className="w-8 h-8 rounded-lg 
+                                bg-emerald-500/10 
+                                border 
+                                border-emerald-500/20 
+                                flex items-center 
+                                justify-center 
+                                flex-shrink-0">
+                  <f.icon size={16} 
+                          className="text-emerald-400" />
+                </div>
+                <span className="text-gray-400 
+                                 text-sm">
+                  {f.text}
+                </span>
               </div>
-            )}
+            ))}
+          </div>
+        </div>
 
-            {!isLogin && (
-              <div className="space-y-1.5">
-                <label className="text-gray-400 text-sm font-medium mb-1.5 block">Full Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Rahul Sharma"
-                  className="w-full bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-gray-100 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 focus:outline-none transition-all placeholder-gray-600"
-                />
+        {/* Bottom stats */}
+        <div className="grid grid-cols-3 gap-4 
+                        relative z-10">
+          {[
+            { value: '469+', label: 'Stocks' },
+            { value: '35+', label: 'Indicators' },
+            { value: '16', label: 'Patterns' },
+          ].map((s, i) => (
+            <div key={i} 
+                 className="bg-surface-850 border 
+                            border-surface-800 
+                            rounded-xl p-3 
+                            text-center">
+              <div className="text-xl font-bold 
+                              text-emerald-400 
+                              font-mono">
+                {s.value}
               </div>
-            )}
+              <div className="text-gray-600 
+                              text-xs mt-0.5">
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-            <div className="space-y-1.5">
-              <label className="text-gray-400 text-sm font-medium mb-1.5 block">Email Address</label>
+      {/* Right Panel — Login Form */}
+      <div className="w-full lg:w-1/2 flex 
+                      items-center justify-center 
+                      p-8">
+        <div className="w-full max-w-md">
+          
+          {/* Mobile logo */}
+          <div className="flex items-center 
+                          gap-3 mb-8 lg:hidden">
+            <div className="w-9 h-9 rounded-xl 
+                            bg-gradient-to-br 
+                            from-emerald-400 
+                            to-emerald-600 
+                            flex items-center 
+                            justify-center">
+              <LineChart className="text-white 
+                                   w-5 h-5" />
+            </div>
+            <span className="text-lg font-bold 
+                             text-gray-100">
+              StockSense
+            </span>
+          </div>
+
+          {/* Form header */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold 
+                           text-gray-50">
+              Welcome back
+            </h2>
+            <p className="text-gray-500 text-sm mt-1">
+              Sign in to your StockSense account
+            </p>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-500/10 border 
+                            border-red-500/30 
+                            rounded-xl p-3 mb-5">
+              <p className="text-red-400 text-sm">
+                {error}
+              </p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} 
+                className="space-y-4">
+            <div>
+              <label className="text-gray-400 
+                                text-sm 
+                                font-medium 
+                                mb-1.5 block">
+                Email Address
+              </label>
               <input
                 type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-gray-100 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 focus:outline-none transition-all placeholder-gray-600"
+                required
+                className="w-full bg-surface-850 
+                           border border-surface-800 
+                           rounded-xl px-4 py-3 
+                           text-gray-100 text-sm 
+                           focus:border-emerald-500/50 
+                           focus:ring-1 
+                           focus:ring-emerald-500/20 
+                           focus:outline-none 
+                           transition-all 
+                           placeholder-gray-600"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-gray-400 text-sm font-medium mb-1.5 block">Password</label>
+            <div>
+              <label className="text-gray-400 
+                                text-sm 
+                                font-medium 
+                                mb-1.5 block">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Enter your password"
                   required
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
-                  className="w-full bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-gray-100 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 focus:outline-none transition-all placeholder-gray-600 pr-12"
+                  className="w-full bg-surface-850 
+                             border border-surface-800 
+                             rounded-xl px-4 py-3 
+                             text-gray-100 text-sm 
+                             focus:border-emerald-500/50 
+                             focus:ring-1 
+                             focus:ring-emerald-500/20 
+                             focus:outline-none 
+                             transition-all 
+                             placeholder-gray-600 pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors p-1"
+                  className="absolute right-3 top-1/2 
+                             -translate-y-1/2 
+                             text-gray-500 
+                             hover:text-gray-300 
+                             transition-colors p-1"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword 
+                    ? <EyeOff size={16} /> 
+                    : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            {isLogin && (
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center space-x-2 cursor-pointer group">
-                  <input type="checkbox" className="rounded border-gray-700 bg-gray-900 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-gray-950 w-4 h-4 cursor-pointer" />
-                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
-                </label>
-                <a href="#" className="text-emerald-500 hover:text-emerald-400 font-medium transition-colors">
-                  Forgot password?
-                </a>
-              </div>
-            )}
+            <div className="flex items-center 
+                            justify-between">
+              <label className="flex items-center 
+                                gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="accent-emerald-500 
+                             w-4 h-4 rounded" 
+                />
+                <span className="text-gray-400 
+                                 text-sm">
+                  Remember me
+                </span>
+              </label>
+              <a href="#" 
+                 className="text-emerald-400 
+                            hover:text-emerald-300 
+                            text-sm transition-colors">
+                Forgot password?
+              </a>
+            </div>
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-xl transition-colors text-sm shadow-glow flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled={loading}
+              className="w-full bg-emerald-500 
+                         hover:bg-emerald-600 
+                         disabled:opacity-50 
+                         disabled:cursor-not-allowed
+                         text-white font-semibold 
+                         py-3 rounded-xl 
+                         transition-colors text-sm 
+                         shadow-glow mt-2"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>{isLogin ? 'Signing in...' : 'Creating account...'}</span>
-                </>
-              ) : (
-                <span>{isLogin ? 'Sign In' : 'Sign Up'}</span>
-              )}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-gray-400">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-emerald-400 hover:text-emerald-300 transition-colors ml-1"
-            >
-              {isLogin ? 'Sign up for free' : 'Log in here'}
-            </button>
-          </div>
+          <p className="text-center text-gray-500 
+                        text-sm mt-6">
+            Don't have an account?{' '}
+            <Link to="/register" 
+                  className="text-emerald-400 
+                             hover:text-emerald-300 
+                             font-medium 
+                             transition-colors">
+              Sign up for free
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
