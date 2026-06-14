@@ -142,10 +142,10 @@ const Header = ({ toggleSidebar }) => {
   return (
     <header className="h-16 bg-surface-900/80 backdrop-blur-md border-b border-surface-800 flex items-center justify-between px-4 lg:px-8 z-30 relative sticky top-0">
       <div className="flex items-center">
-        <button onClick={toggleSidebar} className="md:hidden mr-4 text-gray-400 hover:text-white">
+        <button onClick={toggleSidebar} className="lg:hidden mr-4 text-gray-400 hover:text-white p-2 rounded-lg hover:bg-surface-850 transition-colors">
           <Menu size={24} />
         </button>
-        <div className="hidden sm:flex items-center space-x-3 font-mono text-sm">
+        <div className="hidden md:flex items-center space-x-3 font-mono text-sm">
           <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-surface-850 border border-surface-800 transition-colors duration-500 ${nifty.flash}`}>
             <span className="text-gray-500 text-xs font-sans">NIFTY 50</span>
             <span className="text-gray-100 font-medium">{nifty.price}</span>

@@ -703,7 +703,7 @@ const StockDetail = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-6">
       {errorMsg && (
         <div className="bg-[#ff1744]/10 border border-[#ff1744]/30 text-[#ff1744] px-4 py-3 rounded-lg flex items-center">
           <AlertTriangle size={18} className="mr-2" /> {errorMsg}
@@ -713,7 +713,7 @@ const StockDetail = () => {
       {/* Price Header */}
       {quote && (
         <motion.div
-          className="flex justify-between items-start px-6 py-4 bg-surface-850 border-b border-surface-800"
+          className="flex flex-col sm:flex-row justify-between items-start px-4 sm:px-6 py-4 bg-surface-850 border-b border-surface-800 gap-3"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -730,11 +730,11 @@ const StockDetail = () => {
             </div>
             <p className="text-gray-500 text-sm mt-0.5 font-mono">{companyName || symbol}</p>
           </div>
-          <div className="mt-4 md:mt-0 text-right flex flex-col items-end">
-            <div className={`text-4xl font-bold text-gray-50 font-mono tracking-tight text-right transition-colors duration-500 rounded px-2 ${quoteFlash}`}>
+          <div className="text-left sm:text-right flex-shrink-0">
+            <div className={`text-3xl sm:text-4xl font-bold text-gray-50 font-mono tracking-tight transition-colors duration-500 rounded px-2 ${quoteFlash}`}>
               ₹{stockPrice ? stockPrice.toFixed(2) : quote.current_price?.toFixed(2)}
             </div>
-            <div className={`flex justify-end items-center text-sm font-semibold mt-1 text-right transition-all duration-500 ${isUp ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div className={`flex sm:justify-end items-center text-sm font-semibold mt-1 text-left sm:text-right transition-all duration-500 ${isUp ? 'text-emerald-400' : 'text-red-400'}`}>
               {isUp ? <TrendingUp className="mr-1" size={20} /> : <TrendingDown className="mr-1" size={20} />}
               {isUp ? '+' : ''}{quote.change_amount?.toFixed(2)} ({Math.abs(quote.change_percent).toFixed(2)}%)
             </div>
@@ -818,32 +818,32 @@ const StockDetail = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-surface-800 bg-surface-900 px-4 overflow-x-auto">
-        <button onClick={() => handleTabChange('technical')} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'technical' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+      <div className="flex border-b border-surface-800 bg-surface-900 px-2 overflow-x-auto scrollbar-hide">
+        <button onClick={() => handleTabChange('technical')} className={`flex items-center gap-1.5 px-3 sm:px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'technical' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
           <span className="flex items-center gap-1.5">
             <TrendingUp size={15} />
             Technicals
           </span>
         </button>
-        <button onClick={() => handleTabChange('fundamental')} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'fundamental' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+        <button onClick={() => handleTabChange('fundamental')} className={`flex items-center gap-1.5 px-3 sm:px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'fundamental' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
           <span className="flex items-center gap-1.5">
             <BarChart2 size={15} />
             Fundamentals
           </span>
         </button>
-        <button onClick={() => handleTabChange('institutional')} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'institutional' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+        <button onClick={() => handleTabChange('institutional')} className={`flex items-center gap-1.5 px-3 sm:px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'institutional' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
           <span className="flex items-center gap-1.5">
             <Building2 size={15} />
             Institutional
           </span>
         </button>
-        <button onClick={() => handleTabChange('news')} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'news' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+        <button onClick={() => handleTabChange('news')} className={`flex items-center gap-1.5 px-3 sm:px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'news' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
           <span className="flex items-center gap-1.5">
             <Newspaper size={15} />
             News
           </span>
         </button>
-        <button onClick={handleGenerateAI} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'ai' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+        <button onClick={handleGenerateAI} className={`flex items-center gap-1.5 px-3 sm:px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'ai' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
           <span className="flex items-center gap-1.5">
             <Brain size={15} />
             Claude AI Analysis
@@ -871,7 +871,7 @@ const StockDetail = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {[
                 { label: 'Trend', value: techData.trend?.status, isGood: techData.trend?.status?.includes('Up'), customFormat: null },
                 { label: 'RSI (14)', value: `${techData.momentum?.rsi?.value?.toFixed(1) || 'N/A'} `, suffix: techData.momentum?.rsi?.signal ? `(${techData.momentum?.rsi?.signal})` : '' },

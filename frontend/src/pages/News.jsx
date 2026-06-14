@@ -41,7 +41,7 @@ const News = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between border-b border-surface-800 pb-4">
         <h1 className="text-2xl font-bold text-white flex items-center">
           <Newspaper className="text-[#10b981] mr-3" size={28} /> Market News

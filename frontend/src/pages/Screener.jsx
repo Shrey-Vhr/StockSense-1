@@ -289,7 +289,7 @@ const Screener = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-5 h-full flex flex-col">
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-5 h-full flex flex-col">
 
       {/* ── HEADER ──────────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -394,7 +394,7 @@ const Screener = () => {
           <div className="flex items-center gap-2">
             <Activity size={16} className="text-emerald-400" />
             <span className="text-sm font-semibold text-gray-200 flex items-center gap-2">Conditions</span>
-            <span className="text-xs text-gray-500 bg-surface-900 px-2 py-0.5 rounded-lg border border-surface-800">
+            <span className="text-xs text-gray-500 bg-surface-900 px-2 py-0.5 rounded-lg border border-surface-800 whitespace-nowrap">
               {conditions.length} {conditions.length === 1 ? 'filter' : 'filters'} · AND logic
             </span>
           </div>
@@ -513,7 +513,7 @@ const Screener = () => {
       </div>
 
       {/* ── SCREENER CONTROLS ───────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 mt-4">
+      <div className="flex flex-wrap items-center gap-2 mt-4">
         {/* Sort By */}
         <div className="flex items-center gap-2">
           <label className="text-xs text-gray-500 whitespace-nowrap">Sort by</label>
@@ -558,7 +558,7 @@ const Screener = () => {
         <button
           onClick={runScreener}
           disabled={isLoading.screener || conditions.length === 0}
-          className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors ml-auto shadow-glow disabled:opacity-70 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors w-full sm:w-auto mt-2 sm:mt-0 ml-auto shadow-glow disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isLoading.screener ? (
             <span className="flex items-center gap-2">
@@ -599,7 +599,7 @@ const Screener = () => {
       <div className="bg-surface-850 border border-surface-800 rounded-2xl mt-4 overflow-hidden flex-1 flex flex-col min-h-0">
         <div className="overflow-x-auto custom-scrollbar flex-1">
           <div className="min-w-[800px]">
-            <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-surface-800 bg-surface-900">
+            <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-3 border-b border-surface-800 bg-surface-900">
               <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-1">#</div>
               <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-3">Stock</div>
               <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-2 text-right">Price</div>
@@ -623,28 +623,67 @@ const Screener = () => {
                   <div
                     key={stock.symbol}
                     onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    className="grid grid-cols-12 gap-4 px-4 py-3.5 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/50 cursor-pointer transition-colors"
+                    className="flex flex-col sm:grid sm:grid-cols-12 sm:gap-4 px-4 py-3.5 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/50 cursor-pointer transition-colors"
                   >
-                    <div className="col-span-1 text-emerald-400 font-bold text-sm flex items-center">{stock.rank}</div>
-                    <div className="col-span-3 flex flex-col justify-center">
+                    {/* Mobile View */}
+                    <div className="flex sm:hidden justify-between items-start w-full">
+                      <div className="flex items-center gap-2">
+                        <div className="text-emerald-400 font-bold text-sm w-5">{stock.rank}.</div>
+                        <div>
+                          <div className="font-semibold text-gray-100 text-sm">{stock.symbol.replace('.NS', '')}</div>
+                          <div className="text-gray-500 text-xs mt-0.5">{stock.sector}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-gray-200 font-mono text-sm block">₹{(stock.live_price || stock.price)?.toFixed(2)}</span>
+                        <span className={`inline-flex items-center gap-0.5 mt-0.5 ${stock.change_percent >= 0 ? 'text-emerald-400 font-semibold text-xs font-mono' : 'text-red-400 font-semibold text-xs font-mono'}`}>
+                          {stock.change_percent >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                          {Math.abs(stock.change_percent || 0).toFixed(2)}%
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex sm:hidden justify-between items-center w-full mt-3">
+                      <div className="flex gap-3 text-xs text-gray-400 font-mono overflow-x-auto scrollbar-hide max-w-[70%]">
+                        {usedIndicators.map((ind) => {
+                          const val = stock[ind];
+                          return (
+                            <div key={ind} className="flex flex-col border-r border-surface-800 pr-3 last:border-0 last:pr-0">
+                              <span className="text-[10px] text-gray-600 mb-0.5 uppercase">{flatIndicators[ind]?.label || ind}</span>
+                              <span className="text-gray-300">
+                                {val != null ? (typeof val === 'number' ? (Math.abs(val) >= 10000 ? val.toLocaleString('en-IN', { maximumFractionDigits: 0 }) : val.toFixed(2)) : val) : '—'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex items-center gap-2 bg-surface-900 px-2 py-1 rounded-lg border border-surface-800">
+                        <span className="text-[10px] text-gray-500 uppercase">Score</span>
+                        <span className="text-xs font-bold text-emerald-400">{stock.score}</span>
+                      </div>
+                    </div>
+
+                    {/* Desktop View Elements */}
+                    <div className="hidden sm:flex col-span-1 text-emerald-400 font-bold text-sm items-center">{stock.rank}</div>
+                    <div className="hidden sm:flex col-span-3 flex-col justify-center">
                       <div className="font-semibold text-gray-100 text-sm">{stock.symbol.replace('.NS', '')}</div>
                       <div className="text-gray-500 text-xs mt-0.5 truncate max-w-[140px]" title={stock.sector}>{stock.sector}</div>
                     </div>
-                    <div className="col-span-2 text-right flex flex-col items-end justify-center">
+                    <div className="hidden sm:flex col-span-2 text-right flex-col items-end justify-center">
                       <span className="text-gray-200 font-mono text-sm">₹{(stock.live_price || stock.price)?.toFixed(2)}</span>
                       <span className="text-xs ml-1 text-gray-500">
                         <span className={stock.price_source === 'angel_one' ? 'text-green-400' : 'text-emerald-500'}>●</span>{' '}
                         {stock.price_source === 'angel_one' ? 'Live' : '15min'}
                       </span>
                     </div>
-                    <div className="col-span-2 flex justify-end items-center">
+                    <div className="hidden sm:flex col-span-2 justify-end items-center">
                       <span className={`inline-flex items-center gap-0.5 ${stock.change_percent >= 0 ? 'text-emerald-400 font-semibold text-sm font-mono' : 'text-red-400 font-semibold text-sm font-mono'}`}>
                         {stock.change_percent >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                         {Math.abs(stock.change_percent || 0).toFixed(2)}%
                       </span>
                     </div>
                     {/* Dynamic indicator values */}
-                    <div className="col-span-2 flex gap-4 justify-end items-center">
+                    <div className="hidden sm:flex col-span-2 gap-4 justify-end items-center">
                       {usedIndicators.map((ind) => {
                         const val = stock[ind];
                         return (
@@ -663,7 +702,7 @@ const Screener = () => {
                       })}
                       {usedIndicators.length === 0 && <span className="text-gray-700">—</span>}
                     </div>
-                    <div className="col-span-2 flex items-center justify-center gap-2">
+                    <div className="hidden sm:flex col-span-2 items-center justify-center gap-2">
                       <div className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                         {stock.score}
                       </div>

@@ -120,7 +120,7 @@ const Watchlist = () => {
   if (loading) return <WatchlistSkeleton />;
 
   return (
-    <div className="min-h-screen bg-surface-950 p-6">
+    <div className="min-h-screen bg-surface-950 p-3 sm:p-6">
       <div className="max-w-6xl mx-auto">
         
         {/* Header */}
@@ -195,11 +195,11 @@ const Watchlist = () => {
           </div>
         )}
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           
           {/* Watchlist Sidebar */}
-          <div className="w-48 flex-shrink-0">
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-2">
+          <div className="w-full sm:w-48 sm:flex-shrink-0">
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-2 flex sm:flex-col flex-row overflow-x-auto gap-1">
               {watchlists.length === 0 ? (
                 <p className="text-gray-400 text-sm p-2">
                   No watchlists yet
@@ -211,8 +211,8 @@ const Watchlist = () => {
                     onClick={() => setActiveWatchlist(wl)}
                     className={
                       activeWatchlist?.id === wl.id
-                        ? 'flex justify-between items-center p-2.5 rounded-xl cursor-pointer mb-1 bg-emerald-500/10 border border-emerald-500/20'
-                        : 'flex justify-between items-center p-2.5 rounded-xl cursor-pointer mb-1 hover:bg-surface-800 transition-colors'
+                        ? 'flex-shrink-0 sm:flex-shrink flex justify-between items-center p-2.5 rounded-xl cursor-pointer bg-emerald-500/10 border border-emerald-500/20 min-w-[100px] sm:min-w-0'
+                        : 'flex-shrink-0 sm:flex-shrink flex justify-between items-center p-2.5 rounded-xl cursor-pointer hover:bg-surface-800 transition-colors min-w-[100px] sm:min-w-0'
                     }
                   >
                     <div>
@@ -332,7 +332,7 @@ const Watchlist = () => {
                 ) : (
                   <div>
                     {/* Table Header */}
-                    <div className="grid grid-cols-5 gap-2 px-3 py-2 text-gray-600 text-xs font-semibold uppercase tracking-wide border-b border-surface-800 mb-1">
+                    <div className="hidden sm:grid grid-cols-5 gap-2 px-3 py-2 text-gray-600 text-xs font-semibold uppercase tracking-wide border-b border-surface-800 mb-1">
                       <span>STOCK</span>
                       <span className="text-right">
                         PRICE
@@ -356,58 +356,66 @@ const Watchlist = () => {
                           duration: 0.2, 
                           delay: i * 0.05 
                         }}
-                        className="grid grid-cols-5 gap-2 px-3 py-3.5 rounded-xl hover:bg-surface-800/50 cursor-pointer border-b border-surface-800/50 last:border-b-0 items-center transition-colors"
+                        className="flex flex-col sm:grid sm:grid-cols-5 gap-1 sm:gap-2 px-3 py-3 rounded-xl hover:bg-surface-800/50 cursor-pointer border-b border-surface-800/50 last:border-b-0 items-center transition-colors"
                         onClick={() => {
                           const s = stock.symbol.toUpperCase();
                           const isETF = s.includes('BEES') || s.includes('ETF') || s.includes('MON100');
                           navigate(isETF ? `/etf/${stock.symbol}` : `/stock/${stock.symbol}`);
                         }}
                       >
-                        {/* Name */}
-                        <div>
-                          <p className="text-gray-100 font-semibold text-sm">
-                            {stock.name}
+                        <div className="flex justify-between items-center w-full sm:contents">
+                          <div>
+                            <p className="text-gray-100 font-semibold text-sm">
+                              {stock.name}
+                            </p>
+                            <p className="text-gray-500 text-xs mt-0.5 font-mono">
+                              {stock.symbol}
+                            </p>
+                          </div>
+
+                          <p className="hidden sm:block text-gray-200 text-sm text-right font-mono font-medium">
+                            {stock.price 
+                              ? `₹${stock.price.toLocaleString('en-IN')}`
+                              : 'N/A'
+                            }
                           </p>
-                          <p className="text-gray-500 text-xs mt-0.5 font-mono">
-                            {stock.symbol}
+
+                          <p className={`hidden sm:block ${
+                            stock.change_pct > 0
+                              ? 'text-emerald-400 text-sm text-right font-semibold font-mono'
+                              : stock.change_pct < 0
+                              ? 'text-red-400 text-sm text-right font-semibold font-mono'
+                              : 'text-gray-500 text-sm text-right font-semibold font-mono'
+                          }`}>
+                            {stock.change_pct > 0 ? '+' : ''}
+                            {stock.change_pct}%
                           </p>
+
+                          <div className="sm:hidden text-right">
+                            <p className="text-gray-200 text-sm font-mono font-medium">
+                              {stock.price ? `₹${stock.price.toLocaleString('en-IN')}` : 'N/A'}
+                            </p>
+                            <p className={`text-sm font-semibold font-mono ${stock.change_pct > 0 ? 'text-emerald-400' : stock.change_pct < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                              {stock.change_pct > 0 ? '+' : ''}{stock.change_pct}%
+                            </p>
+                          </div>
                         </div>
 
-                        {/* Price */}
-                        <p className="text-gray-200 text-sm text-right font-mono font-medium">
-                          {stock.price 
-                            ? `₹${stock.price.toLocaleString('en-IN')}`
-                            : 'N/A'
-                          }
-                        </p>
+                        <div className="flex justify-between items-center w-full sm:contents mt-1 sm:mt-0">
+                          <p className="text-gray-500 text-xs truncate max-w-[200px] sm:max-w-none">
+                            {stock.notes || '-'}
+                          </p>
 
-                        {/* Change */}
-                        <p className={
-                          stock.change_pct > 0
-                            ? 'text-emerald-400 text-sm text-right font-semibold font-mono'
-                            : stock.change_pct < 0
-                            ? 'text-red-400 text-sm text-right font-semibold font-mono'
-                            : 'text-gray-500 text-sm text-right font-semibold font-mono'
-                        }>
-                          {stock.change_pct > 0 ? '+' : ''}
-                          {stock.change_pct}%
-                        </p>
-
-                        {/* Notes */}
-                        <p className="text-gray-500 text-xs truncate">
-                          {stock.notes || '-'}
-                        </p>
-
-                        {/* Remove */}
-                        <button
-                          onClick={e => {
-                            e.stopPropagation();
-                            removeStock(stock.id);
-                          }}
-                          className="text-gray-700 hover:text-red-400 text-sm text-right transition-colors"
-                        >
-                          x
-                        </button>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              removeStock(stock.id);
+                            }}
+                            className="text-gray-700 hover:text-red-400 text-sm text-right transition-colors"
+                          >
+                            x
+                          </button>
+                        </div>
                       </motion.div>
                     ))}
                     </AnimatePresence>
