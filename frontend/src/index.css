@@ -101,31 +101,14 @@ input:focus, select:focus, textarea:focus {
   animation: fadeIn 200ms ease-out;
 }
 
-/* Top accent line */
-.accent-line {
+.dot-grid {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    #10b981 30%,
-    #34d399 50%,
-    #10b981 70%,
-    transparent 100%
-  );
-  z-index: 9999;
-  pointer-events: none;
-}
-
-/* Dot grid background */
-body {
+  inset: 0;
   background-image: radial-gradient(
-    rgba(16, 185, 129, 0.07) 1px,
+    rgba(16, 185, 129, 0.06) 1px,
     transparent 1px
   );
   background-size: 28px 28px;
-  background-attachment: fixed;
+  z-index: 0;
+  pointer-events: none;
 }

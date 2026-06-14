@@ -63,6 +63,12 @@ function App() {
         v7_relativeSplatPath: true
       }}
     >
+      <div className="fixed top-0 left-0 right-0 h-0.5 z-[9999] pointer-events-none"
+           style={{
+             background: 'linear-gradient(90deg, transparent 0%, #10b981 30%, #34d399 50%, #10b981 70%, transparent 100%)'
+           }}
+      />
+      <div className="dot-grid" />
       {showSplash && <SplashScreen />}
       <NotificationManager />
       <AppContent />
