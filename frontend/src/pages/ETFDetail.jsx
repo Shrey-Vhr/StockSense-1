@@ -288,26 +288,22 @@ const ETFDetail = () => {
           {/* 4. RETURNS TABLE */}
           <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4 overflow-x-auto">
             <h3 className="text-lg font-bold text-white mb-4">Rolling Returns</h3>
-            <table className="w-full text-left font-mono">
-              <thead>
-                <tr className="border-b border-surface-800 text-gray-500">
-                  <th className="pb-2">1 Week</th>
-                  <th className="pb-2">1 Month</th>
-                  <th className="pb-2">3 Month</th>
-                  <th className="pb-2">6 Month</th>
-                  <th className="pb-2">1 Year</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  {['1_week', '1_month', '3_month', '6_month', '1_year'].map((period) => (
-                    <td key={period} className={`pt-2 ${data.returns[period] >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
-                      {data.returns[period] != null ? `${data.returns[period]}%` : '-'}
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
+              {[
+                { key: '1_week', label: '1 Week' },
+                { key: '1_month', label: '1 Month' },
+                { key: '3_month', label: '3 Month' },
+                { key: '6_month', label: '6 Month' },
+                { key: '1_year', label: '1 Year' },
+              ].map((period) => (
+                <div key={period.key} className="bg-surface-900 border border-surface-800 rounded-xl p-2.5 text-center">
+                  <div className="text-gray-500 text-xs">{period.label}</div>
+                  <div className={`font-semibold text-sm mt-1 font-mono ${data.returns[period.key] >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+                    {data.returns[period.key] != null ? `${data.returns[period.key]}%` : '-'}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* 8. ETF COMPARISON (TRACKING ERROR) */}

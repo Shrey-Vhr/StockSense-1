@@ -210,7 +210,9 @@ const IndexDetail = () => {
                 {data.trend}
               </div>
             </div>
+          </div>
 
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
             {/* NEW: PE Ratio */}
             <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
               <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">Index PE</div>
@@ -232,7 +234,7 @@ const IndexDetail = () => {
             </div>
 
             {/* NEW: Market Breadth */}
-            <div className="col-span-2 bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+            <div className="col-span-2 md:col-span-1 bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
               <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1 flex justify-between">
                 <span>Market Breadth</span>
                 <span className={`font-bold ${data.market_breadth?.ratio > 1 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>Ratio: {data.market_breadth?.ratio}</span>
@@ -247,24 +249,24 @@ const IndexDetail = () => {
                 <div style={{ width: `${(data.market_breadth?.declines / (data.market_breadth?.advances + data.market_breadth?.declines)) * 100}%` }} className="bg-[#ff1744] h-full" />
               </div>
             </div>
-
-            {/* NEW: FII/DII FLOW */}
-            <div className="col-span-2 md:col-span-4 bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-2">FII/DII Flow (Last 5 Days)</div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-gray-400">FII (Foreign Inst.)</div>
-                  <div className={`font-mono font-bold text-lg ${data.fii_dii?.fii >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
-                    {data.fii_dii?.fii >= 0 ? '+' : ''}₹{data.fii_dii?.fii?.toLocaleString('en-IN')} Cr
-                    <span className="text-xs ml-2 font-normal opacity-70">({data.fii_dii?.fii >= 0 ? 'buying' : 'selling'})</span>
-                  </div>
+          </div>
+          
+          {/* NEW: FII/DII FLOW */}
+          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors mt-4">
+            <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-2">FII/DII Flow (Last 5 Days)</div>
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
+              <div>
+                <div className="text-sm text-gray-400">FII (Foreign Inst.)</div>
+                <div className={`font-mono font-bold text-lg ${data.fii_dii?.fii >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+                  {data.fii_dii?.fii >= 0 ? '+' : ''}₹{data.fii_dii?.fii?.toLocaleString('en-IN')} Cr
+                  <span className="text-xs ml-2 font-normal opacity-70">({data.fii_dii?.fii >= 0 ? 'buying' : 'selling'})</span>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-400">DII (Domestic Inst.)</div>
-                  <div className={`font-mono font-bold text-lg ${data.fii_dii?.dii >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
-                    {data.fii_dii?.dii >= 0 ? '+' : ''}₹{data.fii_dii?.dii?.toLocaleString('en-IN')} Cr
-                    <span className="text-xs ml-2 font-normal opacity-70">({data.fii_dii?.dii >= 0 ? 'buying' : 'selling'})</span>
-                  </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-400">DII (Domestic Inst.)</div>
+                <div className={`font-mono font-bold text-lg ${data.fii_dii?.dii >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+                  {data.fii_dii?.dii >= 0 ? '+' : ''}₹{data.fii_dii?.dii?.toLocaleString('en-IN')} Cr
+                  <span className="text-xs ml-2 font-normal opacity-70">({data.fii_dii?.dii >= 0 ? 'buying' : 'selling'})</span>
                 </div>
               </div>
             </div>
@@ -273,27 +275,23 @@ const IndexDetail = () => {
           {/* 4. RETURNS TABLE */}
           <div className="bg-surface-850 p-4 rounded-xl border border-surface-800 overflow-x-auto">
             <h3 className="text-lg font-bold text-white mb-4">Rolling Returns</h3>
-            <table className="w-full text-left font-mono">
-              <thead>
-                <tr className="border-b border-surface-800 text-gray-500">
-                  <th className="pb-2">1 Week</th>
-                  <th className="pb-2">1 Month</th>
-                  <th className="pb-2">3 Month</th>
-                  <th className="pb-2">6 Month</th>
-                  <th className="pb-2">1 Year</th>
-                  <th className="pb-2">YTD</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  {['1_week', '1_month', '3_month', '6_month', '1_year', 'ytd'].map((period) => (
-                    <td key={period} className={`pt-2 ${data.returns[period] >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
-                      {data.returns[period] != null ? `${data.returns[period]}%` : '-'}
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-3">
+              {[
+                { key: '1_week', label: '1 Week' },
+                { key: '1_month', label: '1 Month' },
+                { key: '3_month', label: '3 Month' },
+                { key: '6_month', label: '6 Month' },
+                { key: '1_year', label: '1 Year' },
+                { key: 'ytd', label: 'YTD' },
+              ].map((period) => (
+                <div key={period.key} className="bg-surface-900 border border-surface-800 rounded-xl p-2.5 text-center">
+                  <div className="text-gray-500 text-xs">{period.label}</div>
+                  <div className={`font-semibold text-sm mt-1 font-mono ${data.returns[period.key] >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+                    {data.returns[period.key] != null ? `${data.returns[period.key]}%` : '-'}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

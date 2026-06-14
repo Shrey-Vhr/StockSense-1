@@ -1057,9 +1057,10 @@ const StockDetail = () => {
 
               {/* 4. QUARTERLY RESULTS TABLE */}
               {fundData.quarterly_results && fundData.quarterly_results.quarters && (
-                <div className="border border-surface-800 rounded-lg p-4 bg-surface-900 overflow-x-auto">
+                <div className="border border-surface-800 rounded-lg p-4 bg-surface-900">
                   <h3 className="text-md font-bold text-gray-300 mb-3 pb-2">Quarterly Results (Last 4 Quarters)</h3>
-                  <table className="w-full text-left text-sm font-mono">
+                  <div className="overflow-x-auto -mx-2 px-2">
+                    <table className="w-full text-left text-sm font-mono min-w-[400px]">
                     <thead>
                       <tr className="border-b border-surface-800 text-gray-500">
                         <th className="pb-2 font-sans font-normal">Quarter</th>
@@ -1111,6 +1112,7 @@ const StockDetail = () => {
                       })}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               )}
 
@@ -1200,7 +1202,7 @@ const StockDetail = () => {
                       {fundData.weaknesses && fundData.weaknesses.length > 0 ? (
                         fundData.weaknesses.map((w, i) => (
                           <li key={i} className="flex items-start">
-                            <span className="text-[#ff1744] mr-2">â Œ</span>
+                            <TrendingDown size={12} className="text-red-400 inline mr-1" />
                             <span className="text-gray-300 text-sm">{w}</span>
                           </li>
                         ))
@@ -1233,10 +1235,10 @@ const StockDetail = () => {
                         </p>
                       </div>
                     ) : (
-                      <div className="overflow-x-auto pb-2">
-                        <table className="w-full min-w-[700px] text-sm font-mono">
+                      <div className="overflow-x-auto -mx-2 px-2 pb-2">
+                        <table className="w-full min-w-[500px] text-sm font-mono">
                           <thead>
-                            <tr className="text-gray-400 border-b border-surface-800">
+                            <tr className="grid grid-cols-6 gap-2 px-3 py-2 text-gray-500 text-xs font-semibold uppercase tracking-wide border-b border-surface-800 min-w-[500px]">
                               <th className="text-left py-2 font-sans font-normal whitespace-nowrap">Company</th>
                               <th className="text-right py-2 px-3 font-sans font-normal whitespace-nowrap">Price</th>
                               <th className="text-right py-2 px-3 font-sans font-normal whitespace-nowrap">PE</th>
