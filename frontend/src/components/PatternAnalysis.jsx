@@ -26,7 +26,7 @@ const PatternAnalysis = ({ symbol }) => {
   if (loading) return (
     <div className="bg-gray-800 rounded-xl p-4 mt-4">
       <p className="text-gray-400 text-sm animate-pulse">
-        🔍 Detecting chart patterns...
+        Detecting chart patterns...
       </p>
     </div>
   );
@@ -38,7 +38,7 @@ const PatternAnalysis = ({ symbol }) => {
   if (!patterns || patterns.length === 0) return (
     <div className="bg-gray-800 rounded-xl p-4 mt-4">
       <h3 className="text-white font-bold mb-2">
-        📊 Chart Patterns
+        Chart Patterns
       </h3>
       <p className="text-gray-400 text-sm">
         No significant patterns detected recently
@@ -50,9 +50,9 @@ const PatternAnalysis = ({ symbol }) => {
     <div className="space-y-4 mt-4">
       
       {/* Patterns List */}
-      <div className="bg-gray-800 rounded-xl p-4">
+      <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4">
         <h3 className="text-white font-bold mb-3">
-          📊 Chart Patterns Detected
+          Chart Patterns Detected
         </h3>
         
         <div className="space-y-2">
@@ -90,7 +90,7 @@ const PatternAnalysis = ({ symbol }) => {
                   }`}>
                     {pattern.type.toUpperCase()}
                   </span>
-                  <span className="text-gray-400 text-xs">
+                  <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                     {pattern.confidence}%
                   </span>
                 </div>
@@ -105,16 +105,16 @@ const PatternAnalysis = ({ symbol }) => {
 
       {/* Trade Setup */}
       {trade_setup && trade_setup.bias && (
-        <div className="bg-gray-800 rounded-xl p-4">
-          <h3 className="text-white font-bold mb-3">
-            🎯 Rule-Based Trade Setup
+        <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4">
+          <h3 className="text-base font-semibold text-gray-200 mb-4">
+            Rule-Based Trade Setup
           </h3>
           
           {/* Bias */}
           <div className="flex justify-between 
                           items-center mb-3">
             <div>
-              <p className="text-gray-400 text-xs">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                 Pattern Bias
               </p>
               <p className={`text-lg font-bold ${
@@ -122,22 +122,22 @@ const PatternAnalysis = ({ symbol }) => {
                   ? 'text-green-400'
                   : trade_setup.bias === 'Bearish'
                   ? 'text-red-400'
-                  : 'text-yellow-400'
+                  : 'text-emerald-400'
               }`}>
                 {trade_setup.bias === 'Bullish'
-                  ? '↑' : trade_setup.bias === 'Bearish'
-                  ? '↓' : '→'} {trade_setup.bias}
+                  ? '↑ ' : trade_setup.bias === 'Bearish'
+                  ? '↓ ' : '→ '}{trade_setup.bias}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-gray-400 text-xs">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                 Confidence
               </p>
               <p className={`text-lg font-bold ${
                 trade_setup.confidence >= 70
                   ? 'text-green-400'
                   : trade_setup.confidence >= 50
-                  ? 'text-yellow-400'
+                  ? 'text-emerald-400'
                   : 'text-red-400'
               }`}>
                 {trade_setup.confidence}%
@@ -146,91 +146,82 @@ const PatternAnalysis = ({ symbol }) => {
           </div>
 
           {/* Action */}
-          <div className={`p-2 rounded-lg text-center 
-                          text-sm font-medium mb-3 ${
+          <div className={`w-full py-2.5 rounded-xl text-sm font-bold text-center mb-4 ${
             trade_setup.bias === 'Bullish'
-              ? 'bg-green-900/40 text-green-400'
+              ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
               : trade_setup.bias === 'Bearish'
-              ? 'bg-red-900/40 text-red-400'
-              : 'bg-yellow-900/40 text-yellow-400'
+              ? 'bg-red-500/10 border border-red-500/30 text-red-400'
+              : 'bg-surface-800 border border-surface-700 text-gray-300'
           }`}>
             {trade_setup.action}
           </div>
 
           {/* Entry/SL/Target Grid */}
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            <div className="bg-gray-700/50 rounded-lg p-2">
-              <p className="text-gray-400 text-xs">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                 Entry
               </p>
-              <p className="text-white font-bold">
+              <p className="text-gray-100 font-mono font-bold text-base mt-1">
                 ₹{trade_setup.entry?.toLocaleString('en-IN')}
               </p>
             </div>
-            <div className="bg-red-900/30 rounded-lg p-2">
-              <p className="text-gray-400 text-xs">
+            <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                 Stop Loss
               </p>
-              <p className="text-red-400 font-bold">
+              <p className="text-red-400 font-mono font-bold text-base mt-1">
                 ₹{trade_setup.stop_loss?.toLocaleString('en-IN')}
               </p>
             </div>
-            <div className="bg-green-900/30 rounded-lg p-2">
-              <p className="text-gray-400 text-xs">
+            <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                 Target 1
               </p>
-              <p className="text-green-400 font-bold">
+              <p className="text-emerald-400 font-mono font-bold text-base mt-1">
                 ₹{trade_setup.target1?.toLocaleString('en-IN')}
               </p>
             </div>
-            <div className="bg-green-900/20 rounded-lg p-2">
-              <p className="text-gray-400 text-xs">
+            <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                 Target 2
               </p>
-              <p className="text-green-400 font-bold">
+              <p className="text-emerald-400 font-mono font-bold text-base mt-1">
                 ₹{trade_setup.target2?.toLocaleString('en-IN')}
               </p>
             </div>
           </div>
 
           {/* Risk Reward */}
-          <div className="flex justify-between 
-                          items-center mt-2">
-            <p className="text-gray-400 text-xs">
+          <div className="flex justify-between items-center mt-3 pt-3 border-t border-surface-800">
+            <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
               Risk : Reward
             </p>
-            <p className={`text-sm font-bold ${
-              trade_setup.risk_reward >= 2
-                ? 'text-green-400'
-                : trade_setup.risk_reward >= 1.5
-                ? 'text-yellow-400'
-                : 'text-red-400'
-            }`}>
+            <p className="text-gray-200 font-semibold text-sm font-mono">
               1 : {trade_setup.risk_reward}
             </p>
           </div>
 
           {/* Pattern count */}
-          <div className="flex gap-3 mt-3 
-                          pt-3 border-t border-gray-700">
-            <span className="text-green-400 text-xs">
-              🟢 {trade_setup.bullish_count} Bullish
+          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-surface-800 text-xs">
+            <span className="text-emerald-400 font-medium">
+              ↑ {trade_setup.bullish_count} Bullish
             </span>
-            <span className="text-red-400 text-xs">
-              🔴 {trade_setup.bearish_count} Bearish
+            <span className="text-red-400 font-medium">
+              ↓ {trade_setup.bearish_count} Bearish
             </span>
-            <span className="text-yellow-400 text-xs">
-              🟡 {trade_setup.neutral_count} Neutral
+            <span className="text-gray-400 font-medium">
+              — {trade_setup.neutral_count} Neutral
             </span>
           </div>
 
           {/* Claude AI locked */}
-          <div className="mt-3 p-3 bg-orange-900/20 
-                          border border-orange-700/40 
+          <div className="mt-3 p-3 bg-emerald-900/20 
+                          border border-emerald-700/40 
                           rounded-lg">
-            <p className="text-orange-400 text-xs 
+            <p className="text-emerald-400 text-xs 
                           font-medium text-center">
-              🤖 Claude AI Deep Analysis 🔒
+              Claude AI Deep Analysis
             </p>
             <p className="text-gray-400 text-xs 
                           text-center mt-1">

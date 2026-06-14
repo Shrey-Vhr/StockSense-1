@@ -1,26 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Menu, Bell, X, Activity } from 'lucide-react';
+import { Search, Menu, Bell, Activity, Circle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import useDebounce from '../../hooks/useDebounce';
-
-const safeArray = (data) => {
-  if (!data) return [];
-  if (Array.isArray(data)) return data;
-  if (typeof data === 'object') return Object.values(data);
-  return [];
-};
 
 const Header = ({ toggleSidebar }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  
+
   const [nifty, setNifty] = useState({ price: 'Loading...', change: 0, flash: '' });
   const [bankNifty, setBankNifty] = useState({ price: 'Loading...', change: 0, flash: '' });
   const [marketStatus, setMarketStatus] = useState('Open');
-  
+
   const [alerts, setAlerts] = useState([]);
   const [showAlerts, setShowAlerts] = useState(false);
   const [hasAlerts, setHasAlerts] = useState(false);
@@ -31,7 +24,6 @@ const Header = ({ toggleSidebar }) => {
         const res = await api.get("/alerts/triggered");
         if (res.data && res.data.length > 0) {
           setHasAlerts(true);
-          // Update the local list so dropdown shows them too
           setAlerts(prev => [...res.data, ...prev].slice(0, 20));
           setTimeout(() => setHasAlerts(false), 10000);
         }
@@ -41,7 +33,7 @@ const Header = ({ toggleSidebar }) => {
     const interval = setInterval(checkPending, 60000);
     return () => clearInterval(interval);
   }, []);
-  
+
   const navigate = useNavigate();
   const searchRef = useRef(null);
 
@@ -72,20 +64,20 @@ const Header = ({ toggleSidebar }) => {
       const res = await api.get('/stocks/market-overview');
       const data = res.data;
       if (data && Array.isArray(data)) {
-        const n50 = data.find(d => 
-          d.symbol === '^NSEI' || 
+        const n50 = data.find(d =>
+          d.symbol === '^NSEI' ||
           d.name === 'Nifty 50'
         );
-        const bn = data.find(d => 
-          d.symbol === '^NSEBANK' || 
+        const bn = data.find(d =>
+          d.symbol === '^NSEBANK' ||
           d.name === 'Bank Nifty'
         );
-        
+
         if (n50) {
           setNifty(prev => ({
             price: n50.current_price?.toFixed(2),
             change: n50.change_percent?.toFixed(2),
-            flash: prev.price && prev.price !== n50.current_price?.toFixed(2) ? 'bg-[#f0b429]/20' : ''
+            flash: prev.price && prev.price !== n50.current_price?.toFixed(2) ? 'bg-emerald-500/10' : ''
           }));
           setTimeout(() => setNifty(p => ({...p, flash: ''})), 500);
         }
@@ -93,7 +85,7 @@ const Header = ({ toggleSidebar }) => {
           setBankNifty(prev => ({
             price: bn.current_price?.toFixed(2),
             change: bn.change_percent?.toFixed(2),
-            flash: prev.price && prev.price !== bn.current_price?.toFixed(2) ? 'bg-[#f0b429]/20' : ''
+            flash: prev.price && prev.price !== bn.current_price?.toFixed(2) ? 'bg-emerald-500/10' : ''
           }));
           setTimeout(() => setBankNifty(p => ({...p, flash: ''})), 500);
         }
@@ -117,7 +109,7 @@ const Header = ({ toggleSidebar }) => {
     const interval = setInterval(() => {
       fetchHeaderPrices();
     }, 10000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -147,61 +139,80 @@ const Header = ({ toggleSidebar }) => {
   };
 
   return (
-    <header className="h-16 bg-[#0d1117] border-b border-[#30363d] flex items-center justify-between px-4 lg:px-8 z-30 relative">
+    <header className="h-16 bg-surface-900/80 backdrop-blur-md border-b border-surface-800 flex items-center justify-between px-4 lg:px-8 z-30 relative sticky top-0">
       <div className="flex items-center">
-        <button onClick={toggleSidebar} className="md:hidden mr-4 text-gray-400 hover:text-white"><Menu size={24} /></button>
-        <div className="hidden sm:flex items-center space-x-6 font-mono text-sm">
-          <div className={`flex items-center space-x-2 px-2 py-1 rounded transition-colors duration-500 ${nifty.flash}`}>
-            <span className="text-gray-400">NIFTY 50</span>
-            <span className="text-white font-medium">{nifty.price}</span>
-            <span className={Number(nifty.change) >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}>
+        <button onClick={toggleSidebar} className="md:hidden mr-4 text-gray-400 hover:text-white">
+          <Menu size={24} />
+        </button>
+        <div className="hidden sm:flex items-center space-x-3 font-mono text-sm">
+          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-surface-850 border border-surface-800 transition-colors duration-500 ${nifty.flash}`}>
+            <span className="text-gray-500 text-xs font-sans">NIFTY 50</span>
+            <span className="text-gray-100 font-medium">{nifty.price}</span>
+            <span className={Number(nifty.change) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
               {Number(nifty.change) >= 0 ? '+' : ''}{nifty.change}%
             </span>
           </div>
-          <div className={`flex items-center space-x-2 px-2 py-1 rounded transition-colors duration-500 ${bankNifty.flash}`}>
-            <span className="text-gray-400">BANKNIFTY</span>
-            <span className="text-white font-medium">{bankNifty.price}</span>
-            <span className={Number(bankNifty.change) >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}>
+          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-surface-850 border border-surface-800 transition-colors duration-500 ${bankNifty.flash}`}>
+            <span className="text-gray-500 text-xs font-sans">BANKNIFTY</span>
+            <span className="text-gray-100 font-medium">{bankNifty.price}</span>
+            <span className={Number(bankNifty.change) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
               {Number(bankNifty.change) >= 0 ? '+' : ''}{bankNifty.change}%
             </span>
           </div>
-          <div className="flex items-center space-x-2 px-2 py-1 rounded bg-[#161b22] border border-[#30363d]">
-            <div className={`w-2 h-2 rounded-full ${marketStatus === 'Open' ? 'bg-[#00c853] animate-pulse' : 'bg-[#ff1744]'}`} />
-            <span className="text-xs text-gray-300 font-sans">Market {marketStatus}</span>
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
+            marketStatus === 'Open'
+              ? 'bg-emerald-500/10 border-emerald-500/20'
+              : 'bg-surface-850 border-surface-800'
+          }`}>
+            <Circle 
+              size={8} 
+              className={
+                marketStatus === 'Open' 
+                  ? 'fill-emerald-400 text-emerald-400 animate-pulse' 
+                  : 'fill-gray-500 text-gray-500'
+              } 
+            />
+            <span className={`text-xs font-medium ${
+              marketStatus === 'Open' 
+                ? 'text-emerald-400' 
+                : 'text-gray-400'
+            }`}>
+              Market {marketStatus}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3">
         <div className="relative hidden md:block" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
-            <input 
-              type="text" 
-              placeholder="Search symbol (e.g. RELIANCE)" 
+            <input
+              type="text"
+              placeholder="Search symbol (e.g. RELIANCE)"
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 if (!showDropdown) setShowDropdown(true);
               }}
               onFocus={() => setShowDropdown(true)}
-              className="bg-[#161b22] border border-[#30363d] text-sm rounded-full pl-10 pr-4 py-2 w-48 lg:w-72 text-white focus:outline-none focus:border-[#f0b429] focus:ring-1 focus:ring-[#f0b429] transition-all placeholder-gray-500"
+              className="bg-surface-850 border border-surface-800 text-sm rounded-full pl-10 pr-4 py-2 w-48 lg:w-72 text-gray-100 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40 transition-all placeholder-gray-500"
             />
           </form>
           {showDropdown && searchResults.length > 0 && (
-            <div className="absolute top-full mt-2 w-full bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl overflow-hidden z-50 max-h-80 overflow-y-auto">
+            <div className="absolute top-full mt-2 w-full bg-surface-850 border border-surface-800 rounded-xl shadow-card overflow-hidden z-50 max-h-80 overflow-y-auto">
               {searchResults.map((result, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   onClick={() => handleResultClick(result)}
-                  className="p-3 hover:bg-[#30363d]/50 cursor-pointer border-b border-[#30363d]/50 transition-colors flex justify-between items-center"
+                  className="p-3 hover:bg-surface-800 cursor-pointer border-b border-surface-800 last:border-b-0 transition-colors flex justify-between items-center"
                 >
                   <div className="flex items-center">
                     <span className="mr-2 text-lg">
                       {result.type === 'index' ? '📊' : result.type === 'etf' ? '💹' : '📈'}
                     </span>
                     <div>
-                      <div className="font-bold text-[#f0b429]">
+                      <div className="font-bold text-emerald-400">
                         {result.symbol.replace('.NS', '')} {result.type && <span className="text-xs text-gray-500 capitalize ml-1">({result.type})</span>}
                       </div>
                       <div className="text-xs text-gray-400">{result.name}</div>
@@ -213,27 +224,35 @@ const Header = ({ toggleSidebar }) => {
             </div>
           )}
         </div>
-        
+
         <div className="relative">
-          <button onClick={() => setShowAlerts(!showAlerts)} className="text-gray-400 hover:text-white transition-colors relative p-2">
+          <button onClick={() => setShowAlerts(!showAlerts)} className="text-gray-400 hover:text-gray-100 transition-colors relative p-2 rounded-xl hover:bg-surface-850">
             <Bell size={20} />
-            {(alerts.length > 0 || hasAlerts) && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#ff1744] rounded-full animate-pulse border border-[#0d1117]"></span>}
+            {(alerts.length > 0 || hasAlerts) && (
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-surface-900"></span>
+            )}
           </button>
-          
+
           {showAlerts && (
-            <div className="absolute right-0 mt-2 w-80 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
-              <div className="flex justify-between items-center p-3 border-b border-[#30363d] bg-[#0d1117]">
-                <h3 className="font-bold text-white flex items-center"><Activity size={16} className="mr-2 text-[#f0b429]"/> Notifications</h3>
-                {alerts.length > 0 && <button onClick={() => {setAlerts([]); setShowAlerts(false);}} className="text-xs text-gray-400 hover:text-white">Clear All</button>}
+            <div className="absolute right-0 mt-2 w-80 bg-surface-850 border border-surface-800 rounded-xl shadow-card z-50 overflow-hidden animate-fade-in">
+              <div className="flex justify-between items-center p-3 border-b border-surface-800 bg-surface-900">
+                <h3 className="font-bold text-gray-100 flex items-center text-sm">
+                  <Activity size={16} className="mr-2 text-emerald-400"/> Notifications
+                </h3>
+                {alerts.length > 0 && (
+                  <button onClick={() => {setAlerts([]); setShowAlerts(false);}} className="text-xs text-gray-400 hover:text-gray-100">
+                    Clear All
+                  </button>
+                )}
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {alerts.length === 0 ? (
                   <div className="p-6 text-center text-gray-500 text-sm">No recent alerts.</div>
                 ) : (
                   alerts.map((a, i) => (
-                    <div key={i} className="p-3 border-b border-[#30363d] hover:bg-[#30363d]/30 transition-colors">
+                    <div key={i} className="p-3 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/60 transition-colors">
                       <div className="flex justify-between items-start">
-                        <span className="font-bold text-[#f0b429] text-sm">{a.symbol}</span>
+                        <span className="font-bold text-emerald-400 text-sm">{a.symbol}</span>
                         <span className="text-xs text-gray-500">Just now</span>
                       </div>
                       <p className="text-sm text-gray-300 mt-1">{a.message}</p>

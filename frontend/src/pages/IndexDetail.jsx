@@ -100,7 +100,7 @@ const IndexDetail = () => {
     const ema50Data = calculateEMA(candleData, 50);
     const ema200Data = calculateEMA(candleData, 200);
 
-    const ema20Series = chart.addLineSeries({ color: '#f0b429', lineWidth: 1, title: 'EMA 20' });
+    const ema20Series = chart.addLineSeries({ color: '#10b981', lineWidth: 1, title: 'EMA 20' });
     ema20Series.setData(ema20Data);
     const ema50Series = chart.addLineSeries({ color: '#2196f3', lineWidth: 1, title: 'EMA 50' });
     ema50Series.setData(ema50Data);
@@ -148,7 +148,7 @@ const IndexDetail = () => {
     };
   }, [historicalData]);
 
-  if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-[#f0b429] w-10 h-10" /></div>;
+  if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-[#10b981] w-10 h-10" /></div>;
   if (error) return <div className="p-10 text-red-500">{error}</div>;
   if (!data) return null;
 
@@ -177,7 +177,7 @@ const IndexDetail = () => {
           <div className="absolute top-2 left-2 z-10 text-xs font-mono bg-[#161b22]/80 p-3 rounded-lg border border-[#30363d] shadow-lg backdrop-blur-sm pointer-events-none">
             <div className="text-white mb-2 font-bold uppercase tracking-wider text-[10px]">EMAs</div>
             <div className="space-y-1">
-              {legendData.ema20 && <div className="flex items-center text-[#f0b429]"><span className="w-2 h-2 rounded-full bg-[#f0b429] mr-2"></span>EMA 20: {legendData.ema20}</div>}
+              {legendData.ema20 && <div className="flex items-center text-[#10b981]"><span className="w-2 h-2 rounded-full bg-[#10b981] mr-2"></span>EMA 20: {legendData.ema20}</div>}
               {legendData.ema50 && <div className="flex items-center text-[#2196f3]"><span className="w-2 h-2 rounded-full bg-[#2196f3] mr-2"></span>EMA 50: {legendData.ema50}</div>}
               {legendData.ema200 && <div className="flex items-center text-[#ff5252]"><span className="w-2 h-2 rounded-full bg-[#ff5252] mr-2"></span>EMA 200: {legendData.ema200}</div>}
             </div>
@@ -206,7 +206,7 @@ const IndexDetail = () => {
             </div>
             <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
               <div className="text-gray-400 text-xs mb-1">Trend</div>
-              <div className={`font-bold ${data.trend_color === 'green' ? 'text-[#00c853]' : data.trend_color === 'red' ? 'text-[#ff1744]' : 'text-[#f0b429]'}`}>
+              <div className={`font-bold ${data.trend_color === 'green' ? 'text-[#00c853]' : data.trend_color === 'red' ? 'text-[#ff1744]' : 'text-[#10b981]'}`}>
                 {data.trend}
               </div>
             </div>
@@ -214,7 +214,7 @@ const IndexDetail = () => {
             {/* NEW: PE Ratio */}
             <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
               <div className="text-gray-400 text-xs mb-1">Index PE</div>
-              <div className={`font-mono font-bold ${data.pe_ratio > 22 ? 'text-[#ff1744]' : data.pe_ratio < 18 ? 'text-[#00c853]' : 'text-[#f0b429]'}`}>
+              <div className={`font-mono font-bold ${data.pe_ratio > 22 ? 'text-[#ff1744]' : data.pe_ratio < 18 ? 'text-[#00c853]' : 'text-[#10b981]'}`}>
                 {data.pe_ratio}x
               </div>
               <div className="text-xs text-gray-500">Fair value: 18-22x</div>
@@ -223,7 +223,7 @@ const IndexDetail = () => {
             {/* NEW: INDIA VIX */}
             <div className="bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
               <div className="text-gray-400 text-xs mb-1">India VIX</div>
-              <div className={`font-mono font-bold ${data.india_vix < 12 ? 'text-[#00c853]' : data.india_vix < 16 ? 'text-[#f0b429]' : data.india_vix < 20 ? 'text-[#ff9800]' : 'text-[#ff1744]'}`}>
+              <div className={`font-mono font-bold ${data.india_vix < 12 ? 'text-[#00c853]' : data.india_vix < 16 ? 'text-[#10b981]' : data.india_vix < 20 ? 'text-[#ff9800]' : 'text-[#ff1744]'}`}>
                 {data.india_vix}
               </div>
               <div className="text-xs text-gray-500 truncate">
@@ -299,9 +299,9 @@ const IndexDetail = () => {
 
         <div className="space-y-6">
           {/* 6. INDEX VERDICT BOX */}
-          <div className={`p-6 rounded-xl border border-${data.verdict_color === 'green' ? '[#00c853]' : data.verdict_color === 'red' ? '[#ff1744]' : '[#f0b429]'} bg-[#161b22]`}>
+          <div className={`p-6 rounded-xl border border-${data.verdict_color === 'green' ? '[#00c853]' : data.verdict_color === 'red' ? '[#ff1744]' : '[#10b981]'} bg-[#161b22]`}>
             <h3 className="text-xl font-bold text-white mb-2">Market Verdict</h3>
-            <p className={`text-lg ${data.verdict_color === 'green' ? 'text-[#00c853]' : data.verdict_color === 'red' ? 'text-[#ff1744]' : 'text-[#f0b429]'}`}>
+            <p className={`text-lg ${data.verdict_color === 'green' ? 'text-[#00c853]' : data.verdict_color === 'red' ? 'text-[#ff1744]' : 'text-[#10b981]'}`}>
               {data.verdict}
             </p>
             <p className="text-sm text-gray-300 mt-2">
@@ -337,7 +337,7 @@ const IndexDetail = () => {
             </p>
             <div className="text-sm bg-[#0d1117] p-2 rounded">
               Current status: <br/> 
-              <span className="font-mono text-[#f0b429]">
+              <span className="font-mono text-[#10b981]">
                 RSI = {data.rsi}, Price {data.above_ema200 ? 'above' : 'below'} EMA 200
               </span>
             </div>

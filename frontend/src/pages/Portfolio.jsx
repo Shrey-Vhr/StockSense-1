@@ -127,28 +127,28 @@ const Portfolio = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white flex items-center">
-          <PieChartIcon className="mr-2 text-[#f0b429]" /> My Portfolio
+          <PieChartIcon className="mr-2 text-[#10b981]" /> My Portfolio
         </h1>
         <div className="flex space-x-3">
           <button 
             onClick={handleAIReview}
             disabled={isAiLoading || portfolioHoldings.length === 0}
-            className="bg-[#161b22] border border-[#f0b429]/50 hover:bg-[#f0b429]/10 text-[#f0b429] px-4 py-2 rounded-lg flex items-center transition-colors disabled:opacity-50"
+            className="bg-[#161b22] border border-[#10b981]/50 hover:bg-[#10b981]/10 text-[#10b981] px-4 py-2 rounded-lg flex items-center transition-colors disabled:opacity-50"
           >
             {isAiLoading ? <BrainCircuit className="animate-pulse mr-1" size={18}/> : <BrainCircuit className="mr-1" size={18} />}
             AI Review
           </button>
           <button 
             onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-[#161b22] border border-[#30363d] hover:border-[#f0b429] text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+            className="bg-[#161b22] border border-[#30363d] hover:border-[#10b981] text-white px-4 py-2 rounded-lg flex items-center transition-colors"
           >
-            <Plus size={18} className="mr-1 text-[#f0b429]" /> Add Holding
+            <Plus size={18} className="mr-1 text-[#10b981]" /> Add Holding
           </button>
         </div>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleAddHolding} className="bg-[#161b22] border border-[#f0b429]/50 rounded-xl p-5 flex flex-wrap gap-4 items-end">
+        <form onSubmit={handleAddHolding} className="bg-[#161b22] border border-[#10b981]/50 rounded-xl p-5 flex flex-wrap gap-4 items-end">
           <div className="flex-1 min-w-[150px]">
             <label className="block text-xs text-gray-400 mb-1">Symbol</label>
             <input type="text" value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="e.g. INFOSYS" className="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-white" required />
@@ -161,7 +161,7 @@ const Portfolio = () => {
             <label className="block text-xs text-gray-400 mb-1">Buy Price</label>
             <input type="number" step="0.05" value={buyPrice} onChange={e => setBuyPrice(e.target.value)} placeholder="0.00" className="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-white" required min="0" />
           </div>
-          <button type="submit" className="bg-[#f0b429] text-black font-bold py-2 px-6 rounded hover:bg-amber-500 transition-colors">
+          <button type="submit" className="bg-[#10b981] text-black font-bold py-2 px-6 rounded hover:bg-amber-500 transition-colors">
             Save
           </button>
         </form>
@@ -194,10 +194,10 @@ const Portfolio = () => {
 
       {/* AI Review Section */}
       {aiReview && (
-        <div className="bg-[#161b22] border border-[#f0b429]/50 rounded-xl p-6 animate-fade-in relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#f0b429] opacity-5 rounded-bl-full pointer-events-none" />
+        <div className="bg-[#161b22] border border-[#10b981]/50 rounded-xl p-6 animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#10b981] opacity-5 rounded-bl-full pointer-events-none" />
           <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-            <BrainCircuit className="mr-2 text-[#f0b429]" /> Claude Portfolio Assessment
+            <BrainCircuit className="mr-2 text-[#10b981]" /> Claude Portfolio Assessment
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-1 bg-[#0d1117] p-4 rounded-lg border border-[#30363d] text-center">
@@ -223,8 +223,8 @@ const Portfolio = () => {
                   </ul>
                 </div>
               </div>
-              <div className="bg-[#0d1117] p-4 rounded border border-[#f0b429]/30 mt-4">
-                <h4 className="text-[#f0b429] font-bold text-sm mb-2">Actionable Rebalancing Suggestions</h4>
+              <div className="bg-[#0d1117] p-4 rounded border border-[#10b981]/30 mt-4">
+                <h4 className="text-[#10b981] font-bold text-sm mb-2">Actionable Rebalancing Suggestions</h4>
                 <ul className="list-decimal list-inside text-sm text-gray-300 space-y-2">
                   {aiReview.rebalancing_suggestions?.map((r,i) => <li key={i}>{r}</li>)}
                 </ul>
@@ -301,7 +301,7 @@ const Portfolio = () => {
             {Object.entries(sectorAllocations).sort((a,b) => b[1]-a[1]).map(([sector, val], idx) => {
               const pct = (val / currentValue) * 100;
               // Generate some consistent colors
-              const colors = ['bg-[#f0b429]', 'bg-[#00c853]', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500'];
+              const colors = ['bg-[#10b981]', 'bg-[#00c853]', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500'];
               const colorClass = colors[idx % colors.length];
               
               return (

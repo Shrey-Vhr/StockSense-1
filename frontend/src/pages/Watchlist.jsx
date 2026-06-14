@@ -116,26 +116,23 @@ const Watchlist = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
+    <div className="min-h-screen bg-surface-950 p-6">
       <div className="max-w-6xl mx-auto">
         
         {/* Header */}
         <div className="flex justify-between 
                         items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold 
-                           text-white">
-              👁️ Watchlists
+            <h1 className="text-2xl font-bold text-gray-100 tracking-tight">
+              Watchlists
             </h1>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-gray-500 text-sm mt-1">
               Track stocks you're watching
             </p>
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="bg-orange-500 hover:bg-orange-600 
-                       text-white px-4 py-2 rounded-xl 
-                       text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
           >
             + New Watchlist
           </button>
@@ -153,16 +150,15 @@ const Watchlist = () => {
               onClick={() => setError("")}
               className="text-red-400 hover:text-red-300"
             >
-              ✕
+              x
             </button>
           </div>
         )}
 
         {/* Create Watchlist Form */}
         {showCreateForm && (
-          <div className="bg-gray-800 rounded-xl 
-                          p-4 mb-4">
-            <p className="text-white font-medium mb-2">
+          <div className="bg-surface-850 border border-surface-800 rounded-xl p-4 mb-4">
+            <p className="text-gray-200 text-sm font-medium mb-2">
               New Watchlist Name
             </p>
             <div className="flex gap-2">
@@ -176,15 +172,11 @@ const Watchlist = () => {
                   createWatchlist()}
                 placeholder="e.g. Swing Trades, 
                              Long Term..."
-                className="flex-1 bg-gray-700 text-white 
-                           px-3 py-2 rounded-lg text-sm
-                           border border-gray-600 
-                           focus:border-orange-500 
-                           outline-none"
+                className="flex-1 bg-surface-900 text-gray-200 px-3 py-2 rounded-lg text-sm border border-surface-800 focus:border-emerald-500/50 focus:outline-none"
               />
               <button
                 onClick={createWatchlist}
-                className="bg-orange-500 text-white 
+                className="bg-emerald-500 text-white 
                            px-4 py-2 rounded-lg text-sm"
               >
                 Create
@@ -203,7 +195,7 @@ const Watchlist = () => {
           
           {/* Watchlist Sidebar */}
           <div className="w-48 flex-shrink-0">
-            <div className="bg-gray-800 rounded-xl p-2">
+            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-2">
               {loading ? (
                 <p className="text-gray-400 text-sm p-2">
                   Loading...
@@ -217,23 +209,21 @@ const Watchlist = () => {
                   <div
                     key={wl.id}
                     onClick={() => setActiveWatchlist(wl)}
-                    className={`flex justify-between 
-                               items-center p-2 rounded-lg 
-                               cursor-pointer mb-1 ${
+                    className={
                       activeWatchlist?.id === wl.id
-                        ? 'bg-orange-500/20 border border-orange-500/50'
-                        : 'hover:bg-gray-700'
-                    }`}
+                        ? 'flex justify-between items-center p-2.5 rounded-xl cursor-pointer mb-1 bg-emerald-500/10 border border-emerald-500/20'
+                        : 'flex justify-between items-center p-2.5 rounded-xl cursor-pointer mb-1 hover:bg-surface-800 transition-colors'
+                    }
                   >
                     <div>
-                      <p className={`text-sm font-medium ${
+                      <p className={
                         activeWatchlist?.id === wl.id
-                          ? 'text-orange-400'
-                          : 'text-white'
-                      }`}>
+                          ? 'text-sm font-semibold text-emerald-400'
+                          : 'text-sm font-medium text-gray-300'
+                      }>
                         {wl.name}
                       </p>
-                      <p className="text-gray-500 text-xs">
+                      <p className="text-gray-600 text-xs">
                         {wl.stock_count} stocks
                       </p>
                     </div>
@@ -242,11 +232,9 @@ const Watchlist = () => {
                         e.stopPropagation();
                         deleteWatchlist(wl.id);
                       }}
-                      className="text-gray-600 
-                                 hover:text-red-400 
-                                 text-xs ml-1"
+                      className="text-gray-700 hover:text-red-400 text-xs ml-1 transition-colors"
                     >
-                      ✕
+                      x
                     </button>
                   </div>
                 ))
@@ -257,27 +245,22 @@ const Watchlist = () => {
           {/* Stocks Panel */}
           <div className="flex-1">
             {!activeWatchlist ? (
-              <div className="bg-gray-800 rounded-xl 
-                              p-8 text-center">
+              <div className="bg-surface-850 border border-surface-800 rounded-2xl p-8 text-center">
                 <p className="text-gray-400">
                   Select or create a watchlist
                 </p>
               </div>
             ) : (
-              <div className="bg-gray-800 rounded-xl p-4">
+              <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4">
                 
                 {/* Watchlist Header */}
-                <div className="flex justify-between 
-                                items-center mb-4">
-                  <h2 className="text-white font-bold 
-                                 text-lg">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-base font-bold text-gray-100">
                     {activeWatchlist.name}
                   </h2>
                   <button
                     onClick={() => setShowAddForm(true)}
-                    className="bg-green-600 hover:bg-green-700 
-                               text-white px-3 py-1.5 
-                               rounded-lg text-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all"
                   >
                     + Add Stock
                   </button>
@@ -285,10 +268,8 @@ const Watchlist = () => {
 
                 {/* Add Stock Form */}
                 {showAddForm && (
-                  <div className="bg-gray-700 rounded-xl 
-                                  p-3 mb-4">
-                    <p className="text-white text-sm 
-                                  font-medium mb-2">
+                  <div className="bg-surface-900 border border-surface-800 rounded-xl p-3 mb-4">
+                    <p className="text-gray-300 text-sm font-medium mb-2">
                       Add Stock to Watchlist
                     </p>
                     <div className="flex gap-2 mb-2">
@@ -299,12 +280,7 @@ const Watchlist = () => {
                           e.target.value.toUpperCase()
                         )}
                         placeholder="Symbol (e.g. RELIANCE)"
-                        className="flex-1 bg-gray-600 
-                                   text-white px-3 py-2 
-                                   rounded-lg text-sm
-                                   border border-gray-500
-                                   focus:border-green-500
-                                   outline-none"
+                        className="flex-1 bg-surface-950 text-gray-200 px-3 py-2 rounded-lg text-sm border border-surface-800 focus:border-emerald-500/50 focus:outline-none"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -315,18 +291,11 @@ const Watchlist = () => {
                           e.target.value
                         )}
                         placeholder="Notes (optional)"
-                        className="flex-1 bg-gray-600 
-                                   text-white px-3 py-2 
-                                   rounded-lg text-sm
-                                   border border-gray-500
-                                   focus:border-green-500
-                                   outline-none"
+                        className="flex-1 bg-surface-950 text-gray-200 px-3 py-2 rounded-lg text-sm border border-surface-800 focus:border-emerald-500/50 focus:outline-none"
                       />
                       <button
                         onClick={addStock}
-                        className="bg-green-600 text-white 
-                                   px-4 py-2 rounded-lg 
-                                   text-sm"
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                       >
                         Add
                       </button>
@@ -336,7 +305,7 @@ const Watchlist = () => {
                           setAddSymbol("");
                           setAddNotes("");
                         }}
-                        className="text-gray-400 px-3"
+                        className="text-gray-500 hover:text-gray-300 px-3 py-2 transition-colors text-sm"
                       >
                         Cancel
                       </button>
@@ -363,11 +332,7 @@ const Watchlist = () => {
                 ) : (
                   <div>
                     {/* Table Header */}
-                    <div className="grid grid-cols-5 
-                                    gap-2 px-3 py-2 
-                                    text-gray-400 text-xs 
-                                    font-medium border-b 
-                                    border-gray-700 mb-2">
+                    <div className="grid grid-cols-5 gap-2 px-3 py-2 text-gray-600 text-xs font-semibold uppercase tracking-wide border-b border-surface-800 mb-1">
                       <span>STOCK</span>
                       <span className="text-right">
                         PRICE
@@ -383,12 +348,7 @@ const Watchlist = () => {
                     {stocks.map(stock => (
                       <div
                         key={stock.id}
-                        className="grid grid-cols-5 
-                                   gap-2 px-3 py-3 
-                                   rounded-lg hover:bg-gray-700/50
-                                   cursor-pointer
-                                   border-b border-gray-700/50
-                                   items-center"
+                        className="grid grid-cols-5 gap-2 px-3 py-3.5 rounded-xl hover:bg-surface-800/50 cursor-pointer border-b border-surface-800/50 last:border-b-0 items-center transition-colors"
                         onClick={() => {
                           const s = stock.symbol.toUpperCase();
                           const isETF = s.includes('BEES') || s.includes('ETF') || s.includes('MON100');
@@ -397,19 +357,16 @@ const Watchlist = () => {
                       >
                         {/* Name */}
                         <div>
-                          <p className="text-white 
-                                        font-medium text-sm">
+                          <p className="text-gray-100 font-semibold text-sm">
                             {stock.name}
                           </p>
-                          <p className="text-gray-500 
-                                        text-xs">
+                          <p className="text-gray-500 text-xs mt-0.5 font-mono">
                             {stock.symbol}
                           </p>
                         </div>
 
                         {/* Price */}
-                        <p className="text-white text-sm 
-                                      text-right font-medium">
+                        <p className="text-gray-200 text-sm text-right font-mono font-medium">
                           {stock.price 
                             ? `₹${stock.price.toLocaleString('en-IN')}`
                             : 'N/A'
@@ -417,22 +374,20 @@ const Watchlist = () => {
                         </p>
 
                         {/* Change */}
-                        <p className={`text-sm text-right 
-                                      font-medium ${
+                        <p className={
                           stock.change_pct > 0
-                            ? 'text-green-400'
+                            ? 'text-emerald-400 text-sm text-right font-semibold font-mono'
                             : stock.change_pct < 0
-                            ? 'text-red-400'
-                            : 'text-gray-400'
-                        }`}>
+                            ? 'text-red-400 text-sm text-right font-semibold font-mono'
+                            : 'text-gray-500 text-sm text-right font-semibold font-mono'
+                        }>
                           {stock.change_pct > 0 ? '+' : ''}
                           {stock.change_pct}%
                         </p>
 
                         {/* Notes */}
-                        <p className="text-gray-400 
-                                      text-xs truncate">
-                          {stock.notes || '—'}
+                        <p className="text-gray-500 text-xs truncate">
+                          {stock.notes || '-'}
                         </p>
 
                         {/* Remove */}
@@ -441,11 +396,9 @@ const Watchlist = () => {
                             e.stopPropagation();
                             removeStock(stock.id);
                           }}
-                          className="text-gray-600 
-                                     hover:text-red-400 
-                                     text-sm text-right"
+                          className="text-gray-700 hover:text-red-400 text-sm text-right transition-colors"
                         >
-                          ✕
+                          x
                         </button>
                       </div>
                     ))}

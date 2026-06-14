@@ -117,7 +117,7 @@ const PatternScanner = () => {
   return (
     <div className="bg-gray-800 rounded-xl p-5 mb-6">
       <h2 className="text-white font-bold text-lg mb-4">
-        🔍 Pattern Scanner
+        ðŸ” Pattern Scanner
       </h2>
 
       {/* Pattern Selection */}
@@ -149,7 +149,7 @@ const PatternScanner = () => {
         {/* Bullish Patterns */}
         <p className="text-green-400 text-xs 
                       font-medium mb-2 mt-3">
-          🟢 Bullish Patterns
+          ðŸŸ¢ Bullish Patterns
         </p>
         <div className="grid grid-cols-2 gap-2 mb-3">
           {ALL_PATTERNS
@@ -185,7 +185,7 @@ const PatternScanner = () => {
         {/* Bearish Patterns */}
         <p className="text-red-400 text-xs 
                       font-medium mb-2">
-          🔴 Bearish Patterns
+          ðŸ”´ Bearish Patterns
         </p>
         <div className="grid grid-cols-2 gap-2 mb-3">
           {ALL_PATTERNS
@@ -219,9 +219,9 @@ const PatternScanner = () => {
         </div>
 
         {/* Neutral Patterns */}
-        <p className="text-yellow-400 text-xs 
+        <p className="text-emerald-400 text-xs 
                       font-medium mb-2">
-          🟡 Neutral Patterns
+          ðŸŸ¡ Neutral Patterns
         </p>
         <div className="grid grid-cols-2 gap-2">
           {ALL_PATTERNS
@@ -268,7 +268,7 @@ const PatternScanner = () => {
               value="nifty50"
               checked={scope === "nifty50"}
               onChange={() => setScope("nifty50")}
-              className="accent-orange-500"
+              className="accent-emerald-500"
             />
             <span className="text-white text-sm">
               Nifty 50
@@ -285,7 +285,7 @@ const PatternScanner = () => {
               value="all"
               checked={scope === "all"}
               onChange={() => setScope("all")}
-              className="accent-orange-500"
+              className="accent-emerald-500"
             />
             <span className="text-white text-sm">
               All Stocks
@@ -306,12 +306,12 @@ const PatternScanner = () => {
                    font-bold text-sm transition-colors ${
           scanning
             ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-            : "bg-orange-500 hover:bg-orange-600 text-white"
+            : "bg-emerald-500 hover:bg-emerald-600 text-white"
         }`}
       >
         {scanning
-          ? `⏳ Scanning... ${progress}/${total}`
-          : "🔍 Scan for Patterns"}
+          ? `â³ Scanning... ${progress}/${total}`
+          : "ðŸ” Scan for Patterns"}
       </button>
 
       {/* Progress Bar */}
@@ -327,7 +327,7 @@ const PatternScanner = () => {
           <div className="w-full bg-gray-700 
                           rounded-full h-2">
             <div
-              className="bg-orange-500 h-2 rounded-full 
+              className="bg-emerald-500 h-2 rounded-full 
                          transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
@@ -344,7 +344,7 @@ const PatternScanner = () => {
           <div className="flex justify-between 
                           items-center mb-3">
             <h3 className="text-white font-bold">
-              {completed ? "✅" : "⏳"} Results
+              {completed ? "âœ…" : "â³"} Results
               <span className="text-gray-400 
                                font-normal text-sm ml-2">
                 ({results.length} stocks matched)
@@ -379,9 +379,9 @@ const PatternScanner = () => {
                       </p>
                       <p className="text-gray-400 
                                     text-xs">
-                        ₹{stock.price?.toLocaleString(
+                        â‚¹{stock.price?.toLocaleString(
                           'en-IN'
-                        )} · RSI {stock.rsi}
+                        )} Â· RSI {stock.rsi}
                       </p>
                     </div>
                     <span className={`text-xs px-2 
@@ -391,7 +391,7 @@ const PatternScanner = () => {
                         ? 'bg-green-900/50 text-green-400'
                         : stock.trade_setup?.bias === 'Bearish'
                         ? 'bg-red-900/50 text-red-400'
-                        : 'bg-yellow-900/50 text-yellow-400'
+                        : 'bg-yellow-900/50 text-emerald-400'
                     }`}>
                       {stock.trade_setup?.bias || 'Neutral'}
                     </span>
@@ -409,7 +409,7 @@ const PatternScanner = () => {
                             ? 'bg-green-900/40 text-green-400'
                             : p.type === 'bearish'
                             ? 'bg-red-900/40 text-red-400'
-                            : 'bg-yellow-900/40 text-yellow-400'
+                            : 'bg-yellow-900/40 text-emerald-400'
                         }`}
                       >
                         {p.emoji} {p.name}
@@ -422,13 +422,13 @@ const PatternScanner = () => {
                     <div className="flex gap-3 
                                     mt-2 text-xs">
                       <span className="text-gray-400">
-                        Entry: ₹{stock.trade_setup.entry}
+                        Entry: â‚¹{stock.trade_setup.entry}
                       </span>
                       <span className="text-red-400">
-                        SL: ₹{stock.trade_setup.stop_loss}
+                        SL: â‚¹{stock.trade_setup.stop_loss}
                       </span>
                       <span className="text-green-400">
-                        T1: ₹{stock.trade_setup.target1}
+                        T1: â‚¹{stock.trade_setup.target1}
                       </span>
                     </div>
                   )}

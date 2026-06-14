@@ -43,15 +43,15 @@ const Login = () => {
         {/* Subtle decorative chart-like abstract lines in the background */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg viewBox="0 0 800 800" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 600 L150 450 L300 500 L450 300 L600 350 L800 150" fill="none" stroke="url(#orange-grad)" strokeWidth="4" />
+            <path d="M0 600 L150 450 L300 500 L450 300 L600 350 L800 150" fill="none" stroke="url(#emerald-grad)" strokeWidth="4" />
             <path d="M0 700 L200 550 L350 650 L550 400 L700 480 L800 250" fill="none" stroke="url(#gold-grad)" strokeWidth="2" opacity="0.6"/>
             <defs>
-              <linearGradient id="orange-grad" x1="0" y1="0" x2="800" y2="0">
+              <linearGradient id="emerald-grad" x1="0" y1="0" x2="800" y2="0">
                 <stop offset="0%" stopColor="#f97316" />
                 <stop offset="100%" stopColor="#d97706" />
               </linearGradient>
               <linearGradient id="gold-grad" x1="0" y1="0" x2="800" y2="0">
-                <stop offset="0%" stopColor="#fbbf24" />
+                <stop offset="0%" stopColor="#34d399" />
                 <stop offset="100%" stopColor="#f59e0b" />
               </linearGradient>
             </defs>
@@ -60,16 +60,16 @@ const Login = () => {
         
         <div className="z-10 mt-10">
           <div className="flex items-center space-x-3 mb-8">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
               <TrendingUp className="text-white w-6 h-6" />
             </div>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-amber-500 tracking-tight">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-amber-500 tracking-tight">
               StockSense
             </h1>
           </div>
           <h2 className="text-4xl font-extrabold leading-tight text-white mb-6">
             Master the Indian<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-emerald-500">
               Stock Market
             </span>
           </h2>
@@ -89,7 +89,7 @@ const Login = () => {
       <div className="flex-1 flex flex-col justify-center items-center p-8 sm:p-12 md:p-16 relative">
         {/* Mobile Logo */}
         <div className="md:hidden flex items-center space-x-2 mb-10">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
             <TrendingUp className="text-white w-5 h-5" />
           </div>
           <h1 className="text-2xl font-bold text-white">StockSense</h1>
@@ -123,7 +123,7 @@ const Login = () => {
                   onChange={handleChange}
                   required
                   placeholder="Rahul Sharma"
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg outline-none text-white placeholder-gray-600 transition-all"
+                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg outline-none text-white placeholder-gray-600 transition-all"
                 />
               </div>
             )}
@@ -137,7 +137,7 @@ const Login = () => {
                 onChange={handleChange}
                 required
                 placeholder="name@example.com"
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg outline-none text-white placeholder-gray-600 transition-all"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg outline-none text-white placeholder-gray-600 transition-all"
               />
             </div>
 
@@ -150,8 +150,8 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg outline-none text-white placeholder-gray-600 transition-all pr-12"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg outline-none text-white placeholder-gray-600 transition-all pr-12"
                 />
                 <button
                   type="button"
@@ -166,10 +166,10 @@ const Login = () => {
             {isLogin && (
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center space-x-2 cursor-pointer group">
-                  <input type="checkbox" className="rounded border-gray-700 bg-gray-900 text-orange-500 focus:ring-orange-500 focus:ring-offset-gray-950 w-4 h-4 cursor-pointer" />
+                  <input type="checkbox" className="rounded border-gray-700 bg-gray-900 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-gray-950 w-4 h-4 cursor-pointer" />
                   <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
                 </label>
-                <a href="#" className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
+                <a href="#" className="text-emerald-500 hover:text-emerald-400 font-medium transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -178,7 +178,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-lg shadow-lg shadow-orange-500/20 transform transition-all active:scale-[0.98] flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-amber-500 hover:from-emerald-600 hover:to-emerald-600 text-white font-bold rounded-lg shadow-lg shadow-emerald-500/20 transform transition-all active:scale-[0.98] flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
@@ -195,7 +195,7 @@ const Login = () => {
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-orange-500 hover:text-orange-400 font-bold transition-colors ml-1"
+              className="text-emerald-500 hover:text-emerald-400 font-bold transition-colors ml-1"
             >
               {isLogin ? 'Sign up for free' : 'Log in here'}
             </button>

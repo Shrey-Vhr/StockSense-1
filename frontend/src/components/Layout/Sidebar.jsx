@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BarChart2, LineChart, PieChart, Newspaper, BrainCircuit, LogOut, Menu, X, TrendingUp, Eye } from 'lucide-react';
+import { LayoutDashboard, BarChart2, LineChart, PieChart, Newspaper, BrainCircuit, LogOut, X, TrendingUp, Eye } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
@@ -26,28 +25,26 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
           onClick={toggleSidebar}
         />
       )}
-      
-      {/* Sidebar */}
+
       <div className={`
-        fixed top-0 left-0 h-full w-64 bg-[#0d1117] border-r border-[#30363d] z-50
+        fixed top-0 left-0 h-full w-56 bg-surface-900 border-r border-surface-800 z-50
         transform transition-transform duration-300 ease-in-out flex flex-col
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         md:relative md:h-screen
       `}>
         {/* Logo Area */}
-        <div className="flex items-center justify-between p-6 border-b border-[#30363d]">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-surface-800">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded bg-gradient-to-br from-[#f0b429] to-amber-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-glow">
               <LineChart className="text-white w-5 h-5" />
             </div>
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#f0b429] to-amber-500">
+            <span className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 to-emerald-500">
               StockSense
             </span>
           </div>
@@ -57,32 +54,35 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+        <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
               className={({ isActive }) => `
-                flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
-                ${isActive 
-                  ? 'bg-[#161b22] text-[#f0b429] border border-[#30363d]' 
-                  : 'text-gray-400 hover:bg-[#161b22] hover:text-white'}
+                group flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-150
+                ${isActive
+                  ? 'bg-emerald-500/10 text-emerald-400 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.25)]'
+                  : 'text-gray-400 hover:bg-surface-800 hover:text-gray-100'}
               `}
             >
-              <item.icon size={20} />
-              <span className="font-medium">{item.name}</span>
+              <item.icon
+                size={19}
+                className="transition-transform duration-150 group-hover:scale-110"
+              />
+              <span className="font-medium text-sm">{item.name}</span>
             </NavLink>
           ))}
         </nav>
 
         {/* Footer actions */}
-        <div className="p-4 border-t border-[#30363d]">
-          <button 
+        <div className="p-3 border-t border-surface-800">
+          <button
             onClick={handleLogout}
-            className="flex items-center space-x-3 px-4 py-3 w-full rounded-lg text-gray-400 hover:bg-[#161b22] hover:text-[#ff1744] transition-colors"
+            className="flex items-center space-x-3 px-4 py-2.5 w-full rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150"
           >
-            <LogOut size={20} />
-            <span className="font-medium">Logout</span>
+            <LogOut size={19} />
+            <span className="font-medium text-sm">Logout</span>
           </button>
         </div>
       </div>

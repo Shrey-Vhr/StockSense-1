@@ -42,9 +42,9 @@ const News = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
+      <div className="flex items-center justify-between border-b border-surface-800 pb-4">
         <h1 className="text-2xl font-bold text-white flex items-center">
-          <Newspaper className="text-[#f0b429] mr-3" size={28} /> Market News
+          <Newspaper className="text-[#10b981] mr-3" size={28} /> Market News
         </h1>
       </div>
 
@@ -61,18 +61,18 @@ const News = () => {
                 target="_blank" 
                 rel="noopener noreferrer"
                 key={i} 
-                className="bg-[#161b22] border border-[#30363d] rounded-xl p-5 hover:border-[#f0b429] transition-all flex flex-col justify-between h-48 group"
+                className="bg-surface-850 border border-surface-800 rounded-xl p-5 hover:border-[#10b981] transition-all flex flex-col justify-between h-48 group"
               >
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <div className="text-xs text-[#f0b429] font-medium">{news.source}</div>
+                    <div className="text-xs text-[#10b981] font-medium">{news.source}</div>
                     {news.sentiment && (
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
                         news.sentiment === 'Positive' ? 'bg-green-900/50 text-green-400'
                         : news.sentiment === 'Negative' ? 'bg-red-900/50 text-red-400'
                         : 'bg-gray-700 text-gray-400'
                       }`}>
-                        {news.sentiment === 'Positive' ? '🟢' : news.sentiment === 'Negative' ? '🔴' : '⚪'} {news.sentiment}
+                        {news.sentiment === 'Positive' ? '↑' : news.sentiment === 'Negative' ? '↓' : '—'} {news.sentiment}
                       </span>
                     )}
                   </div>
@@ -80,7 +80,7 @@ const News = () => {
                     {news.title}
                   </h3>
                 </div>
-                <div className="text-xs text-gray-500 mt-4 border-t border-[#30363d] pt-3">
+                <div className="text-xs text-gray-500 mt-4 border-t border-surface-800 pt-3">
                   {news.published_display || formatDate(news.published_date)}
                 </div>
               </a>
@@ -93,7 +93,7 @@ const News = () => {
             {positiveNews.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-[#00c853] mb-4 flex items-center">
-                  🟢 Positive News
+                  Positive News
                 </h2>
                 {renderNewsCards(positiveNews)}
               </div>
@@ -102,7 +102,7 @@ const News = () => {
             {negativeNews.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-[#ff1744] mb-4 flex items-center">
-                  🔴 Negative News
+                  Negative News
                 </h2>
                 {renderNewsCards(negativeNews)}
               </div>
@@ -111,7 +111,7 @@ const News = () => {
             {neutralNews.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-gray-400 mb-4 flex items-center">
-                  ⚪ Neutral News
+                  Neutral News
                 </h2>
                 {renderNewsCards(neutralNews)}
               </div>

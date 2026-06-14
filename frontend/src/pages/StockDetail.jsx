@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
-import { Activity, BookOpen, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, ShieldAlert, AlertTriangle, BellPlus, X } from 'lucide-react';
+import { Activity, BookOpen, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, ShieldAlert, AlertTriangle, BellPlus, X, BarChart2, Building2, Brain } from 'lucide-react';
 import api from '../utils/api';
 import useStore from '../store/useStore';
 import PatternAnalysis from '../components/PatternAnalysis';
@@ -39,7 +39,7 @@ const MetricCard = ({ label, value, format, goodAbove, goodBelow }) => {
   }
 
   return (
-    <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center">
+    <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
       <div className="text-gray-500 text-xs mb-1">{label}</div>
       <div className={`font-mono ${colorClass}`}>{displayValue}</div>
     </div>
@@ -66,12 +66,12 @@ const InstitutionalTab = ({ symbol }) => {
     fetchData();
   }, [symbol]);
   
-  if (loading && !data) return <div className="flex justify-center py-20 text-[#f0b429]"><Activity className="animate-pulse" /></div>;
+  if (loading && !data) return <div className="flex justify-center py-20 text-[#10b981]"><Activity className="animate-pulse" /></div>;
   if (!data) return <p className="text-gray-400 text-center py-10">No institutional data available.</p>;
   
   return (
     <div className="space-y-4 relative">
-      {loading && <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-10"><Activity className="animate-pulse text-[#f0b429]" /></div>}
+      {loading && <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-10"><Activity className="animate-pulse text-[#10b981]" /></div>}
       
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-white flex items-center">
@@ -79,14 +79,14 @@ const InstitutionalTab = ({ symbol }) => {
         </h2>
         <button 
           onClick={() => fetchData(true)}
-          className="text-xs bg-[#0d1117] hover:bg-[#30363d] border border-[#30363d] px-3 py-2 rounded-lg text-gray-300 transition-colors"
+          className="text-xs bg-surface-900 hover:bg-[#30363d] border border-surface-800 px-3 py-2 rounded-lg text-gray-300 transition-colors"
         >
           Refresh Data
         </button>
       </div>
 
       {/* Smart Money Score */}
-      <div className="bg-[#0d1117] rounded-xl p-4 border border-[#30363d]">
+      <div className="bg-surface-900 rounded-xl p-4 border border-surface-800">
         <div className="flex justify-between items-center">
           <div>
             <p className="text-gray-400 text-sm mb-1">
@@ -97,7 +97,7 @@ const InstitutionalTab = ({ symbol }) => {
                 ? 'text-[#00c853]'
               : data.smart_money_score <= 35
                 ? 'text-[#ff1744]'
-                : 'text-[#f0b429]'
+                : 'text-[#10b981]'
             }`}>
               {data.smart_money_score}/100
             </p>
@@ -107,7 +107,7 @@ const InstitutionalTab = ({ symbol }) => {
               ? 'bg-[#00c853]/10 text-[#00c853] border border-[#00c853]/30'
             : data.smart_money_score <= 35
               ? 'bg-[#ff1744]/10 text-[#ff1744] border border-[#ff1744]/30'
-              : 'bg-[#f0b429]/10 text-[#f0b429] border border-[#f0b429]/30'
+              : 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/30'
           }`}>
             {data.institutional_verdict}
           </div>
@@ -115,7 +115,7 @@ const InstitutionalTab = ({ symbol }) => {
       </div>
       
       {/* Promoter Activity */}
-      <div className="bg-[#0d1117] rounded-xl p-4 border border-[#30363d]">
+      <div className="bg-surface-900 rounded-xl p-4 border border-surface-800">
         <h3 className="text-white font-bold mb-3">
           Promoter Activity
         </h3>
@@ -126,16 +126,16 @@ const InstitutionalTab = ({ symbol }) => {
               ? 'text-[#00c853]'
             : data.promoter_activity?.trend === 'Decreasing'
               ? 'text-[#ff1744]'
-              : 'text-[#f0b429]'
+              : 'text-[#10b981]'
           }`}>
             {data.promoter_activity?.trend === 'Increasing'
-              ? '↑ Increasing'
+              ? 'â†‘ Increasing'
             : data.promoter_activity?.trend === 'Decreasing'
-              ? '↓ Decreasing'
+              ? 'â†“ Decreasing'
               : '→ Stable'}
           </span>
           {data.promoter_activity?.change_vs_last_quarter !== undefined && data.promoter_activity?.change_vs_last_quarter !== null && (
-            <span className="text-gray-400 text-sm">
+            <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
               {data.promoter_activity.change_vs_last_quarter > 0 ? '+' : ''}
               {data.promoter_activity.change_vs_last_quarter}% vs last quarter
             </span>
@@ -170,14 +170,14 @@ const InstitutionalTab = ({ symbol }) => {
       {/* Deals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Bulk Deals */}
-        <div className="bg-[#0d1117] rounded-xl p-4 border border-[#30363d]">
+        <div className="bg-surface-900 rounded-xl p-4 border border-surface-800">
           <h3 className="text-white font-bold mb-3">
             Recent Bulk Deals
           </h3>
           {data.bulk_deals && data.bulk_deals.length > 0 ? (
             <div className="space-y-2">
               {data.bulk_deals.slice(0,5).map((deal, i) => (
-                <div key={i} className="flex justify-between items-center p-3 bg-[#161b22] border border-[#30363d] rounded-lg">
+                <div key={i} className="flex justify-between items-center p-3 bg-surface-850 border border-surface-800 rounded-lg">
                   <div className="overflow-hidden pr-2">
                     <p className="text-white text-sm font-medium truncate" title={deal.client}>
                       {deal.client}
@@ -195,7 +195,7 @@ const InstitutionalTab = ({ symbol }) => {
                       {deal.buy_sell}
                     </span>
                     <p className="text-gray-400 text-xs mt-1 font-mono">
-                      ₹{deal.price} <span className="text-gray-600">×</span> {Number(deal.quantity).toLocaleString('en-IN')}
+                      ₹{deal.price} <span className="text-gray-600">Ã—</span> {Number(deal.quantity).toLocaleString('en-IN')}
                     </p>
                   </div>
                 </div>
@@ -207,14 +207,14 @@ const InstitutionalTab = ({ symbol }) => {
         </div>
         
         {/* Block Deals */}
-        <div className="bg-[#0d1117] rounded-xl p-4 border border-[#30363d]">
+        <div className="bg-surface-900 rounded-xl p-4 border border-surface-800">
           <h3 className="text-white font-bold mb-3">
             Recent Block Deals
           </h3>
           {data.block_deals && data.block_deals.length > 0 ? (
             <div className="space-y-2">
               {data.block_deals.slice(0,5).map((deal, i) => (
-                <div key={i} className="flex justify-between items-center p-3 bg-[#161b22] border border-[#30363d] rounded-lg">
+                <div key={i} className="flex justify-between items-center p-3 bg-surface-850 border border-surface-800 rounded-lg">
                   <div className="overflow-hidden pr-2">
                     <p className="text-white text-sm font-medium truncate" title={deal.client}>
                       {deal.client}
@@ -471,7 +471,7 @@ const StockDetail = () => {
     }
   };
 
-  // ─── EMA calculation helper ──────────────────────────────────────────────
+  // â”€â”€â”€ EMA calculation helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const calculateEMA = (data, period) => {
     if (!data || data.length === 0) return [];
     const k = 2 / (period + 1);
@@ -497,7 +497,7 @@ const StockDetail = () => {
     return emaArray;
   };
 
-  // ─── Chart drawing effect ────────────────────────────────────────────────
+  // â”€â”€â”€ Chart drawing effect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!chartContainerRef.current || !historicalData || historicalData.length === 0) return;
 
@@ -576,7 +576,7 @@ const StockDetail = () => {
     const ema200Data = calculateEMA(candleData, 200);
 
     const ema20Series = chart.addLineSeries({
-      color: '#f0b429',
+      color: '#10b981',
       lineWidth: 1,
       lineStyle: 0,
       title: 'EMA 20',
@@ -706,34 +706,30 @@ const StockDetail = () => {
 
       {/* Price Header */}
       {quote && (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div className="flex justify-between items-start px-6 py-4 bg-surface-850 border-b border-surface-800">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-white">{cleanSymbol.replace('.NS', '')}</h1>
+              <h1 className="text-3xl font-bold text-gray-50 tracking-tight">{cleanSymbol.replace('.NS', '')}</h1>
               <button
                 onClick={addToWatchlist}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  watchlistAdded
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-800 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-all ml-3"
               >
-                {watchlistAdded ? '✓ Watchlisted' : '+ Watchlist'}
+                {watchlistAdded ? 'âœ“ Watchlisted' : '+ Watchlist'}
               </button>
             </div>
-            <p className="text-gray-400">{companyName || symbol}</p>
+            <p className="text-gray-500 text-sm mt-0.5 font-mono">{companyName || symbol}</p>
           </div>
           <div className="mt-4 md:mt-0 text-right flex flex-col items-end">
-            <div className={`text-3xl font-mono font-bold text-white transition-colors duration-500 rounded px-2 ${quoteFlash}`}>
+            <div className={`text-4xl font-bold text-gray-50 font-mono tracking-tight text-right transition-colors duration-500 rounded px-2 ${quoteFlash}`}>
               ₹{stockPrice ? stockPrice.toFixed(2) : quote.current_price?.toFixed(2)}
             </div>
-            <div className={`flex justify-end items-center text-lg font-mono font-medium transition-all duration-500 ${isUp ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+            <div className={`flex justify-end items-center text-sm font-semibold mt-1 text-right transition-all duration-500 ${isUp ? 'text-emerald-400' : 'text-red-400'}`}>
               {isUp ? <TrendingUp className="mr-1" size={20} /> : <TrendingDown className="mr-1" size={20} />}
               {isUp ? '+' : ''}{quote.change_amount?.toFixed(2)} ({Math.abs(quote.change_percent).toFixed(2)}%)
             </div>
             <button
               onClick={() => setShowAlertModal(true)}
-              className="mt-2 flex items-center text-xs text-[#f0b429] hover:bg-[#f0b429]/10 border border-[#f0b429]/30 px-3 py-1.5 rounded transition-colors"
+              className="mt-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 transition-all flex items-center gap-1.5"
             >
               <BellPlus size={14} className="mr-1" /> Create Alert
             </button>
@@ -744,10 +740,10 @@ const StockDetail = () => {
       {/* Alert Modal */}
       {showAlertModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-surface-850 border border-surface-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-white flex items-center">
-                <BellPlus className="mr-2 text-[#f0b429]" size={20} /> Add Alert for {cleanSymbol.replace('.NS', '')}
+                <BellPlus className="mr-2 text-[#10b981]" size={20} /> Add Alert for {cleanSymbol.replace('.NS', '')}
               </h3>
               <button onClick={() => setShowAlertModal(false)} className="text-gray-400 hover:text-white"><X size={20} /></button>
             </div>
@@ -757,7 +753,7 @@ const StockDetail = () => {
                 <select
                   value={alertType}
                   onChange={(e) => setAlertType(e.target.value)}
-                  className="w-full bg-[#0d1117] border border-[#30363d] text-white rounded p-2 focus:border-[#f0b429] focus:outline-none"
+                  className="w-full bg-surface-900 border border-surface-800 text-white rounded p-2 focus:border-[#10b981] focus:outline-none"
                 >
                   <option value="price_above">Price goes Above</option>
                   <option value="price_below">Price goes Below</option>
@@ -775,12 +771,12 @@ const StockDetail = () => {
                   value={alertValue}
                   onChange={(e) => setAlertValue(e.target.value)}
                   placeholder="e.g. 2500"
-                  className="w-full bg-[#0d1117] border border-[#30363d] text-white rounded p-2 focus:border-[#f0b429] focus:outline-none"
+                  className="w-full bg-surface-900 border border-surface-800 text-white rounded p-2 focus:border-[#10b981] focus:outline-none"
                 />
                 <p className="text-xs text-gray-500 mt-1">Current Price: ₹{stockPrice ? stockPrice.toFixed(2) : quote?.current_price?.toFixed(2)}</p>
               </div>
               <div className="pt-2">
-                <button type="submit" className="w-full bg-[#f0b429] text-black font-bold py-2 rounded hover:bg-amber-500 transition-colors">
+                <button type="submit" className="w-full bg-[#10b981] text-black font-bold py-2 rounded hover:bg-amber-500 transition-colors">
                   Set Alert
                 </button>
               </div>
@@ -790,17 +786,17 @@ const StockDetail = () => {
       )}
 
       {/* Chart */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4">
+      <div className="bg-surface-950 border-b border-surface-800 rounded-none">
         {chartLoading ? (
-          <div className="w-full h-[400px] flex items-center justify-center text-[#f0b429]">
+          <div className="w-full h-[400px] flex items-center justify-center text-[#10b981]">
             <Activity className="animate-pulse w-8 h-8" />
           </div>
         ) : (
           <div className="relative w-full">
-            <div className="absolute top-2 left-2 z-10 text-xs font-mono bg-[#161b22]/80 p-3 rounded-lg border border-[#30363d] shadow-lg backdrop-blur-sm pointer-events-none">
+            <div className="absolute top-2 left-2 z-10 text-xs font-mono bg-surface-850/80 p-3 rounded-lg border border-surface-800 shadow-lg backdrop-blur-sm pointer-events-none">
               <div className="text-white mb-2 font-bold uppercase tracking-wider text-[10px]">EMAs</div>
               <div className="space-y-1">
-                {legendData.ema20 && <div className="flex items-center text-[#f0b429]"><span className="w-2 h-2 rounded-full bg-[#f0b429] mr-2"></span>EMA 20: {legendData.ema20}</div>}
+                {legendData.ema20 && <div className="flex items-center text-[#10b981]"><span className="w-2 h-2 rounded-full bg-[#10b981] mr-2"></span>EMA 20: {legendData.ema20}</div>}
                 {legendData.ema50 && <div className="flex items-center text-[#2196f3]"><span className="w-2 h-2 rounded-full bg-[#2196f3] mr-2"></span>EMA 50: {legendData.ema50}</div>}
                 {legendData.ema200 && <div className="flex items-center text-[#ff5252]"><span className="w-2 h-2 rounded-full bg-[#ff5252] mr-2"></span>EMA 200: {legendData.ema200}</div>}
               </div>
@@ -811,56 +807,71 @@ const StockDetail = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 border-b border-[#30363d]">
-        <button onClick={() => handleTabChange('technical')} className={`flex items-center px-6 py-3 font-medium transition-colors border-b-2 ${activeTab === 'technical' ? 'border-[#f0b429] text-[#f0b429]' : 'border-transparent text-gray-400 hover:text-white'}`}>
-          <Activity size={18} className="mr-2" /> Technicals
+      <div className="flex border-b border-surface-800 bg-surface-900 px-4 overflow-x-auto">
+        <button onClick={() => handleTabChange('technical')} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'technical' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+          <span className="flex items-center gap-1.5">
+            <TrendingUp size={15} />
+            Technicals
+          </span>
         </button>
-        <button onClick={() => handleTabChange('fundamental')} className={`flex items-center px-6 py-3 font-medium transition-colors border-b-2 ${activeTab === 'fundamental' ? 'border-[#f0b429] text-[#f0b429]' : 'border-transparent text-gray-400 hover:text-white'}`}>
-          <BookOpen size={18} className="mr-2" /> Fundamentals
+        <button onClick={() => handleTabChange('fundamental')} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'fundamental' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+          <span className="flex items-center gap-1.5">
+            <BarChart2 size={15} />
+            Fundamentals
+          </span>
         </button>
-        <button onClick={() => handleTabChange('institutional')} className={`flex items-center px-6 py-3 font-medium transition-colors border-b-2 ${activeTab === 'institutional' ? 'border-[#f0b429] text-[#f0b429]' : 'border-transparent text-gray-400 hover:text-white'}`}>
-          <span className="mr-2 text-lg leading-none">🏛️</span> Institutional
+        <button onClick={() => handleTabChange('institutional')} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'institutional' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+          <span className="flex items-center gap-1.5">
+            <Building2 size={15} />
+            Institutional
+          </span>
         </button>
-        <button onClick={() => handleTabChange('news')} className={`flex items-center px-6 py-3 font-medium transition-colors border-b-2 ${activeTab === 'news' ? 'border-[#f0b429] text-[#f0b429]' : 'border-transparent text-gray-400 hover:text-white'}`}>
-          <Newspaper size={18} className="mr-2" /> News
+        <button onClick={() => handleTabChange('news')} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'news' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+          <span className="flex items-center gap-1.5">
+            <Newspaper size={15} />
+            News
+          </span>
         </button>
-        <button onClick={handleGenerateAI} className={`flex items-center px-6 py-3 font-medium transition-colors border-b-2 ${activeTab === 'ai' ? 'border-[#f0b429] text-[#f0b429]' : 'border-transparent text-gray-400 hover:text-white'}`}>
-          <BrainCircuit size={18} className="mr-2" /> Claude AI Analysis
+        <button onClick={handleGenerateAI} className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'ai' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+          <span className="flex items-center gap-1.5">
+            <Brain size={15} />
+            Claude AI Analysis
+          </span>
         </button>
       </div>
 
       {/* Tab Content */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 min-h-[400px]">
+      <div className="bg-surface-850 border border-surface-800 rounded-xl p-6 min-h-[400px]">
 
         {/* TECHNICAL TAB */}
         {activeTab === 'technical' && techData && (
           <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Technical Snapshot</h2>
-              <div className="bg-[#0d1117] border border-[#30363d] px-4 py-2 rounded-lg font-mono">
-                <span className="text-gray-400 text-sm">Tech Score:</span> <span className="text-[#f0b429] font-bold text-lg">{techData.overall_technical_score}/100</span>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold text-gray-200">Technical Snapshot</h2>
+              <div className="px-3 py-1.5 rounded-xl text-sm font-bold bg-surface-900 border border-surface-700 text-gray-300">
+                <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Tech Score:</span> <span className="text-[#10b981] font-bold text-lg">{techData.overall_technical_score}/100</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-[#0d1117] p-4 rounded border border-[#30363d]">
-                <div className="text-gray-400 text-sm">Trend</div>
-                <div className={`font-bold mt-1 ${techData.trend?.status.includes('Up') ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>{techData.trend?.status}</div>
+              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
+                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">Trend</div>
+                <div className={`text-sm font-semibold mt-1.5 ${techData.trend?.status.includes('Up') ? 'text-emerald-400' : 'text-red-400'}`}>{techData.trend?.status}</div>
               </div>
-              <div className="bg-[#0d1117] p-4 rounded border border-[#30363d]">
-                <div className="text-gray-400 text-sm">RSI (14)</div>
-                <div className="font-bold font-mono text-white mt-1">{techData.momentum?.rsi?.value?.toFixed(1) || 'N/A'} <span className="text-xs font-sans text-gray-500">({techData.momentum?.rsi?.signal})</span></div>
+              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
+                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">RSI (14)</div>
+                <div className="text-gray-100 font-semibold text-sm mt-1.5">{techData.momentum?.rsi?.value?.toFixed(1) || 'N/A'} <span className="text-xs font-sans text-gray-500">({techData.momentum?.rsi?.signal})</span></div>
               </div>
-              <div className="bg-[#0d1117] p-4 rounded border border-[#30363d]">
-                <div className="text-gray-400 text-sm">MACD</div>
-                <div className="font-bold text-white mt-1">{techData.momentum?.macd?.crossover}</div>
+              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
+                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">MACD</div>
+                <div className="text-gray-100 font-semibold text-sm mt-1.5">{techData.momentum?.macd?.crossover}</div>
               </div>
-              <div className="bg-[#0d1117] p-4 rounded border border-[#30363d]">
-                <div className="text-gray-400 text-sm">Volume</div>
-                <div className="font-bold font-mono text-white mt-1">{techData.volume?.relative_volume?.toFixed(1) || 'N/A'}x <span className="text-xs font-sans text-gray-500">Avg</span></div>
+              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
+                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">Volume</div>
+                <div className="text-gray-100 font-semibold text-sm mt-1.5">{techData.volume?.relative_volume?.toFixed(1) || 'N/A'}x <span className="text-xs font-sans text-gray-500">Avg</span></div>
               </div>
-              <div className="bg-[#0d1117] p-4 rounded border border-[#30363d]">
-                <div className="text-gray-400 text-sm">News Sentiment</div>
+              <div className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors">
+                <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">News Sentiment</div>
                 {sentiment ? (
                   <div className={`font-bold mt-1 ${
                     sentiment.overall_sentiment === 'Positive' ? 'text-[#00c853]'
@@ -877,13 +888,13 @@ const StockDetail = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-medium text-white mb-3 border-b border-[#30363d] pb-2">Support & Resistance</h3>
-                <div className="space-y-2 font-mono">
-                  <div className="flex justify-between bg-[#0d1117] p-2 rounded">
-                    <span className="text-gray-400">Resistance</span><span className="text-[#ff1744]">₹{techData.structure?.support_resistance?.resistance?.toFixed(2) || 'N/A'}</span>
+                <h3 className="text-base font-semibold text-gray-200 mb-3">Support & Resistance</h3>
+                <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4">
+                  <div className="flex justify-between items-center py-3 border-b border-surface-800 last:border-b-0">
+                    <span className="text-gray-500 text-sm mt-0.5 font-mono">Resistance</span><span className="text-red-400 font-mono font-semibold text-sm">₹{techData.structure?.support_resistance?.resistance?.toFixed(2) || 'N/A'}</span>
                   </div>
-                  <div className="flex justify-between bg-[#0d1117] p-2 rounded">
-                    <span className="text-gray-400">Support</span><span className="text-[#00c853]">₹{techData.structure?.support_resistance?.support?.toFixed(2) || 'N/A'}</span>
+                  <div className="flex justify-between items-center py-3 border-b border-surface-800 last:border-b-0">
+                    <span className="text-gray-500 text-sm mt-0.5 font-mono">Support</span><span className="text-emerald-400 font-mono font-semibold text-sm">₹{techData.structure?.support_resistance?.support?.toFixed(2) || 'N/A'}</span>
                   </div>
                 </div>
               </div>
@@ -901,14 +912,14 @@ const StockDetail = () => {
         {/* FUNDAMENTAL TAB */}
         {activeTab === 'fundamental' && (
           isFundLoading ? (
-            <div className="flex justify-center py-20 text-[#f0b429]"><Activity className="animate-pulse" /></div>
+            <div className="flex justify-center py-20 text-[#10b981]"><Activity className="animate-pulse" /></div>
           ) : fundData ? (
             <div className="space-y-8">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-xl font-bold text-white flex items-center">
                     Fundamental Analysis
-                    <span className="ml-3 text-xs bg-[#0d1117] border border-[#30363d] px-2 py-1 rounded-full text-gray-400">
+                    <span className="ml-3 text-xs bg-surface-900 border border-surface-800 px-2 py-1 rounded-full text-gray-400">
                       Data: Screener.in
                     </span>
                   </h2>
@@ -916,7 +927,7 @@ const StockDetail = () => {
                 <div className="flex items-center space-x-3">
                   <button 
                     onClick={handleRefreshFundamental}
-                    className="text-xs bg-[#0d1117] hover:bg-[#30363d] border border-[#30363d] px-3 py-2 rounded-lg text-gray-300 transition-colors"
+                    className="text-xs bg-surface-900 hover:bg-[#30363d] border border-surface-800 px-3 py-2 rounded-lg text-gray-300 transition-colors"
                   >
                     Refresh Data
                   </button>
@@ -925,35 +936,35 @@ const StockDetail = () => {
 
               {/* 1. KEY RATIOS */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-                <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center">
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
                   <div className="text-gray-500 text-xs mb-1">Market Cap</div>
                   <div className="text-white font-mono font-bold">{formatMetric('market_cap', fundData.market_cap)}</div>
                 </div>
-                <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center" title="Price to Earnings: How much you pay for ₹1 of company earnings">
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Price to Earnings: How much you pay for ₹1 of company earnings">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">PE Ratio</div>
                   <div className="text-white font-mono font-bold">{formatMetric('pe_ratio', fundData.pe_ratio)}</div>
                 </div>
-                <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center" title="Price to Book: How much you pay for ₹1 of company assets">
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Price to Book: How much you pay for ₹1 of company assets">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">PB Ratio</div>
                   <div className="text-white font-mono font-bold">{formatMetric('pb_ratio', fundData.pb_ratio)}</div>
                 </div>
-                <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center" title="Return on Equity: Profit generated per ₹100 of shareholder money">
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Return on Equity: Profit generated per ₹100 of shareholder money">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">ROE</div>
                   <div className="text-white font-mono font-bold">{formatMetric('roe', fundData.roe)}</div>
                 </div>
-                <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center" title="Return on Capital Employed: Efficiency of capital utilization">
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Return on Capital Employed: Efficiency of capital utilization">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">ROCE</div>
                   <div className="text-white font-mono font-bold">{formatMetric('roce', fundData.roce)}</div>
                 </div>
-                <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center">
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
                   <div className="text-gray-500 text-xs mb-1">Book Value</div>
                   <div className="text-white font-mono font-bold">{formatMetric('book_value', fundData.book_value)}</div>
                 </div>
-                <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center">
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
                   <div className="text-gray-500 text-xs mb-1">EPS</div>
                   <div className="text-white font-mono font-bold">{formatMetric('eps', fundData.eps)}</div>
                 </div>
-                <div className="bg-[#0d1117] p-3 rounded border border-[#30363d] text-center">
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
                   <div className="text-gray-500 text-xs mb-1">Dividend Yield</div>
                   <div className="text-white font-mono font-bold">{formatMetric('dividend_yield', fundData.dividend_yield)}</div>
                 </div>
@@ -988,8 +999,8 @@ const StockDetail = () => {
 
               {/* 2. GROWTH & 3. SHAREHOLDING PATTERN */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="border border-[#30363d] rounded-lg p-4 bg-[#0d1117]">
-                  <h3 className="text-md font-bold text-gray-300 mb-3 border-b border-[#30363d] pb-2">Growth YoY</h3>
+                <div className="border border-surface-800 rounded-lg p-4 bg-surface-900">
+                  <h3 className="text-md font-bold text-gray-300 mb-3 border-b border-surface-800 pb-2">Growth YoY</h3>
                   <div className="space-y-3 font-mono text-sm">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 font-sans">Revenue Growth YoY</span>
@@ -1012,16 +1023,16 @@ const StockDetail = () => {
                   </div>
                 </div>
 
-                <div className="border border-[#30363d] rounded-lg p-4 bg-[#0d1117]">
-                  <h3 className="text-md font-bold text-gray-300 mb-3 border-b border-[#30363d] pb-2">Shareholding Pattern</h3>
+                <div className="border border-surface-800 rounded-lg p-4 bg-surface-900">
+                  <h3 className="text-md font-bold text-gray-300 mb-3 border-b border-surface-800 pb-2">Shareholding Pattern</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <div className="flex justify-between"><span className="text-gray-500 font-sans">Promoter</span><span className={fundData.promoter_holding > 50 ? "text-[#00c853] font-bold" : "text-white"}>{fundData.promoter_holding ? `${fundData.promoter_holding}%` : 'N/A'}</span></div>
                     <div className="flex justify-between"><span className="text-gray-500 font-sans">FII</span><span className="text-white">{fundData.fii_holding ? `${fundData.fii_holding}%` : 'N/A'}</span></div>
                     <div className="flex justify-between"><span className="text-gray-500 font-sans">DII</span><span className="text-white">{fundData.dii_holding ? `${fundData.dii_holding}%` : 'N/A'}</span></div>
                     <div className="flex justify-between"><span className="text-gray-500 font-sans">Public</span><span className="text-white">{fundData.shareholding?.public_holding ? `${fundData.shareholding.public_holding}%` : 'N/A'}</span></div>
-                    <div className="flex justify-between border-t border-[#30363d] pt-2 mt-2">
+                    <div className="flex justify-between border-t border-surface-800 pt-2 mt-2">
                       <span className="text-gray-500 font-sans">Promoter Pledge</span>
-                      <span className={`${fundData.promoter_pledge > 25 ? "text-[#ff1744] font-bold" : fundData.promoter_pledge > 10 ? "text-[#f0b429]" : "text-white"}`}>
+                      <span className={`${fundData.promoter_pledge > 25 ? "text-[#ff1744] font-bold" : fundData.promoter_pledge > 10 ? "text-[#10b981]" : "text-white"}`}>
                         {fundData.promoter_pledge !== null && fundData.promoter_pledge !== undefined ? `${fundData.promoter_pledge}%` : '0%'}
                       </span>
                     </div>
@@ -1031,11 +1042,11 @@ const StockDetail = () => {
 
               {/* 4. QUARTERLY RESULTS TABLE */}
               {fundData.quarterly_results && fundData.quarterly_results.quarters && (
-                <div className="border border-[#30363d] rounded-lg p-4 bg-[#0d1117] overflow-x-auto">
+                <div className="border border-surface-800 rounded-lg p-4 bg-surface-900 overflow-x-auto">
                   <h3 className="text-md font-bold text-gray-300 mb-3 pb-2">Quarterly Results (Last 4 Quarters)</h3>
                   <table className="w-full text-left text-sm font-mono">
                     <thead>
-                      <tr className="border-b border-[#30363d] text-gray-500">
+                      <tr className="border-b border-surface-800 text-gray-500">
                         <th className="pb-2 font-sans font-normal">Quarter</th>
                         {fundData.quarterly_results.quarters.slice(0, 4).map((q, i) => <th key={i} className="pb-2 text-right">{q}</th>)}
                       </tr>
@@ -1070,7 +1081,7 @@ const StockDetail = () => {
                         if (!hasData) return null;
                         
                         return (
-                          <tr key={row.label} className="border-b border-[#30363d]/50">
+                          <tr key={row.label} className="border-b border-surface-800/50">
                             <td className="py-2 text-gray-400 font-sans">{row.label}</td>
                             {quarterly.quarters.slice(0, 4).map((q, i) => (
                               <td key={q} className={`py-2 text-right ${
@@ -1091,7 +1102,7 @@ const StockDetail = () => {
               {/* 5. ANNUAL TREND */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 {fundData.annual_results?.revenue && (
-                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+                  <div className="bg-surface-850 border border-surface-800 rounded-lg p-4">
                     <p className="text-gray-400 text-sm mb-2 font-bold uppercase tracking-wider">
                       Revenue Trend (₹ Cr)
                     </p>
@@ -1118,7 +1129,7 @@ const StockDetail = () => {
                 )}
                 
                 {fundData.annual_results?.net_profit && (
-                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+                  <div className="bg-surface-850 border border-surface-800 rounded-lg p-4">
                     <p className="text-gray-400 text-sm mb-2 font-bold uppercase tracking-wider">
                       Net Profit Trend (₹ Cr)
                     </p>
@@ -1131,7 +1142,7 @@ const StockDetail = () => {
                         return (
                           <div
                             key={i}
-                            className={`flex-1 rounded-t transition-colors ${val >= 0 ? 'bg-orange-400/60 hover:bg-orange-400' : 'bg-red-500/60 hover:bg-red-500'}`}
+                            className={`flex-1 rounded-t transition-colors ${val >= 0 ? 'bg-emerald-400/60 hover:bg-emerald-400' : 'bg-red-500/60 hover:bg-red-500'}`}
                             style={{ height: `${Math.max(5, height)}%` }}
                             title={`₹${val} Cr`}
                           />
@@ -1146,10 +1157,10 @@ const StockDetail = () => {
               </div>
 
               {/* 5. SCORE CARD */}
-              <div className="bg-[#161b22] border border-[#f0b429]/50 rounded-lg p-5">
-                <div className="flex items-center justify-between mb-4 border-b border-[#30363d] pb-3">
-                  <h3 className="font-bold text-[#f0b429] text-lg">Fundamental Score Card</h3>
-                  <div className="text-2xl font-bold font-mono text-[#f0b429]">{fundData.fundamental_score}/100</div>
+              <div className="bg-surface-850 border border-[#10b981]/50 rounded-lg p-5">
+                <div className="flex items-center justify-between mb-4 border-b border-surface-800 pb-3">
+                  <h3 className="font-bold text-[#10b981] text-lg">Fundamental Score Card</h3>
+                  <div className="text-2xl font-bold font-mono text-[#10b981]">{fundData.fundamental_score}/100</div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1159,7 +1170,7 @@ const StockDetail = () => {
                       {fundData.strengths && fundData.strengths.length > 0 ? (
                         fundData.strengths.map((s, i) => (
                           <li key={i} className="flex items-start">
-                            <span className="text-[#00c853] mr-2">✅</span>
+                            <span className="text-[#00c853] mr-2"></span>
                             <span className="text-gray-300 text-sm">{s}</span>
                           </li>
                         ))
@@ -1174,7 +1185,7 @@ const StockDetail = () => {
                       {fundData.weaknesses && fundData.weaknesses.length > 0 ? (
                         fundData.weaknesses.map((w, i) => (
                           <li key={i} className="flex items-start">
-                            <span className="text-[#ff1744] mr-2">❌</span>
+                            <span className="text-[#ff1744] mr-2">âŒ</span>
                             <span className="text-gray-300 text-sm">{w}</span>
                           </li>
                         ))
@@ -1191,8 +1202,8 @@ const StockDetail = () => {
                 const validPeers = fundData.peers.filter(p => p.name && p.name.trim() !== '');
                 
                 return (
-                  <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-5 mt-4">
-                    <h3 className="text-white font-bold mb-4 border-b border-[#30363d] pb-2">
+                  <div className="bg-surface-850 border border-surface-800 rounded-xl p-5 mt-4">
+                    <h3 className="text-white font-bold mb-4 border-b border-surface-800 pb-2">
                       Peer Comparison
                     </h3>
                     
@@ -1210,7 +1221,7 @@ const StockDetail = () => {
                       <div className="overflow-x-auto pb-2">
                         <table className="w-full min-w-[700px] text-sm font-mono">
                           <thead>
-                            <tr className="text-gray-400 border-b border-[#30363d]">
+                            <tr className="text-gray-400 border-b border-surface-800">
                               <th className="text-left py-2 font-sans font-normal whitespace-nowrap">Company</th>
                               <th className="text-right py-2 px-3 font-sans font-normal whitespace-nowrap">Price</th>
                               <th className="text-right py-2 px-3 font-sans font-normal whitespace-nowrap">PE</th>
@@ -1229,7 +1240,7 @@ const StockDetail = () => {
                                              cursor-pointer transition-all">
                                 
                                 <td className="py-3 text-left whitespace-nowrap pr-2">
-                                  <span className="text-orange-400 font-medium">
+                                  <span className="text-emerald-400 font-medium">
                                     {peer.name || '-'}
                                   </span>
                                   {peer.symbol && (
@@ -1275,7 +1286,7 @@ const StockDetail = () => {
                     
                     <div className="mt-3 p-3 bg-gray-800 rounded-lg">
                       <p className="text-gray-400 text-xs">
-                        💡 Click any peer company to view 
+                        Click any peer company to view 
                         their full analysis and compare
                       </p>
                     </div>
@@ -1284,7 +1295,7 @@ const StockDetail = () => {
                       href={`https://www.screener.in/company/${cleanSymbol.replace('.NS','')}/`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-orange-400 hover:text-orange-300 mt-2 block"
+                      className="text-xs text-emerald-400 hover:text-emerald-300 mt-2 block"
                     >
                       View full peer comparison on Screener.in →
                     </a>
@@ -1307,11 +1318,11 @@ const StockDetail = () => {
                 onClick={() => fetchNews(true)}
                 className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded border border-gray-600 transition-colors"
               >
-                🔄 Refresh
+                ðŸ”„ Refresh
               </button>
             </div>
             {isNewsLoading ? (
-              <div className="flex justify-center py-20 text-[#f0b429]"><Activity className="animate-pulse" /></div>
+              <div className="flex justify-center py-20 text-[#10b981]"><Activity className="animate-pulse" /></div>
             ) : (
               <div className="space-y-4">
                 {sentiment && (
@@ -1320,7 +1331,7 @@ const StockDetail = () => {
                     ? 'bg-green-900/30 border border-green-500/30'
                   : sentiment.overall_sentiment === 'Negative'
                     ? 'bg-red-900/30 border border-red-500/30'
-                    : 'bg-[#0d1117] border border-[#30363d]'
+                    : 'bg-surface-900 border border-surface-800'
                 }`}>
                   <div className="flex justify-between items-center">
                     <div>
@@ -1350,13 +1361,13 @@ const StockDetail = () => {
                   
                   <div className="flex gap-4 mt-3">
                     <span className="text-green-400 text-sm">
-                      ✅ {sentiment.positive_count} Positive
+                      {sentiment.positive_count} Positive
                     </span>
                     <span className="text-red-400 text-sm">
-                      ❌ {sentiment.negative_count} Negative
+                      âŒ {sentiment.negative_count} Negative
                     </span>
-                    <span className="text-gray-400 text-sm">
-                      ⚪ {sentiment.neutral_count} Neutral
+                    <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+                      {sentiment.neutral_count} Neutral
                     </span>
                   </div>
                 </div>
@@ -1368,14 +1379,14 @@ const StockDetail = () => {
                 const neutralNews = news.filter(n => !n.sentiment || n.sentiment === 'Neutral');
 
                 const renderArticles = (articles) => articles.map((article, i) => (
-                  <div key={i} className="p-4 rounded-xl bg-[#0d1117] 
-                                  border border-[#30363d] mb-3
-                                  hover:border-[#f0b429]/50 
+                  <div key={i} className="p-4 rounded-xl bg-surface-900 
+                                  border border-surface-800 mb-3
+                                  hover:border-[#10b981]/50 
                                   transition-all cursor-pointer"
                        onClick={() => window.open(article.url)}>
                     
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs text-[#f0b429] font-medium">
+                      <span className="text-xs text-[#10b981] font-medium">
                         {article.source}
                       </span>
                       <div className="flex items-center gap-2">
@@ -1387,15 +1398,15 @@ const StockDetail = () => {
                             ? 'bg-red-900/50 text-red-400'
                             : 'bg-gray-700 text-gray-400'
                         }`}>
-                          {article.sentiment === 'Positive' ? '🟢' 
-                           : article.sentiment === 'Negative' ? '🔴' 
-                           : '⚪'} {article.sentiment}
+                          {article.sentiment === 'Positive' ? '' 
+                           : article.sentiment === 'Negative' ? '' 
+                           : ''} {article.sentiment}
                         </span>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
                           article.impact === 'High'
-                            ? 'bg-orange-900/50 text-orange-400'
+                            ? 'bg-emerald-900/50 text-emerald-400'
                           : article.impact === 'Medium'
-                            ? 'bg-yellow-900/50 text-yellow-400'
+                            ? 'bg-yellow-900/50 text-emerald-400'
                             : 'bg-gray-700 text-gray-400'
                         }`}>
                           {article.impact} Impact
@@ -1409,7 +1420,7 @@ const StockDetail = () => {
                     
                     {article.reason && (
                       <p className="text-gray-400 text-xs italic">
-                        💡 {article.reason}
+                        {article.reason}
                       </p>
                     )}
                     
@@ -1424,7 +1435,7 @@ const StockDetail = () => {
                     {positiveNews.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-[#00c853] mb-3 flex items-center">
-                          🟢 Positive News
+                          Positive News
                         </h3>
                         {renderArticles(positiveNews)}
                       </div>
@@ -1432,7 +1443,7 @@ const StockDetail = () => {
                     {negativeNews.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-[#ff1744] mb-3 flex items-center">
-                          🔴 Negative News
+                          Negative News
                         </h3>
                         {renderArticles(negativeNews)}
                       </div>
@@ -1440,7 +1451,7 @@ const StockDetail = () => {
                     {neutralNews.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-400 mb-3 flex items-center">
-                          ⚪ Neutral News
+                          Neutral News
                         </h3>
                         {renderArticles(neutralNews)}
                       </div>
@@ -1458,7 +1469,7 @@ const StockDetail = () => {
         {activeTab === 'ai' && (
           <div className="h-full">
             {aiLoading ? (
-              <div className="flex flex-col items-center justify-center py-20 text-[#f0b429]">
+              <div className="flex flex-col items-center justify-center py-20 text-[#10b981]">
                 <BrainCircuit className="animate-pulse w-16 h-16 mb-4" />
                 <p className="text-lg font-medium">Claude Opus is analyzing market data...</p>
                 <p className="text-sm text-gray-500 mt-2">Correlating technicals, fundamentals, and sentiment.</p>
@@ -1467,18 +1478,18 @@ const StockDetail = () => {
               <div className="space-y-8 animate-fade-in">
                 {/* Top Hero Section */}
                 <div className="flex flex-col md:flex-row gap-6 items-start">
-                  <div className="bg-gradient-to-br from-[#161b22] to-[#0d1117] border border-[#f0b429]/40 p-6 rounded-xl flex-1 w-full relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#f0b429] opacity-5 rounded-bl-full pointer-events-none" />
+                  <div className="bg-gradient-to-br from-[#161b22] to-[#0d1117] border border-[#10b981]/40 p-6 rounded-xl flex-1 w-full relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#10b981] opacity-5 rounded-bl-full pointer-events-none" />
                     <h2 className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">AI Verdict</h2>
                     <div className="text-3xl font-bold text-white mb-4">{aiAnalysis.verdict}</div>
                     <p className="text-gray-300 leading-relaxed">{aiAnalysis.summary}</p>
                   </div>
 
-                  <div className="bg-[#0d1117] border border-[#30363d] p-6 rounded-xl w-full md:w-64 flex flex-col items-center justify-center">
+                  <div className="bg-surface-900 border border-surface-800 p-6 rounded-xl w-full md:w-64 flex flex-col items-center justify-center">
                     <div className="relative w-24 h-24 mb-2">
                       <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                         <path className="text-[#30363d]" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        <path className="text-[#f0b429]" strokeDasharray={`${aiAnalysis.confidence}, 100`} strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path className="text-[#10b981]" strokeDasharray={`${aiAnalysis.confidence}, 100`} strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="text-xl font-bold text-white font-mono">{aiAnalysis.confidence}%</span>
@@ -1490,28 +1501,28 @@ const StockDetail = () => {
 
                 {/* Trade Setup */}
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center"><Target className="mr-2 text-[#f0b429]" size={20} /> Proposed Swing Trade Setup</h3>
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center"><Target className="mr-2 text-[#10b981]" size={20} /> Proposed Swing Trade Setup</h3>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div className="bg-[#0d1117] border border-[#30363d] p-4 rounded-lg text-center">
+                    <div className="bg-surface-900 border border-surface-800 p-4 rounded-lg text-center">
                       <div className="text-gray-500 text-xs mb-1">Entry Range</div>
                       <div className="text-white font-mono font-bold">{aiAnalysis.trade_setup.entry}</div>
                     </div>
-                    <div className="bg-[#0d1117] border border-[#ff1744]/30 p-4 rounded-lg text-center">
+                    <div className="bg-surface-900 border border-[#ff1744]/30 p-4 rounded-lg text-center">
                       <div className="text-gray-500 text-xs mb-1">Stop Loss</div>
                       <div className="text-[#ff1744] font-mono font-bold">{aiAnalysis.trade_setup.stop_loss}</div>
                       <div className="text-xs text-[#ff1744]/70 mt-1">({aiAnalysis.trade_setup.risk_percent} risk)</div>
                     </div>
-                    <div className="bg-[#0d1117] border border-[#00c853]/30 p-4 rounded-lg text-center">
+                    <div className="bg-surface-900 border border-[#00c853]/30 p-4 rounded-lg text-center">
                       <div className="text-gray-500 text-xs mb-1">Target 1</div>
                       <div className="text-[#00c853] font-mono font-bold">{aiAnalysis.trade_setup.target_1}</div>
                     </div>
-                    <div className="bg-[#0d1117] border border-[#00c853]/30 p-4 rounded-lg text-center">
+                    <div className="bg-surface-900 border border-[#00c853]/30 p-4 rounded-lg text-center">
                       <div className="text-gray-500 text-xs mb-1">Target 2</div>
                       <div className="text-[#00c853] font-mono font-bold">{aiAnalysis.trade_setup.target_2}</div>
                     </div>
-                    <div className="bg-[#0d1117] border border-[#30363d] p-4 rounded-lg text-center">
+                    <div className="bg-surface-900 border border-surface-800 p-4 rounded-lg text-center">
                       <div className="text-gray-500 text-xs mb-1">Risk / Reward</div>
-                      <div className="text-[#f0b429] font-mono font-bold">{aiAnalysis.trade_setup.risk_reward}</div>
+                      <div className="text-[#10b981] font-mono font-bold">{aiAnalysis.trade_setup.risk_reward}</div>
                     </div>
                   </div>
                 </div>
@@ -1550,7 +1561,7 @@ const StockDetail = () => {
                       <h4 className="text-gray-300 font-bold mb-2">Key Levels to Watch</h4>
                       <div className="flex flex-wrap gap-2">
                         {aiAnalysis.key_levels_to_watch.map((kl, i) => (
-                          <span key={i} className="bg-[#0d1117] border border-[#30363d] text-gray-300 text-xs px-2 py-1 rounded font-mono">{kl}</span>
+                          <span key={i} className="bg-surface-900 border border-surface-800 text-gray-300 text-xs px-2 py-1 rounded font-mono">{kl}</span>
                         ))}
                       </div>
                     </div>
