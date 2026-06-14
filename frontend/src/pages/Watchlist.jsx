@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
@@ -345,9 +346,17 @@ const Watchlist = () => {
                     </div>
 
                     {/* Stock Rows */}
-                    {stocks.map(stock => (
-                      <div
+                    <AnimatePresence>
+                    {stocks.map((stock, i) => (
+                      <motion.div
                         key={stock.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ 
+                          duration: 0.2, 
+                          delay: i * 0.05 
+                        }}
                         className="grid grid-cols-5 gap-2 px-3 py-3.5 rounded-xl hover:bg-surface-800/50 cursor-pointer border-b border-surface-800/50 last:border-b-0 items-center transition-colors"
                         onClick={() => {
                           const s = stock.symbol.toUpperCase();
@@ -400,8 +409,9 @@ const Watchlist = () => {
                         >
                           x
                         </button>
-                      </div>
+                      </motion.div>
                     ))}
+                    </AnimatePresence>
                   </div>
                 )}
               </div>
