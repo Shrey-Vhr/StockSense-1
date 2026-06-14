@@ -5,6 +5,14 @@ import { TrendingUp, TrendingDown, RefreshCw, ChevronRight, Activity, Newspaper,
 import api from '../utils/api';
 import useStore from '../store/useStore';
 import SectorHeatmap from '../components/Dashboard/SectorHeatmap';
+import useCountUp from '../hooks/useCountUp';
+
+const AnimatedPrice = ({ value }) => {
+  const animated = useCountUp(
+    value, 800, 2
+  );
+  return <>{animated.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>;
+};
 
 const safeArray = (data) => {
   if (!data) return [];
@@ -165,7 +173,7 @@ const Dashboard = () => {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-gray-200 font-semibold text-base group-hover:text-emerald-400 transition-colors">{idx.symbol === '^NSEI' ? 'Nifty 50' : idx.symbol === '^NSEBANK' ? 'BankNifty' : idx.symbol}</h3>
-                <div className="mt-2 text-2xl font-bold text-white font-mono">{idx.current_price?.toFixed(2)}</div>
+                <div className="mt-2 text-2xl font-bold text-white font-mono"><AnimatedPrice value={idx.current_price} /></div>
               </div>
               <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border ${idx.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
                 {idx.change_percent >= 0 ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
