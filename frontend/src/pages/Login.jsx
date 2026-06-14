@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { LineChart, Eye, EyeOff, TrendingUp, 
          Shield, Zap } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { motion } from 'framer-motion';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -75,7 +76,12 @@ const Login = () => {
         </div>
 
         {/* Main copy */}
-        <div className="relative z-10">
+        <motion.div 
+          className="relative z-10"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
           <h1 className="text-4xl font-bold 
                          text-gray-50 
                          leading-tight mb-4">
@@ -112,9 +118,16 @@ const Login = () => {
                 text: 'AI-powered news sentiment analysis'
               },
             ].map((f, i) => (
-              <div key={i} 
+              <motion.div key={i} 
                    className="flex items-center 
-                              gap-3">
+                              gap-3"
+                   initial={{ opacity: 0, x: -20 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   transition={{ 
+                     duration: 0.4, 
+                     delay: 0.4 + i * 0.1 
+                   }}
+              >
                 <div className="w-8 h-8 rounded-lg 
                                 bg-emerald-500/10 
                                 border 
@@ -129,10 +142,10 @@ const Login = () => {
                                  text-sm">
                   {f.text}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Bottom stats */}
         <div className="grid grid-cols-3 gap-4 
@@ -142,11 +155,18 @@ const Login = () => {
             { value: '35+', label: 'Indicators' },
             { value: '16', label: 'Patterns' },
           ].map((s, i) => (
-            <div key={i} 
+            <motion.div key={i} 
                  className="bg-surface-850 border 
                             border-surface-800 
                             rounded-xl p-3 
-                            text-center">
+                            text-center"
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ 
+                   duration: 0.4, 
+                   delay: 0.6 + i * 0.1 
+                 }}
+            >
               <div className="text-xl font-bold 
                               text-emerald-400 
                               font-mono">
@@ -156,7 +176,7 @@ const Login = () => {
                               text-xs mt-0.5">
                 {s.label}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -165,7 +185,12 @@ const Login = () => {
       <div className="w-full lg:w-1/2 flex 
                       items-center justify-center 
                       p-8">
-        <div className="w-full max-w-md">
+        <motion.div 
+          className="w-full max-w-md"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
           
           {/* Mobile logo */}
           <div className="flex items-center 
@@ -186,7 +211,12 @@ const Login = () => {
           </div>
 
           {/* Form header */}
-          <div className="mb-8">
+          <motion.div 
+            className="mb-8"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
             <h2 className="text-2xl font-bold 
                            text-gray-50">
               Welcome back
@@ -194,7 +224,7 @@ const Login = () => {
             <p className="text-gray-500 text-sm mt-1">
               Sign in to your StockSense account
             </p>
-          </div>
+          </motion.div>
 
           {/* Error */}
           {error && (
@@ -326,7 +356,7 @@ const Login = () => {
               Sign up for free
             </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
