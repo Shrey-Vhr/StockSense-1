@@ -12,41 +12,80 @@ class AngelOneService:
     self.is_connected = False
   
   def login(self):
-    try:
-      self.api = SmartConnect(api_key=settings.ANGEL_ONE_API_KEY)
-      
-      # Generate TOTP
-      totp = pyotp.TOTP(settings.ANGEL_ONE_TOTP_SECRET).now()
-      
-      # Login
-      data = self.api.generateSession(
-        settings.ANGEL_ONE_CLIENT_ID,
-        settings.ANGEL_ONE_PASSWORD,
-        totp
-      )
-      
-      if data['status']:
-        self.auth_token = data['data']['jwtToken']
-        self.feed_token = self.api.getfeedToken()
-        self.last_login = time.time()
-        self.is_connected = True
-        print("Angel One login successful")
-        return True
-      else:
-        print(f"Angel One login failed: {data}")
-        return False
+    max_retries = 3
+    
+    for attempt in range(max_retries):
+      try:
+        self.api = SmartConnect(
+          api_key=settings.ANGEL_ONE_API_KEY
+        )
         
-    except Exception as e:
-      print(f"Angel One login error: {e}")
-      self.is_connected = False
-      return False
+        # Wait for next TOTP window if retrying
+        if attempt > 0:
+          print(f"Retry {attempt} — waiting for "
+                f"next TOTP window...")
+          time.sleep(31)
+        
+        # Generate TOTP
+        totp_obj = pyotp.TOTP(
+          settings.ANGEL_ONE_TOTP_SECRET
+        )
+        totp = totp_obj.now()
+        print(f"[Attempt {attempt+1}] TOTP: {totp}")
+        
+        # Login
+        data = self.api.generateSession(
+          settings.ANGEL_ONE_CLIENT_ID,
+          settings.ANGEL_ONE_PASSWORD,
+          totp
+        )
+        
+        if data['status']:
+          self.auth_token = data['data']['jwtToken']
+          self.feed_token = self.api.getfeedToken()
+          self.last_login = time.time()
+          self.is_connected = True
+          print("Angel One login successful!")
+          return True
+        else:
+          error = data.get('errorcode', '')
+          print(f"[Attempt {attempt+1}] Failed: "
+                f"{data.get('message', '')}")
+          
+          # AB1050 = invalid TOTP — retry
+          # Other errors — don't retry
+          if error != 'AB1050':
+            break
+            
+      except Exception as e:
+        print(f"Angel One login error: {e}")
+        if attempt == max_retries - 1:
+          self.is_connected = False
+          return False
+    
+    self.is_connected = False
+    return False
   
   def ensure_logged_in(self):
-    # Re-login if token expired (tokens last ~24 hours)
+    # Re-login if not connected
     if not self.is_connected or not self.last_login:
       return self.login()
-    if time.time() - self.last_login > 82800:  # 23 hours
+    
+    # Angel One tokens last ~24h
+    # Re-login after 22 hours to be safe
+    if time.time() - self.last_login > 79200:
+      print("Angel One token expiring, re-logging...")
       return self.login()
+    
+    # Test if connection still alive
+    try:
+      profile = self.api.getProfile(self.auth_token)
+      if not profile.get('status'):
+        print("Angel One session dead, re-logging...")
+        return self.login()
+    except:
+      return self.login()
+    
     return True
   
   def get_quote(self, symbol):
