@@ -85,15 +85,30 @@ class AIService:
         e20, e50 = emas.get('ema20'), emas.get('ema50')
         ema_status = f"20EMA({e20}) vs 50EMA({e50})" if e20 and e50 else "N/A"
         
-        fund_score = fund.get('analysis', {}).get('score', 50)
-        fund_metrics = fund.get('metrics', {})
-        pe = fund_metrics.get('valuation', {}).get('pe_ratio', 'N/A')
-        roe = fund_metrics.get('quality', {}).get('roe', 'N/A')
-        roe_val = roe * 100 if roe and roe != 'N/A' else 'N/A'
-        de = fund_metrics.get('health', {}).get('debt_to_equity', 'N/A')
-        rev_growth = fund_metrics.get('growth', {}).get('revenue_growth_yoy_pct', 'N/A')
-        profit_growth = fund_metrics.get('growth', {}).get('profit_growth_yoy_pct', 'N/A')
-        promoter = fund_metrics.get('ownership', {}).get('promoter_holding_pct', 'N/A')
+        fund_score = fund.get('fundamental_score', 50)
+        
+        pe = fund.get('pe_ratio', 'N/A')
+        
+        roe_raw = fund.get('roe', 'N/A')
+        if roe_raw and roe_raw != 'N/A':
+            roe_val = round(float(roe_raw) * 100, 2) if float(roe_raw) < 1 else round(float(roe_raw), 2)
+        else:
+            roe_val = 'N/A'
+        
+        de = fund.get('debt_to_equity', 'N/A')
+        rev_growth = fund.get('revenue_growth_yoy', 'N/A')
+        profit_growth = fund.get('profit_growth_yoy', 'N/A')
+        promoter = fund.get('promoter_holding', 'N/A')
+        
+        sector = fund.get('sector', quote.get('sector', 'N/A'))
+        company_name = fund.get('company_name', 
+                       quote.get('company_name', symbol))
+        market_cap = fund.get('market_cap', 
+                     quote.get('market_cap', 'N/A'))
+        
+        logger.info(f"Fund data extracted: PE={pe}, ROE={roe_val}, "
+                    f"D/E={de}, RevGrowth={rev_growth}, "
+                    f"ProfitGrowth={profit_growth}, Promoter={promoter}")
         
         sentiment_score = "N/A"
         top_headlines = ""
