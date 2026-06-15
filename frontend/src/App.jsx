@@ -10,6 +10,7 @@ import Watchlist from './pages/Watchlist'
 import Login from './pages/Login'
 import IndexDetail from './pages/IndexDetail'
 import ETFDetail from './pages/ETFDetail'
+import AIAnalysis from './pages/AIAnalysis'
 import Layout from './components/Layout/Layout'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
 import SplashScreen from './components/SplashScreen'
@@ -38,6 +39,7 @@ const AppContent = () => {
             <Route path="portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
             <Route path="news" element={<PageTransition><News /></PageTransition>} />
             <Route path="watchlist" element={<PageTransition><Watchlist /></PageTransition>} />
+            <Route path="ai-analysis" element={<PageTransition><AIAnalysis /></PageTransition>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>

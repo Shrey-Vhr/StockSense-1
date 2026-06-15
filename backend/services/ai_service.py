@@ -34,7 +34,7 @@ def rate_limit_cache(ttl_seconds=300):
 
 class AIService:
     @staticmethod
-    def _call_claude(system_prompt: str, user_prompt: str, model="claude-3-opus-20240229"):
+    def _call_claude(system_prompt: str, user_prompt: str, model="claude-sonnet-4-6"):
         if not settings.ANTHROPIC_API_KEY:
             return {"error": "Anthropic API key is not configured in environment variables."}
             
@@ -42,7 +42,7 @@ class AIService:
             client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
             response = client.messages.create(
                 model=model,
-                max_tokens=1500,
+                max_tokens=4000,
                 temperature=0.2,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_prompt}]
@@ -56,9 +56,10 @@ class AIService:
                 text = text.split("```")[1].split("```")[0].strip()
                 
             return json.loads(text)
-        except json.JSONDecodeError:
-            logger.error(f"Failed to parse Claude JSON: {text}")
-            return {"error": "AI returned malformed JSON response"}
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse Claude JSON. Error: {e}")
+            logger.error(f"Raw text received: {text[:500]}")
+            return {"error": f"AI returned malformed JSON: {str(e)}"}
         except Exception as e:
             logger.error(f"Claude API error: {e}")
             return {"error": f"AI Engine error: {str(e)}"}
@@ -165,14 +166,57 @@ Provide a comprehensive analysis in this exact JSON format:
   }},
   "risk_level": "Low/Medium/High/Very High",
   "risk_factors": ["list of specific risks"],
-  "bull_case": "why this trade works",
-  "bear_case": "why this trade fails",
+  "summary": "3-sentence plain English summary",
+  "bull_case": "why this works",
+  "bear_case": "why this fails",
+  "red_flags": ["list"],
+  "key_levels_to_watch": ["price levels"],
   "technical_reasoning": "detailed explanation",
   "fundamental_reasoning": "detailed explanation",
-  "news_impact": "how news affects this trade",
-  "key_levels_to_watch": ["price levels"],
-  "red_flags": ["any concerns"],
-  "summary": "3-sentence plain English summary"
+  "news_impact": "how news affects this",
+  "timeframes": {{
+    "intraday": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "entry": "price or range",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "risk_reward": "ratio",
+      "reasoning": "why for intraday specifically"
+    }},
+    "swing": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X-Y days",
+      "entry": "price or range",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "target_3": "price",
+      "risk_reward": "ratio",
+      "risk_percent": "% from entry to SL",
+      "reasoning": "why for swing specifically"
+    }},
+    "midterm": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X-Y months",
+      "entry": "price or range",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "risk_reward": "ratio",
+      "reasoning": "why for midterm specifically"
+    }},
+    "longterm": {{
+      "verdict": "Accumulate/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X+ years",
+      "reasoning": "fundamental thesis for long term",
+      "key_risks": ["risks specific to long term"]
+    }}
+  }}
 }}"""
 
         return await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt)

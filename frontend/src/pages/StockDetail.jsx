@@ -654,15 +654,26 @@ const StockDetail = () => {
   }, [historicalData]);
 
   const handleGenerateAI = async () => {
-    if (!techData || !fundData) return;
+    if (!techData) return;
     setAiLoading(true);
     setActiveTab('ai');
+
+    let fundamentalData = fundData;
+    if (!fundamentalData) {
+      try {
+        const res = await api.get(`/analysis/fundamental/${cleanSymbol}`);
+        fundamentalData = res.data;
+        setFundData(res.data);
+      } catch(e) {
+        fundamentalData = {};
+      }
+    }
 
     try {
       const payload = {
         quote: quote || {},
         technical: techData,
-        fundamental: fundData,
+        fundamental: fundamentalData,
         news: news.slice(0, 5),
         market_regime: 'Neutral', // Placeholder
         sector_performance: 'Neutral'
@@ -1548,6 +1559,68 @@ const StockDetail = () => {
                     </div>
                   </div>
                 </motion.div>
+
+                {aiAnalysis.timeframes && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-white">
+                      Analysis by Timeframe
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(aiAnalysis.timeframes).map(([tf, data]) => (
+                        <div key={tf} className="bg-surface-900 border border-surface-800 rounded-xl p-5">
+                          <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-white font-bold uppercase tracking-wider text-sm">
+                              {tf === 'intraday' ? 'Intraday' :
+                               tf === 'swing' ? 'Swing (Days)' :
+                               tf === 'midterm' ? 'Midterm (Months)' :
+                               'Long Term (Years)'}
+                            </h4>
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                              data.verdict?.includes('Take') || 
+                              data.verdict?.includes('Accumulate') ||
+                              data.verdict?.includes('Buy')
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              : data.verdict?.includes('Avoid')
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                : 'bg-gray-700 text-gray-300 border border-gray-600'
+                            }`}>
+                              {data.verdict}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500 mb-2">
+                            Confidence: <span className="text-emerald-400 font-mono font-bold">
+                              {data.confidence}%
+                            </span>
+                            {data.holding_period && (
+                              <span className="ml-3">
+                                Hold: {data.holding_period}
+                              </span>
+                            )}
+                          </div>
+                          {data.entry && (
+                            <div className="grid grid-cols-3 gap-2 mt-3 text-xs font-mono">
+                              <div className="bg-surface-850 rounded p-2 text-center">
+                                <div className="text-gray-500 mb-1">Entry</div>
+                                <div className="text-white">{data.entry}</div>
+                              </div>
+                              <div className="bg-surface-850 rounded p-2 text-center">
+                                <div className="text-gray-500 mb-1">SL</div>
+                                <div className="text-red-400">{data.stop_loss}</div>
+                              </div>
+                              <div className="bg-surface-850 rounded p-2 text-center">
+                                <div className="text-gray-500 mb-1">T1</div>
+                                <div className="text-emerald-400">{data.target_1}</div>
+                              </div>
+                            </div>
+                          )}
+                          <p className="text-gray-400 text-xs mt-3 leading-relaxed">
+                            {data.reasoning}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Deep Dive Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
