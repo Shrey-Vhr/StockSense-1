@@ -1,6 +1,9 @@
 from fastapi import APIRouter, HTTPException, Query, Body
 from typing import Dict, Any, List
+import logging
 from services.ai_service import AIService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -17,7 +20,9 @@ async def analyze_stock(symbol: str, data_bundle: Dict[str, Any] = Body(...)):
         "sector_performance": "Strong"
     }
     """
-    result = await AIService.generate_stock_analysis(symbol, data_bundle)
+    analysis_type = data_bundle.get('analysis_type', 'full')
+    logger.info(f"Received analysis_type: {analysis_type}")
+    result = await AIService.generate_stock_analysis(symbol, data_bundle, analysis_type)
     if "error" in result:
         # Check if rate limited or API error
         status_code = 429 if "rate limit" in result["error"].lower() else 500

@@ -8,30 +8,6 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-# Rate limiter / Cache to enforce max 1 analysis per stock per 5 minutes (300 seconds)
-def rate_limit_cache(ttl_seconds=300):
-    cache = {}
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            # Create a cache key from arguments (e.g. symbol name)
-            key = str(args) + str(kwargs)
-            now = time.time()
-            
-            if key in cache:
-                result, timestamp = cache[key]
-                if now - timestamp < ttl_seconds:
-                    logger.info(f"Rate limit active. Returning cached AI response for {key}.")
-                    return result
-                    
-            result = await func(*args, **kwargs)
-            
-            if isinstance(result, dict) and "error" not in result:
-                cache[key] = (result, now)
-            return result
-        return wrapper
-    return decorator
-
 class AIService:
     @staticmethod
     def _call_claude(system_prompt: str, user_prompt: str, model="claude-sonnet-4-6"):
@@ -65,8 +41,11 @@ class AIService:
             return {"error": f"AI Engine error: {str(e)}"}
 
     @staticmethod
-    @rate_limit_cache(ttl_seconds=300)
-    async def generate_stock_analysis(symbol: str, data_bundle: dict):
+    async def generate_stock_analysis(
+        symbol: str, data_bundle: dict, 
+        analysis_type: str = 'full'
+    ):
+        logger.info(f"AI Analysis called: {symbol} | type: {analysis_type}")
         system_prompt = (
             "You are an expert Indian stock market analyst with 20 years of experience in NSE/BSE markets. "
             "You specialize in swing trading using technical and fundamental analysis. "
@@ -121,40 +100,269 @@ class AIService:
         if news and isinstance(news, list) and len(news) > 0:
             top_headlines = "; ".join([n.get('title', '') for n in news[:5]])
 
-        user_prompt = f"""Analyze {symbol} ({company_name}) for a potential swing trade.
+        if analysis_type == 'trade_setup':
+            user_prompt = f"""You are a trading desk analyst.
+For {symbol} ({company_name}) at ₹{price}, 
+give ONLY trade setup details. No fluff.
 
-Current Data:
-- Price: ₹{price} | Change: {change}%
-- Market Cap: ₹{market_cap}
-- Sector: {sector}
+Technical: Trend={trend}, RSI={rsi}, 
+MACD={macd_signal}, Support=₹{support}, 
+Resistance=₹{resistance}, Pattern={pattern_str}
 
-Technical Analysis:
-- Trend: {trend} | Score: {tech_score}/100
-- RSI: {rsi} | MACD: {macd_signal}
-- EMA Status: {ema_status}
-- ADX: {adx} (Trend Strength)
-- Volume: {rel_volume}x average
-- Pattern Detected: {pattern_str}
-- Support: ₹{support} | Resistance: ₹{resistance}
+Respond in this exact JSON:
+{{
+  "verdict": "Take/Avoid/Wait",
+  "confidence": 0-100,
+  "summary": "One sentence on whether to trade now",
+  "risk_level": "Low/Medium/High/Very High",
+  "bull_case": "one sentence",
+  "bear_case": "one sentence", 
+  "red_flags": ["list"],
+  "key_levels_to_watch": ["levels"],
+  "technical_reasoning": "detailed entry logic",
+  "fundamental_reasoning": "one sentence only",
+  "news_impact": "one sentence only",
+  "trade_setup": {{
+    "entry": "exact price or range",
+    "stop_loss": "exact price",
+    "target_1": "price",
+    "target_2": "price",
+    "target_3": "price",
+    "risk_reward": "ratio",
+    "risk_percent": "% risk"
+  }},
+  "timeframes": {{
+    "intraday": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "entry": "price",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "risk_reward": "ratio",
+      "reasoning": "intraday specific logic"
+    }},
+    "swing": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X-Y days",
+      "entry": "price",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "target_3": "price",
+      "risk_reward": "ratio",
+      "risk_percent": "% risk",
+      "reasoning": "swing specific logic"
+    }},
+    "midterm": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X-Y months",
+      "entry": "price",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "risk_reward": "ratio",
+      "reasoning": "midterm logic"
+    }},
+    "longterm": {{
+      "verdict": "Accumulate/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X+ years",
+      "reasoning": "long term thesis",
+      "key_risks": ["risks"]
+    }}
+  }}
+}}"""
 
-Fundamental Analysis:
-- Fundamental Score: {fund_score}/100
-- PE: {pe} (Sector avg: N/A)
-- ROE: {roe_val}% | Debt/Equity: {de}
-- Revenue Growth: {rev_growth}% | Profit Growth: {profit_growth}%
-- Promoter Holding: {promoter}%
+        elif analysis_type == 'risk':
+            user_prompt = f"""You are a risk manager. 
+Assess ALL risks for {symbol} ({company_name}) at ₹{price}.
+Be brutally honest about what can go wrong.
 
-Recent News Sentiment: {sentiment_score}/10
-Top News: {top_headlines}
+Data: Trend={trend}, RSI={rsi}, ADX={adx},
+Tech Score={tech_score}/100, Fund Score={fund_score}/100,
+Promoter={promoter}%, Support=₹{support}
 
-Market Regime: {market_regime}
-Sector Strength: {sector_perf}
+Respond in this exact JSON:
+{{
+  "verdict": "Low Risk/Medium Risk/High Risk/Very High Risk",
+  "confidence": 0-100,
+  "summary": "Risk assessment in 2 sentences",
+  "risk_level": "Low/Medium/High/Very High",
+  "bull_case": "only scenario where risk is worth it",
+  "bear_case": "worst case scenario with price targets",
+  "red_flags": [
+    "list every specific risk you see minimum 6 items"
+  ],
+  "key_levels_to_watch": [
+    "levels where risk increases significantly"
+  ],
+  "technical_reasoning": "technical risk factors in detail",
+  "fundamental_reasoning": "fundamental risk factors in detail",
+  "news_impact": "macro and news risks",
+  "trade_setup": {{
+    "entry": "only if risk is manageable",
+    "stop_loss": "strict stop loss for risk management",
+    "target_1": "conservative target",
+    "target_2": "optimistic target",
+    "target_3": "best case",
+    "risk_reward": "ratio",
+    "risk_percent": "max acceptable risk %"
+  }},
+  "timeframes": {{
+    "intraday": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "entry": "price",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "risk_reward": "ratio",
+      "reasoning": "intraday risk assessment"
+    }},
+    "swing": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X-Y days",
+      "entry": "price",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "target_3": "price",
+      "risk_reward": "ratio",
+      "risk_percent": "% risk",
+      "reasoning": "swing risk assessment"
+    }},
+    "midterm": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X-Y months",
+      "entry": "price",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "risk_reward": "ratio",
+      "reasoning": "midterm risk factors"
+    }},
+    "longterm": {{
+      "verdict": "Accumulate/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "X+ years",
+      "reasoning": "long term risk vs reward",
+      "key_risks": ["specific long term risks"]
+    }}
+  }}
+}}"""
 
-Provide a comprehensive analysis in this exact JSON format:
+        elif analysis_type == 'fundamental':
+            user_prompt = f"""You are a fundamental analyst (CFA).
+Deep dive on {symbol} ({company_name}) fundamentals only.
+Ignore short term price action almost entirely.
+
+Fundamentals: PE={pe}, ROE={roe_val}%, D/E={de},
+Revenue Growth={rev_growth}%, Profit Growth={profit_growth}%,
+Promoter={promoter}%, Fund Score={fund_score}/100,
+Price=₹{price}, Market Cap={market_cap}
+
+Respond in this exact JSON:
+{{
+  "verdict": "Strong Buy/Buy/Hold/Sell/Strong Sell",
+  "confidence": 0-100,
+  "summary": "Fundamental verdict in 2-3 sentences",
+  "risk_level": "Low/Medium/High/Very High",
+  "bull_case": "fundamental bull thesis",
+  "bear_case": "fundamental bear thesis",
+  "red_flags": ["fundamental red flags only"],
+  "key_levels_to_watch": ["valuation levels to watch"],
+  "technical_reasoning": "ignore technicals, say N/A for short term",
+  "fundamental_reasoning": "deep 5-6 sentence fundamental analysis covering valuation, quality, growth, and management",
+  "news_impact": "fundamental catalysts to watch",
+  "trade_setup": {{
+    "entry": "fundamental value buy zone",
+    "stop_loss": "price that breaks fundamental thesis",
+    "target_1": "fair value estimate",
+    "target_2": "optimistic valuation",
+    "target_3": "bull case valuation",
+    "risk_reward": "ratio",
+    "risk_percent": "% from entry to thesis break"
+  }},
+  "timeframes": {{
+    "intraday": {{
+      "verdict": "Avoid",
+      "confidence": 0,
+      "entry": "N/A",
+      "stop_loss": "N/A",
+      "target_1": "N/A",
+      "target_2": "N/A",
+      "risk_reward": "N/A",
+      "reasoning": "Fundamental analysis not relevant for intraday"
+    }},
+    "swing": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "weeks",
+      "entry": "price",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "target_3": "price",
+      "risk_reward": "ratio",
+      "risk_percent": "% risk",
+      "reasoning": "fundamental backing for swing"
+    }},
+    "midterm": {{
+      "verdict": "Take/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "months",
+      "entry": "price",
+      "stop_loss": "price",
+      "target_1": "price",
+      "target_2": "price",
+      "risk_reward": "ratio",
+      "reasoning": "fundamental midterm thesis"
+    }},
+    "longterm": {{
+      "verdict": "Accumulate/Avoid/Wait",
+      "confidence": 0-100,
+      "holding_period": "years",
+      "reasoning": "core long term fundamental thesis in detail",
+      "key_risks": ["fundamental risks to monitor"]
+    }}
+  }}
+}}"""
+
+        else:  # full analysis
+            user_prompt = f"""Analyze {symbol} ({company_name}) 
+comprehensively for all trade timeframes.
+
+Price: ₹{price} | Change: {change}%
+Technical: Trend={trend}, Score={tech_score}/100,
+RSI={rsi}, MACD={macd_signal}, ADX={adx},
+Pattern={pattern_str}, Support=₹{support}, 
+Resistance=₹{resistance}, Volume={rel_volume}x avg
+
+Fundamental: Score={fund_score}/100, PE={pe},
+ROE={roe_val}%, D/E={de}, Rev Growth={rev_growth}%,
+Profit Growth={profit_growth}%, Promoter={promoter}%
+
+Market: {market_regime} | Sector: {sector_perf}
+News: {top_headlines}
+
+Respond in this exact JSON:
 {{
   "verdict": "Strong Buy/Buy/Neutral/Avoid/Strong Avoid",
   "confidence": 0-100,
-  "holding_period": "X-Y weeks",
+  "summary": "3 sentence balanced summary",
+  "risk_level": "Low/Medium/High/Very High",
+  "bull_case": "detailed bull thesis",
+  "bear_case": "detailed bear thesis",
+  "red_flags": ["all concerns"],
+  "key_levels_to_watch": ["all key price levels"],
+  "technical_reasoning": "detailed technical analysis",
+  "fundamental_reasoning": "detailed fundamental analysis",
+  "news_impact": "news and macro impact",
   "trade_setup": {{
     "entry": "price or range",
     "stop_loss": "price",
@@ -162,59 +370,49 @@ Provide a comprehensive analysis in this exact JSON format:
     "target_2": "price",
     "target_3": "price",
     "risk_reward": "ratio",
-    "risk_percent": "% from entry to SL"
+    "risk_percent": "% risk"
   }},
-  "risk_level": "Low/Medium/High/Very High",
-  "risk_factors": ["list of specific risks"],
-  "summary": "3-sentence plain English summary",
-  "bull_case": "why this works",
-  "bear_case": "why this fails",
-  "red_flags": ["list"],
-  "key_levels_to_watch": ["price levels"],
-  "technical_reasoning": "detailed explanation",
-  "fundamental_reasoning": "detailed explanation",
-  "news_impact": "how news affects this",
   "timeframes": {{
     "intraday": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
-      "entry": "price or range",
+      "entry": "price",
       "stop_loss": "price",
       "target_1": "price",
       "target_2": "price",
       "risk_reward": "ratio",
-      "reasoning": "why for intraday specifically"
+      "reasoning": "intraday specific"
     }},
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
       "holding_period": "X-Y days",
-      "entry": "price or range",
+      "entry": "price",
       "stop_loss": "price",
       "target_1": "price",
       "target_2": "price",
       "target_3": "price",
       "risk_reward": "ratio",
-      "risk_percent": "% from entry to SL",
-      "reasoning": "why for swing specifically"
+      "risk_percent": "% risk",
+      "reasoning": "swing specific"
     }},
     "midterm": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
       "holding_period": "X-Y months",
-      "entry": "price or range",
+      "entry": "price",
       "stop_loss": "price",
       "target_1": "price",
       "target_2": "price",
       "risk_reward": "ratio",
-      "reasoning": "why for midterm specifically"
+      "reasoning": "midterm specific"
     }},
     "longterm": {{
       "verdict": "Accumulate/Avoid/Wait",
       "confidence": 0-100,
       "holding_period": "X+ years",
-      "reasoning": "fundamental thesis for long term",
-      "key_risks": ["risks specific to long term"]
+      "reasoning": "long term thesis",
+      "key_risks": ["long term risks"]
     }}
   }}
 }}"""

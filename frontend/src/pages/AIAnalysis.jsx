@@ -41,6 +41,13 @@ const AIAnalysis = () => {
       const fundRes = await api.get(`/analysis/fundamental/${formattedSymbol}`);
       const fundData = fundRes.data;
 
+      const typeMap = {
+        'Full Stock Analysis': 'full',
+        'Quick Trade Setup': 'trade_setup',
+        'Risk Assessment': 'risk',
+        'Fundamental Deep Dive': 'fundamental'
+      };
+
       // 3. Request AI Analysis
       const payload = {
         quote: {}, 
@@ -49,9 +56,10 @@ const AIAnalysis = () => {
         news: [],
         market_regime: 'Neutral',
         sector_performance: 'Neutral',
-        analysis_type: analysisType
+        analysis_type: typeMap[analysisType] || 'full'
       };
 
+      console.log('Sending analysis_type:', analysisType);
       const aiRes = await api.post(`/ai/analyze/${formattedSymbol}`, payload);
       setAiAnalysis(aiRes.data.analysis);
       
