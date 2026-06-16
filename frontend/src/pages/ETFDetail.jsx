@@ -177,9 +177,15 @@ const ETFDetail = () => {
 
   if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-emerald-400 w-10 h-10" /></div>;
   if (error) return <div className="p-10 text-red-500">{error}</div>;
-  if (!data) return null;
+  if (!data || data.current_price == null) {
+    return (
+      <div className="flex items-center justify-center h-96 text-emerald-400">
+        <Activity className="animate-pulse w-8 h-8" />
+      </div>
+    );
+  }
 
-  const isUp = data.change >= 0;
+  const isUp = (data.change_percent ?? 0) >= 0;
 
   return (
     <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-6">
@@ -202,10 +208,10 @@ const ETFDetail = () => {
           <p className="text-gray-400">ETF Analysis</p>
         </div>
         <div className="mt-4 md:mt-0 text-right">
-          <div className="text-3xl font-mono font-bold text-white">₹{data.current_price.toFixed(2)}</div>
+          <div className="text-3xl font-mono font-bold text-white">₹{data.current_price != null ? data.current_price.toFixed(2) : '—'}</div>
           <div className={`flex justify-end items-center text-lg font-mono font-medium ${isUp ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
             {isUp ? <TrendingUp className="mr-1" size={20} /> : <TrendingDown className="mr-1" size={20} />}
-            {isUp ? '+' : ''}{data.change.toFixed(2)} ({data.change_percent.toFixed(2)}%)
+            {isUp ? '+' : ''}{data.change != null ? data.change.toFixed(2) : '0.00'} ({data.change_percent != null ? data.change_percent.toFixed(2) : '0.00'}%)
           </div>
         </div>
       </div>
