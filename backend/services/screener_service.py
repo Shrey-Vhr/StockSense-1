@@ -563,11 +563,13 @@ class ScreenerEngine:
 
         # ---- Step 3.5: Evaluate institutional conditions ----
         async def _process_institutional(item):
+            if not inst_conditions:
+                return item
+                
             from services.institutional_service import get_institutional_data
             try:
                 inst_data = await asyncio.to_thread(get_institutional_data, item["symbol"])
                 
-                # Extract indicators
                 sms = inst_data.get('smart_money_score', 0)
                 pt = inst_data.get('promoter_activity', {}).get('trend', 'Stable')
                 bulk = inst_data.get('bulk_deals', [])
@@ -583,9 +585,6 @@ class ScreenerEngine:
                 item["today"]["promoter_trend"] = "Stable"
                 item["today"]["has_bulk_deal"] = False
                 item["today"]["has_bulk_buying"] = False
-            
-            if not inst_conditions:
-                return item
                 
             passed = all(_evaluate_condition(c, item["today"], item.get("yesterday", {})) for c in inst_conditions)
             return item if passed else None
