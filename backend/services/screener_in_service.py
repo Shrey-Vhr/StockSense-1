@@ -74,6 +74,13 @@ def parse_top_ratios(soup):
         f"D/E={ratios.get('Debt to equity')} "
         f"OPM={ratios.get('OPM')}")
   
+  if not ratios:
+    print(f"[WARN] No ratios found — checking if page loaded correctly")
+    all_lis = soup.find_all('li', class_=lambda x: x and 'flex' in x)
+    print(f"[DEBUG] Found {len(all_lis)} ratio li elements")
+    for li in all_lis[:5]:
+        print(f"[DEBUG] li text: {li.get_text(strip=True)[:50]}")
+
   def parse_number(val):
     if not val: return None
     val = str(val).replace(',','').replace('%','')
@@ -97,7 +104,7 @@ def parse_top_ratios(soup):
     'roce': parse_number(ratios.get('ROCE')),
     'roe': parse_number(ratios.get('ROE')),
     'dividend_yield': parse_number(
-      ratios.get('Dividend Yield')
+      ratios.get('Dividend Yield') or ratios.get('Div. Yield')
     ),
     'eps': parse_number(
       ratios.get('EPS in Rs') or 
@@ -124,6 +131,10 @@ def parse_top_ratios(soup):
       ratios.get('Op. Profit Margin') or
       ratios.get('Oper. Profit Margin')
     ),
+    'nim': parse_number(ratios.get('NIM')),
+    'gross_npa': parse_number(ratios.get('Gross NPA') or ratios.get('GNPA %')),
+    'net_npa': parse_number(ratios.get('Net NPA') or ratios.get('NNPA %')),
+    'car': parse_number(ratios.get('CAR')),
   }
 
 # Hardcoded peer overrides for stocks where
@@ -410,7 +421,7 @@ def parse_quarterly_results(soup):
     values = parse_row_values(cells, n)
     
     if any(x in label for x in [
-      'Sales', 'Revenue', 'Net Sales'
+      'Sales', 'Revenue', 'Net Sales', 'Revenue +', 'Interest Earned', 'Total Income', 'Net Interest Income'
     ]):
       quarterly['revenue'] = values
     
@@ -478,7 +489,8 @@ def parse_annual_results(soup):
     
     if any(x in label for x in [
       'Sales', 'Revenue', 'Net Sales', 
-      'Total Revenue', 'Revenue from Operations'
+      'Total Revenue', 'Revenue from Operations',
+      'Revenue +', 'Interest Earned', 'Total Income', 'Net Interest Income'
     ]):
       annual['revenue'] = values
       print(f"Found revenue: {values[-3:]}")
@@ -520,26 +532,40 @@ def scrape_screener_fundamentals(symbol: str) -> Optional[dict]:
       return data
   
   clean_symbol = get_screener_symbol(symbol)
-  url = f"https://www.screener.in/company/{clean_symbol}/consolidated/"
   
   print(f"[DEBUG] Scraping Screener.in for {clean_symbol}...")
-  print(f"[DEBUG] Exact URL being requested: {url}")
   
+  urls_to_try = [
+      f"https://www.screener.in/company/{clean_symbol}/consolidated/",
+      f"https://www.screener.in/company/{clean_symbol}/",
+  ]
+  
+  soup = None
   try:
-    response = requests.get(url, headers=HEADERS, timeout=15)
-    
-    # If consolidated not found try standalone
-    if response.status_code == 404:
-      print(f"[DEBUG] Consolidated URL returned 404, trying standalone...")
-      url = f"https://www.screener.in/company/{clean_symbol}/"
-      print(f"[DEBUG] Exact URL being requested: {url}")
-      response = requests.get(url, headers=HEADERS, timeout=15)
-    
-    if response.status_code != 200:
-      print(f"[ERROR] Screener.in returned {response.status_code} for {clean_symbol}")
+    for url in urls_to_try:
+        print(f"[DEBUG] Trying URL: {url}")
+        try:
+            response = requests.get(url, headers=HEADERS, timeout=15)
+            if response.status_code == 200:
+                temp_soup = BeautifulSoup(response.text, 'lxml')
+                # Check if ratio section has actual data
+                ratio_section = temp_soup.find('section', id='top-ratios')
+                if ratio_section:
+                    ratio_items = ratio_section.find_all('li')
+                    if len(ratio_items) > 3:
+                        print(f"[DEBUG] Found data at: {url}")
+                        soup = temp_soup
+                        break
+                    else:
+                        print(f"[DEBUG] No ratio data at {url}, trying next")
+        except Exception as e:
+            print(f"[DEBUG] Failed {url}: {e}")
+            continue
+
+    if not soup:
+      print(f"[ERROR] Screener.in failed to find data for {clean_symbol}")
       return None
     
-    soup = BeautifulSoup(response.text, 'lxml')
     data = {}
     
     # --- COMPANY INFO ---
