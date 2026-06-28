@@ -379,7 +379,7 @@ def get_etf_analysis(symbol: str) -> dict:
     except:
       pass
     
-    if hist.empty:
+    if hist is None or hist.empty:
       return None
     
     current = float(hist['Close'].iloc[-1])

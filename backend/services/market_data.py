@@ -6,10 +6,15 @@ import asyncio
 from functools import wraps
 import logging
 
+import logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from services.angel_one_service import angel_one
+
+_history_cache = {}
+_CACHE_TTL = 300  # 5 minutes
 
 # Simple TTLCache decorator
 def ttl_cache(ttl_seconds):
@@ -112,8 +117,33 @@ class YFinanceService:
             symbol = f"{symbol}.NS"
         try:
             def _fetch():
+                cache_key = f"{symbol}_{period}_{interval}"
+                now = time.time()
+                
+                if cache_key in _history_cache:
+                    cached_data, cached_time = _history_cache[cache_key]
+                    if now - cached_time < _CACHE_TTL:
+                        print(f"[CACHE HIT] {symbol} history")
+                        return cached_data
+
                 ticker = yf.Ticker(symbol)
-                df = ticker.history(period=period, interval=interval)
+                df = None
+                
+                for attempt in range(3):
+                    try:
+                        df = ticker.history(period=period, interval=interval)
+                        if not df.empty:
+                            break
+                    except Exception as e:
+                        if 'rate' in str(e).lower() or 'too many' in str(e).lower():
+                            wait = 2 ** attempt
+                            print(f"Rate limited, waiting {wait}s...")
+                            time.sleep(wait)
+                        else:
+                            raise
+                            
+                if df is None or df.empty:
+                    return []
                 
                 # Fix datetime index issues
                 df.index = pd.to_datetime(df.index)
@@ -130,7 +160,9 @@ class YFinanceService:
                 # Replace NaN with None for JSON serialization
                 df = df.replace({np.nan: None})
                 # Return list of dicts
-                return df[['date', 'open', 'high', 'low', 'close', 'volume']].to_dict(orient="records")
+                result = df[['date', 'open', 'high', 'low', 'close', 'volume']].to_dict(orient="records")
+                _history_cache[cache_key] = (result, now)
+                return result
             return await asyncio.to_thread(_fetch)
         except Exception as e:
             logger.error(f"Error fetching history for {symbol}: {e}")
