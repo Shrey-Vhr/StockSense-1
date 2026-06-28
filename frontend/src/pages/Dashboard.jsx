@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, RefreshCw, ChevronRight, Activity, Newspaper,
 import api from '../utils/api';
 import useStore from '../store/useStore';
 import SectorHeatmap from '../components/Dashboard/SectorHeatmap';
+import TrendingSection from '../components/Dashboard/TrendingSection';
 import useCountUp from '../hooks/useCountUp';
 import { DashboardSkeleton } from '../components/Skeleton';
 
@@ -173,6 +174,8 @@ const Dashboard = () => {
           </motion.div>
         ))}
       </div>
+
+      <TrendingSection />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Movers */}

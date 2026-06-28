@@ -129,7 +129,7 @@ const Header = ({ toggleSidebar }) => {
 
   const handleResultClick = (result) => {
     if (result.type === 'index') {
-      navigate(`/index/${result.symbol.replace('^', 'IDX-')}`);
+      navigate(`/index/${result.symbol}`);
     } else if (result.type === 'etf') {
       navigate(`/etf/${result.symbol}`);
     } else {
@@ -223,8 +223,14 @@ const Header = ({ toggleSidebar }) => {
                         {result.type === 'index' ? '📊' : result.type === 'etf' ? '💹' : '📈'}
                       </span>
                       <div>
-                        <div className="font-bold text-emerald-400">
-                          {result.symbol.replace('.NS', '')} {result.type && <span className="text-xs text-gray-500 capitalize ml-1">({result.type})</span>}
+                        <div className="font-bold text-emerald-400 flex items-center gap-2">
+                          {result.symbol.replace('.NS', '')}
+                          {result.type === 'etf' && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-400 border border-teal-500/30 uppercase tracking-wider">ETF</span>
+                          )}
+                          {result.type === 'index' && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30 uppercase tracking-wider">IDX</span>
+                          )}
                         </div>
                         <div className="text-xs text-gray-400">{result.name}</div>
                       </div>

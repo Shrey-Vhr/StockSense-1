@@ -457,7 +457,7 @@ Output JSON format:
 }}"""
 
         # We can use sonnet for lighter tasks to save costs, but Opus was requested generally.
-        return await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt, model="claude-3-haiku-20240307")
+        return await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt, model="claude-haiku-4-5")
 
     @staticmethod
     async def generate_swing_screener_insights(top_stocks: list):
@@ -479,7 +479,7 @@ Output JSON format:
     ],
     "market_context": "How the current market suits these setups"
 }}"""
-        return await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt, model="claude-3-haiku-20240307")
+        return await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt, model="claude-haiku-4-5")
 
     @staticmethod
     async def explain_indicator(indicator_name: str, value: str):
@@ -496,4 +496,4 @@ Output JSON format:
     "bull_bear_bias": "Bullish/Bearish/Neutral"
 }}"""
         # Extremely fast/cheap model for definitions
-        return await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt, model="claude-3-haiku-20240307")
+        return await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt, model="claude-haiku-4-5")

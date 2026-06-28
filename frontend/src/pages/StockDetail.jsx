@@ -854,10 +854,10 @@ const StockDetail = () => {
             News
           </span>
         </button>
-        <button onClick={handleGenerateAI} className={`flex items-center gap-1.5 px-3 sm:px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'ai' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
+        <button onClick={() => handleTabChange('ai')} className={`flex items-center gap-1.5 px-3 sm:px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${activeTab === 'ai' ? 'text-emerald-400 border-emerald-400' : 'text-gray-400 hover:text-gray-200 border-transparent hover:border-surface-600'}`}>
           <span className="flex items-center gap-1.5">
             <Brain size={15} />
-            Claude AI Analysis
+            AI Analysis
           </span>
         </button>
       </div>
@@ -1496,10 +1496,26 @@ const StockDetail = () => {
         {/* AI ANALYSIS TAB */}
         {activeTab === 'ai' && (
           <div className="h-full">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold text-gray-200">
+                AI Analysis
+              </h2>
+              <button
+                onClick={handleGenerateAI}
+                disabled={aiLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-500/20 transition-colors text-sm font-medium disabled:opacity-50"
+              >
+                {aiLoading 
+                  ? <><BrainCircuit size={15} className="animate-pulse" /> Analyzing...</>
+                  : <><BrainCircuit size={15} /> {aiAnalysis ? 'Refresh Analysis' : 'Generate Analysis'}</>
+                }
+              </button>
+            </div>
+            
             {aiLoading ? (
               <div className="flex flex-col items-center justify-center py-20 text-[#10b981]">
                 <BrainCircuit className="animate-pulse w-16 h-16 mb-4" />
-                <p className="text-lg font-medium">Claude Opus is analyzing market data...</p>
+                <p className="text-lg font-medium">AI is analyzing market data...</p>
                 <p className="text-sm text-gray-500 mt-2">Correlating technicals, fundamentals, and sentiment.</p>
               </div>
             ) : aiAnalysis ? (
