@@ -108,11 +108,31 @@ const TrendingSection = () => {
               })}
             </div>
 
-            <div className="text-xs text-gray-400 
-                           leading-tight line-clamp-2 
-                           border-t border-surface-800 
-                           pt-2 mt-1">
-              {stock.reason}
+            <div className="relative group">
+              <div className="text-xs text-gray-400 
+                             leading-tight line-clamp-2 
+                             border-t border-surface-800 
+                             pt-2 mt-1 cursor-help">
+                {stock.reason}
+              </div>
+              
+              {/* Tooltip on hover */}
+              <div className="absolute bottom-full left-0 
+                             mb-2 w-64 bg-surface-800 
+                             border border-surface-700 
+                             rounded-xl p-3 text-xs 
+                             text-gray-300 leading-relaxed
+                             shadow-xl z-50
+                             invisible group-hover:visible 
+                             opacity-0 group-hover:opacity-100
+                             transition-all duration-200
+                             pointer-events-none">
+                {stock.reason}
+                <div className="absolute top-full left-4 
+                               border-4 border-transparent 
+                               border-t-surface-700">
+                </div>
+              </div>
             </div>
           </motion.div>
         ))}
