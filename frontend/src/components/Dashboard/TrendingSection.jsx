@@ -68,52 +68,34 @@ const TrendingSection = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            onClick={() => navigate(
-              `/stock/${stock.symbol}`
-            )}
-            className="min-w-[175px] min-h-[130px] bg-surface-900 
-                       border border-surface-800 
-                       rounded-xl p-4 cursor-pointer 
-                       hover:border-emerald-500/30 
-                       hover:bg-surface-800 
-                       transition-all flex-shrink-0"
+            onClick={() => navigate(`/stock/${stock.symbol}`)}
+            className="min-w-[160px] bg-surface-900 
+                       border border-surface-800 rounded-xl p-4 
+                       cursor-pointer hover:border-emerald-500/30 
+                       hover:bg-surface-800 transition-all 
+                       flex-shrink-0"
           >
-            <div className="flex justify-between 
-                           items-start mb-2">
-              <span className="text-white font-bold 
-                               text-sm">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-white font-bold text-sm">
                 {stock.symbol.replace('.NS', '')}
               </span>
-              <span className={`flex items-center 
-                               text-xs font-bold 
-                               font-mono ${
-                stock.is_positive 
-                  ? 'text-emerald-400' 
-                  : 'text-red-400'
+              <span className={`flex items-center text-xs 
+                               font-bold font-mono ${
+                stock.is_positive ? 'text-emerald-400' : 'text-red-400'
               }`}>
                 {stock.is_positive 
-                  ? <TrendingUp size={12} 
-                       className="mr-0.5" /> 
-                  : <TrendingDown size={12} 
-                       className="mr-0.5" />}
+                  ? <TrendingUp size={12} className="mr-0.5" /> 
+                  : <TrendingDown size={12} className="mr-0.5" />}
                 {stock.is_positive ? '+' : ''}
                 {stock.change_percent}%
               </span>
             </div>
 
-            <div className="text-gray-200 font-mono 
-                           font-semibold text-sm mb-2">
+            <div className="text-gray-200 font-mono font-semibold 
+                           text-sm">
               ₹{stock.price?.toLocaleString('en-IN', {
                 maximumFractionDigits: 2
               })}
-            </div>
-
-            <div className="text-xs text-gray-400 
-                           leading-tight border-t 
-                           border-surface-800 pt-2 mt-1"
-                 title={stock.reason}
-                 onClick={(e) => e.stopPropagation()}>
-              {stock.reason}
             </div>
           </motion.div>
         ))}
