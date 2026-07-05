@@ -598,24 +598,37 @@ const Screener = () => {
       {/* ── RESULTS TABLE ───────────────────────────────────────────────── */}
       <div className="bg-surface-850 border border-surface-800 rounded-2xl mt-4 overflow-hidden flex-1 flex flex-col min-h-0">
         <div className="overflow-x-auto custom-scrollbar flex-1">
-          <div className="min-w-[800px]">
-            <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-3 border-b border-surface-800 bg-surface-900">
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-1">#</div>
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-3">Stock</div>
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-2 text-right">Price</div>
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-2 text-right">Chg%</div>
+          <div className="min-w-[900px] w-full">
+            <div className="hidden sm:flex gap-4 px-4 py-3 border-b border-surface-800 bg-surface-900">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider w-8 whitespace-nowrap">#</div>
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[160px] whitespace-nowrap border-r border-surface-800">Stock</div>
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[100px] text-right whitespace-nowrap">Price</div>
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[80px] text-right whitespace-nowrap">Chg%</div>
               {/* Dynamic indicator columns (combined in flex for grid) */}
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-2 text-right flex gap-4 justify-end">
-                {usedIndicators.map((ind) => (
-                  <Tooltip key={ind} text={flatIndicators[ind]?.description || ind}>
-                    <span className="cursor-help border-b border-dashed border-gray-600">
-                      {flatIndicators[ind]?.label || ind}
-                    </span>
-                  </Tooltip>
-                ))}
-                {usedIndicators.length === 0 && <span>Indicators</span>}
+              <div className="flex-1 flex gap-4 justify-end">
+                {usedIndicators.map((ind) => {
+                  let label = flatIndicators[ind]?.label || ind;
+                  if (label === 'PRICE - EMA 20') label = 'EMA20';
+                  else if (label === 'PRICE - EMA 50') label = 'EMA50';
+                  else if (label === 'CHG% VOLUME RATIO') label = 'VOL RATIO';
+                  else if (label === 'DEBT / EQUITY') label = 'D/E';
+                  else if (label === 'REVENUE GROWTH %') label = 'REV GRW%';
+                  else if (label === 'ADX (14)') label = 'ADX';
+                  else if (label === 'RSI (14)') label = 'RSI';
+
+                  return (
+                    <Tooltip key={ind} text={flatIndicators[ind]?.description || ind}>
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[90px] text-right whitespace-nowrap">
+                        <span className="cursor-help border-b border-dashed border-gray-600">
+                          {label}
+                        </span>
+                      </div>
+                    </Tooltip>
+                  );
+                })}
+                {usedIndicators.length === 0 && <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[90px] text-right whitespace-nowrap">Indicators</div>}
               </div>
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider col-span-2 text-center">Score</div>
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[70px] text-right whitespace-nowrap">Score</div>
             </div>
             <div className="divide-y divide-surface-800/50">
               {screenerResults.length > 0 ? (
@@ -623,7 +636,7 @@ const Screener = () => {
                   <div
                     key={stock.symbol}
                     onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    className="flex flex-col sm:grid sm:grid-cols-12 sm:gap-4 px-4 py-3.5 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/50 cursor-pointer transition-colors"
+                    className="flex flex-col sm:flex-row sm:gap-4 px-4 py-3.5 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/50 cursor-pointer transition-colors"
                   >
                     {/* Mobile View */}
                     <div className="flex sm:hidden justify-between items-start w-full">
@@ -664,30 +677,30 @@ const Screener = () => {
                     </div>
 
                     {/* Desktop View Elements */}
-                    <div className="hidden sm:flex col-span-1 text-emerald-400 font-bold text-sm items-center">{stock.rank}</div>
-                    <div className="hidden sm:flex col-span-3 flex-col justify-center">
+                    <div className="hidden sm:flex w-8 text-emerald-400 font-bold text-sm items-center whitespace-nowrap">{stock.rank}</div>
+                    <div className="hidden sm:flex min-w-[160px] flex-col justify-center whitespace-nowrap border-r border-surface-800 pr-4">
                       <div className="font-semibold text-gray-100 text-sm">{stock.symbol.replace('.NS', '')}</div>
                       <div className="text-gray-500 text-xs mt-0.5 truncate max-w-[140px]" title={stock.sector}>{stock.sector}</div>
                     </div>
-                    <div className="hidden sm:flex col-span-2 text-right flex-col items-end justify-center">
+                    <div className="hidden sm:flex min-w-[100px] text-right flex-col items-end justify-center whitespace-nowrap">
                       <span className="text-gray-200 font-mono text-sm">₹{(stock.live_price || stock.price)?.toFixed(2)}</span>
                       <span className="text-xs ml-1 text-gray-500">
                         <span className={stock.price_source === 'angel_one' ? 'text-green-400' : 'text-emerald-500'}>●</span>{' '}
                         {stock.price_source === 'angel_one' ? 'Live' : '15min'}
                       </span>
                     </div>
-                    <div className="hidden sm:flex col-span-2 justify-end items-center">
+                    <div className="hidden sm:flex min-w-[80px] justify-end items-center whitespace-nowrap">
                       <span className={`inline-flex items-center gap-0.5 ${stock.change_percent >= 0 ? 'text-emerald-400 font-semibold text-sm font-mono' : 'text-red-400 font-semibold text-sm font-mono'}`}>
                         {stock.change_percent >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                         {Math.abs(stock.change_percent || 0).toFixed(2)}%
                       </span>
                     </div>
                     {/* Dynamic indicator values */}
-                    <div className="hidden sm:flex col-span-2 gap-4 justify-end items-center">
+                    <div className="hidden sm:flex flex-1 gap-4 justify-end items-center">
                       {usedIndicators.map((ind) => {
                         const val = stock[ind];
                         return (
-                          <div key={ind} className="text-right text-gray-300 font-mono text-sm">
+                          <div key={ind} className="min-w-[90px] text-right text-gray-300 font-mono text-sm whitespace-nowrap">
                             {val != null ? (
                               typeof val === 'number' ? (
                                 Math.abs(val) >= 10000
@@ -700,9 +713,9 @@ const Screener = () => {
                           </div>
                         );
                       })}
-                      {usedIndicators.length === 0 && <span className="text-gray-700">—</span>}
+                      {usedIndicators.length === 0 && <div className="min-w-[90px] text-right whitespace-nowrap"><span className="text-gray-700">—</span></div>}
                     </div>
-                    <div className="hidden sm:flex col-span-2 items-center justify-center gap-2">
+                    <div className="hidden sm:flex min-w-[70px] items-center justify-end gap-2 whitespace-nowrap">
                       <div className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                         {stock.score}
                       </div>

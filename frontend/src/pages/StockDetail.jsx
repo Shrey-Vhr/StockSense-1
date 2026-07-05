@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
-import { Activity, BookOpen, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, ShieldAlert, AlertTriangle, BellPlus, X, BarChart2, Building2, Brain } from 'lucide-react';
+import { Activity, BookOpen, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, ShieldAlert, AlertTriangle, BellPlus, X, BarChart2, Building2, Brain, Minus } from 'lucide-react';
 import api from '../utils/api';
 import useStore from '../store/useStore';
 import PatternAnalysis from '../components/PatternAnalysis';
@@ -192,10 +192,16 @@ const InstitutionalTab = ({ symbol, fundData }) => {
               : 'text-[#10b981]'
           }`}>
             {data.promoter_activity?.trend === 'Increasing'
-              ? 'â†‘ Increasing'
+              ? <span className="flex items-center gap-1">
+                  <TrendingUp size={16} /> Increasing
+                </span>
             : data.promoter_activity?.trend === 'Decreasing'
-              ? 'â†“ Decreasing'
-              : '→ Stable'}
+              ? <span className="flex items-center gap-1">
+                  <TrendingDown size={16} /> Decreasing
+                </span>
+              : <span className="flex items-center gap-1">
+                  <Minus size={16} /> Stable
+                </span>}
           </span>
           {data.promoter_activity?.change_vs_last_quarter !== undefined && data.promoter_activity?.change_vs_last_quarter !== null && (
             <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
@@ -366,6 +372,408 @@ const StockDetail = () => {
 
   const [isFundLoading, setIsFundLoading] = useState(false);
   const [isNewsLoading, setIsNewsLoading] = useState(false);
+
+  const handleExportPDF = () => {
+    if (!aiAnalysis) return;
+    
+    const { jsPDF } = window.jspdf || {};
+    
+    // Build clean HTML for PDF
+    const content = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #1a1a1a;
+            font-size: 12px;
+            line-height: 1.5;
+          }
+          .header {
+            background: #0f4c35;
+            color: white;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+          }
+          .header h1 { font-size: 22px; font-weight: 700; }
+          .header p { font-size: 11px; opacity: 0.8; margin-top: 4px; }
+          .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+          }
+          .section {
+            margin: 0 24px 16px 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          .section-title {
+            background: #f9fafb;
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 12px;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+          .section-body { padding: 14px 16px; }
+          .verdict-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+          }
+          .verdict-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: #059669;
+          }
+          .confidence {
+            font-size: 32px;
+            font-weight: 800;
+            color: #10b981;
+          }
+          .confidence-label {
+            font-size: 10px;
+            color: #6b7280;
+            text-align: center;
+          }
+          .trade-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+          }
+          .trade-cell {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+          }
+          .trade-label {
+            font-size: 9px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+          }
+          .trade-value {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a1a1a;
+          }
+          .trade-value.sl { color: #dc2626; }
+          .trade-value.target { color: #059669; }
+          .trade-value.rr { color: #10b981; }
+          .timeframe-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+          }
+          .tf-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px;
+          }
+          .tf-title {
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            color: #374151;
+          }
+          .tf-verdict {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 6px;
+          }
+          .take { background: #d1fae5; color: #065f46; }
+          .avoid { background: #fee2e2; color: #991b1b; }
+          .wait { background: #fef3c7; color: #92400e; }
+          .accumulate { background: #dbeafe; color: #1e40af; }
+          .tf-conf { font-size: 10px; color: #6b7280; margin-bottom: 6px; }
+          .tf-levels {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
+            font-size: 10px;
+          }
+          .tf-level { text-align: center; }
+          .tf-level-label { color: #6b7280; font-size: 9px; }
+          .tf-level-val { font-weight: 600; }
+          .tf-level-val.sl { color: #dc2626; }
+          .tf-level-val.t { color: #059669; }
+          .reasoning { font-size: 11px; color: #374151; margin-top: 6px; }
+          .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+          }
+          .bull { color: #059669; font-weight: 700; margin-bottom: 6px; }
+          .bear { color: #dc2626; font-weight: 700; margin-bottom: 6px; }
+          .red-flags {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 12px;
+          }
+          .red-flags-title {
+            color: #dc2626;
+            font-weight: 700;
+            margin-bottom: 8px;
+          }
+          .red-flag-item {
+            font-size: 10px;
+            color: #7f1d1d;
+            margin-bottom: 4px;
+            padding-left: 12px;
+            position: relative;
+          }
+          .red-flag-item:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+          }
+          .key-levels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+          }
+          .level-tag {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-family: monospace;
+          }
+          .summary-box {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 11px;
+            color: #14532d;
+            line-height: 1.6;
+          }
+          .disclaimer {
+            margin: 16px 24px;
+            font-size: 9px;
+            color: #9ca3af;
+            text-align: center;
+            border-top: 1px solid #f3f4f6;
+            padding-top: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>StockSense AI Analysis — ${cleanSymbol.replace('.NS', '')}</h1>
+          <p>Generated on ${new Date().toLocaleDateString('en-IN', { 
+            day: '2-digit', month: 'long', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          })}</p>
+          <div class="badge">Powered by Claude AI</div>
+        </div>
+
+        <!-- Verdict -->
+        <div class="section">
+          <div class="section-title">AI Verdict</div>
+          <div class="section-body">
+            <div class="verdict-row">
+              <div>
+                <div class="verdict-text">${aiAnalysis.verdict}</div>
+                <div style="color:#6b7280;font-size:11px;margin-top:4px;">
+                  Risk Level: ${aiAnalysis.risk_level || 'Medium'}
+                </div>
+              </div>
+              <div style="text-align:center">
+                <div class="confidence">${aiAnalysis.confidence}%</div>
+                <div class="confidence-label">Confidence Score</div>
+              </div>
+            </div>
+            <div class="summary-box">${aiAnalysis.summary}</div>
+          </div>
+        </div>
+
+        <!-- Trade Setup -->
+        <div class="section">
+          <div class="section-title">Proposed Swing Trade Setup</div>
+          <div class="section-body">
+            <div class="trade-grid">
+              <div class="trade-cell">
+                <div class="trade-label">Entry Range</div>
+                <div class="trade-value">${aiAnalysis.trade_setup?.entry || 'N/A'}</div>
+              </div>
+              <div class="trade-cell">
+                <div class="trade-label">Stop Loss</div>
+                <div class="trade-value sl">${aiAnalysis.trade_setup?.stop_loss || 'N/A'}</div>
+              </div>
+              <div class="trade-cell">
+                <div class="trade-label">Target 1</div>
+                <div class="trade-value target">${aiAnalysis.trade_setup?.target_1 || 'N/A'}</div>
+              </div>
+              <div class="trade-cell">
+                <div class="trade-label">Target 2</div>
+                <div class="trade-value target">${aiAnalysis.trade_setup?.target_2 || 'N/A'}</div>
+              </div>
+              <div class="trade-cell">
+                <div class="trade-label">Risk / Reward</div>
+                <div class="trade-value rr">${aiAnalysis.trade_setup?.risk_reward || 'N/A'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeframes -->
+        ${aiAnalysis.timeframes ? `
+        <div class="section">
+          <div class="section-title">Analysis by Timeframe</div>
+          <div class="section-body">
+            <div class="timeframe-grid">
+              ${Object.entries(aiAnalysis.timeframes).map(([tf, data]) => `
+              <div class="tf-card">
+                <div class="tf-title">${
+                  tf === 'intraday' ? 'Intraday' :
+                  tf === 'swing' ? 'Swing (Days)' :
+                  tf === 'midterm' ? 'Midterm (Months)' :
+                  'Long Term (Years)'
+                }</div>
+                <span class="tf-verdict ${
+                  data.verdict?.toLowerCase().includes('take') || 
+                  data.verdict?.toLowerCase().includes('buy') ? 'take' :
+                  data.verdict?.toLowerCase().includes('avoid') ? 'avoid' :
+                  data.verdict?.toLowerCase().includes('accum') ? 'accumulate' : 'wait'
+                }">${data.verdict}</span>
+                <div class="tf-conf">Confidence: ${data.confidence}%${
+                  data.holding_period ? ` | Hold: ${data.holding_period}` : ''
+                }</div>
+                ${data.entry ? `
+                <div class="tf-levels">
+                  <div class="tf-level">
+                    <div class="tf-level-label">Entry</div>
+                    <div class="tf-level-val">${data.entry}</div>
+                  </div>
+                  <div class="tf-level">
+                    <div class="tf-level-label">SL</div>
+                    <div class="tf-level-val sl">${data.stop_loss}</div>
+                  </div>
+                  <div class="tf-level">
+                    <div class="tf-level-label">T1</div>
+                    <div class="tf-level-val t">${data.target_1}</div>
+                  </div>
+                </div>` : ''}
+                <div class="reasoning">${(data.reasoning || '').substring(0, 200)}${
+                  (data.reasoning || '').length > 200 ? '...' : ''
+                }</div>
+              </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>` : ''}
+
+        <!-- Bull & Bear -->
+        <div class="section">
+          <div class="section-title">Bull Case vs Bear Case</div>
+          <div class="section-body">
+            <div class="two-col">
+              <div>
+                <div class="bull">↑ The Bull Case</div>
+                <div style="font-size:11px;color:#374151">
+                  ${aiAnalysis.bull_case}
+                </div>
+              </div>
+              <div>
+                <div class="bear">↓ The Bear Case</div>
+                <div style="font-size:11px;color:#374151">
+                  ${aiAnalysis.bear_case}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Technical & Fundamental -->
+        <div class="section">
+          <div class="section-title">Detailed Analysis</div>
+          <div class="section-body">
+            <div style="margin-bottom:12px">
+              <div style="font-weight:700;margin-bottom:4px;color:#374151">
+                Technical Reasoning
+              </div>
+              <div style="font-size:11px;color:#4b5563">
+                ${aiAnalysis.technical_reasoning}
+              </div>
+            </div>
+            <div>
+              <div style="font-weight:700;margin-bottom:4px;color:#374151">
+                Fundamental Reasoning
+              </div>
+              <div style="font-size:11px;color:#4b5563">
+                ${aiAnalysis.fundamental_reasoning}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Red Flags & Key Levels -->
+        <div class="section">
+          <div class="section-title">Risk Factors & Key Levels</div>
+          <div class="section-body">
+            <div class="two-col">
+              <div class="red-flags">
+                <div class="red-flags-title">⚠ Red Flags to Watch</div>
+                ${(aiAnalysis.red_flags || []).map(rf => 
+                  `<div class="red-flag-item">${rf}</div>`
+                ).join('')}
+              </div>
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;color:#374151">
+                  Key Levels to Watch
+                </div>
+                <div class="key-levels">
+                  ${(aiAnalysis.key_levels_to_watch || []).map(kl => 
+                    `<div class="level-tag">${kl}</div>`
+                  ).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="disclaimer">
+          This analysis is generated by AI for educational purposes only and does not constitute 
+          financial advice. Past performance is not indicative of future results. 
+          Always do your own research before investing. StockSense | ${new Date().getFullYear()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Create blob and open in new tab for printing/saving as PDF
+    const blob = new Blob([content], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, '_blank');
+    
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        URL.revokeObjectURL(url);
+      }, 500);
+    };
+  };
 
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [alertType, setAlertType] = useState('price_above');
@@ -1615,16 +2023,31 @@ const StockDetail = () => {
               <h2 className="text-lg font-semibold text-gray-200">
                 AI Analysis
               </h2>
-              <button
-                onClick={handleGenerateAI}
-                disabled={aiLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-500/20 transition-colors text-sm font-medium disabled:opacity-50"
-              >
-                {aiLoading 
-                  ? <><BrainCircuit size={15} className="animate-pulse" /> Analyzing...</>
-                  : <><BrainCircuit size={15} /> {aiAnalysis ? 'Refresh Analysis' : 'Generate Analysis'}</>
-                }
-              </button>
+              <div className="flex items-center gap-3">
+                {aiAnalysis && (
+                  <button
+                    onClick={handleExportPDF}
+                    className="flex items-center gap-2 px-4 py-2 bg-surface-900 border border-surface-800 text-gray-300 rounded-xl hover:bg-surface-800 hover:text-white transition-colors text-sm font-medium"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Export PDF
+                  </button>
+                )}
+                <button
+                  onClick={handleGenerateAI}
+                  disabled={aiLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-500/20 transition-colors text-sm font-medium disabled:opacity-50"
+                >
+                  {aiLoading 
+                    ? <><BrainCircuit size={15} className="animate-pulse" /> Analyzing...</>
+                    : <><BrainCircuit size={15} /> {aiAnalysis ? 'Refresh Analysis' : 'Generate Analysis'}</>
+                  }
+                </button>
+              </div>
             </div>
             
             {aiLoading ? (
@@ -1634,7 +2057,7 @@ const StockDetail = () => {
                 <p className="text-sm text-gray-500 mt-2">Correlating technicals, fundamentals, and sentiment.</p>
               </div>
             ) : aiAnalysis ? (
-              <div className="space-y-8 animate-fade-in">
+              <div id="ai-analysis-content" className="space-y-8 animate-fade-in">
                 {/* Top Hero Section */}
                 <div className="flex flex-col md:flex-row gap-6 items-start">
                   <div className="bg-gradient-to-br from-[#161b22] to-[#0d1117] border border-[#10b981]/40 p-6 rounded-xl flex-1 w-full relative overflow-hidden">
