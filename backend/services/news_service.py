@@ -2,6 +2,7 @@
 import os
 import json
 import time
+import re
 import feedparser
 import requests
 import httpx
@@ -130,6 +131,34 @@ def ttl_cache(ttl_seconds):
         return wrapper
     return decorator
 
+def safe_parse_groq(text):
+    # Remove control characters that break JSON
+    text = re.sub(r'[\x00-\x1f\x7f]', ' ', text)
+    
+    # Try direct parse first
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    
+    # Try extracting JSON array from response
+    try:
+        match = re.search(r'\[.*?\]', text, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+    except json.JSONDecodeError:
+        pass
+    
+    # Try extracting JSON object
+    try:
+        match = re.search(r'\{.*?\}', text, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+    except json.JSONDecodeError:
+        pass
+    
+    return None
+
 def analyze_news_sentiment(articles, stock_name):
   
   if not SENTIMENT_ENABLED or not _groq_client:
@@ -150,7 +179,8 @@ def analyze_news_sentiment(articles, stock_name):
   
   headlines_text = ""
   for i, a in enumerate(to_analyze):
-    headlines_text += f"{i+1}. {a.get('title','')}\n"
+    headline = a.get('title', '')[:150]
+    headlines_text += f"{i+1}. {headline}\n"
   
   prompt = f"""You are an expert Indian stock 
 market analyst specializing in sentiment analysis
@@ -193,6 +223,11 @@ High — Price moved >2% or very significant news
 Medium — Notable but moderate impact
 Low — Minor or indirect impact
 
+Respond with valid JSON only. 
+Do not include any special characters,
+quotes within strings must be escaped.
+Keep all text fields under 100 characters.
+
 Reply ONLY with valid JSON array, no markdown:
 [{{"index":1,"sentiment":"Negative","impact":"High",
 "score":2,"reason":"Stock tanked 9 percent"}}]
@@ -217,7 +252,9 @@ pick the directional one."""
     elif '```' in text:
       text = text.split('```')[1].split('```')[0].strip()
     
-    data = json.loads(text)
+    data = safe_parse_groq(text)
+    if not data:
+        raise ValueError("Failed to parse JSON")
     print(f"✅ Parsed {len(data)} sentiments")
     
     smap = {item['index']: item for item in data}

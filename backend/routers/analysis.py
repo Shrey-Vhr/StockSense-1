@@ -41,9 +41,9 @@ from services.fundamental_analysis import get_fundamental_data
 async def get_fundamental_analysis(symbol: str, refresh: bool = False):
     try:
         if refresh:
-            from services.screener_in_service import _fundamentals_cache
-            if symbol in _fundamentals_cache:
-                del _fundamentals_cache[symbol]
+            from services.screener_in_service import _fundamental_cache
+            if symbol in _fundamental_cache:
+                del _fundamental_cache[symbol]
                 print(f"🔄 Cache cleared for {symbol}")
 
         data = await asyncio.to_thread(get_fundamental_data, symbol)

@@ -48,7 +48,7 @@ const MetricCard = ({ label, value, format, goodAbove, goodBelow }) => {
   );
 };
 
-const InstitutionalTab = ({ symbol }) => {
+const InstitutionalTab = ({ symbol, fundData }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -116,6 +116,67 @@ const InstitutionalTab = ({ symbol }) => {
         </div>
       </div>
       
+      {/* Shareholding Breakdown */}
+      <div className="bg-surface-900 rounded-xl p-4 border border-surface-800">
+        <h3 className="text-white font-bold mb-3">
+          Shareholding Breakdown
+        </h3>
+        <div className="space-y-3">
+          {[
+            { 
+              label: 'Promoter', 
+              value: fundData?.promoter_holding,
+              color: 'bg-blue-500'
+            },
+            { 
+              label: 'FPI / FII', 
+              value: fundData?.fpi_holding,
+              color: 'bg-emerald-500'
+            },
+            { 
+              label: 'DII', 
+              value: fundData?.dii_holding,
+              color: 'bg-purple-500'
+            },
+            { 
+              label: 'Retail (Public)', 
+              value: fundData?.shareholding?.public_holding,
+              color: 'bg-orange-400'
+            },
+          ].map(item => (
+            <div key={item.label}>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-300">
+                  {item.label}
+                </span>
+                <span className="font-mono text-white">
+                  {item.value 
+                    ? `${item.value}%` 
+                    : 'N/A'}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-surface-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full ${item.color} rounded-full`}
+                  style={{ 
+                    width: `${Math.min(item.value || 0, 100)}%` 
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="mt-4 pt-3 border-t border-surface-800 flex justify-between text-sm">
+          <span className="text-gray-400">Free Float</span>
+          <span className="text-emerald-400 font-bold font-mono">
+            {fundData?.free_float 
+              ? `${fundData.free_float}%` 
+              : 'N/A'}
+          </span>
+        </div>
+      </div>
+
       {/* Promoter Activity */}
       <div className="bg-surface-900 rounded-xl p-4 border border-surface-800">
         <h3 className="text-white font-bold mb-3">
@@ -932,7 +993,7 @@ const StockDetail = () => {
 
         {/* INSTITUTIONAL TAB */}
         {activeTab === 'institutional' && (
-          <InstitutionalTab symbol={cleanSymbol} />
+          <InstitutionalTab symbol={cleanSymbol} fundData={fundData} />
         )}
 
         {/* FUNDAMENTAL TAB */}
@@ -973,6 +1034,36 @@ const StockDetail = () => {
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Price to Book: How much you pay for ₹1 of company assets">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">PB Ratio</div>
                   <div className="text-white font-mono font-bold">{formatMetric('pb_ratio', fundData.pb_ratio)}</div>
+                </div>
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Price to Sales: How much you pay for ₹1 of company revenue">
+                  <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">
+                    P/S Ratio
+                  </div>
+                  <div className="text-white font-mono font-bold">
+                    {fundData.ps_ratio 
+                      ? `${parseFloat(fundData.ps_ratio).toFixed(1)}x` 
+                      : 'N/A'}
+                  </div>
+                </div>
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Enterprise Value to EBITDA: Lower = potentially undervalued">
+                  <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">
+                    EV/EBITDA
+                  </div>
+                  <div className="text-white font-mono font-bold">
+                    {fundData.ev_ebitda 
+                      ? `${parseFloat(fundData.ev_ebitda).toFixed(1)}x` 
+                      : 'N/A'}
+                  </div>
+                </div>
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
+                  <div className="text-gray-500 text-xs mb-1">
+                    52W Avg Price
+                  </div>
+                  <div className="text-white font-mono font-bold">
+                    {fundData.avg_52w 
+                      ? `₹${fundData.avg_52w}` 
+                      : 'N/A'}
+                  </div>
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Return on Equity: Profit generated per ₹100 of shareholder money">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">ROE</div>
@@ -1056,6 +1147,30 @@ const StockDetail = () => {
                     <div className="flex justify-between"><span className="text-gray-500 font-sans">FII</span><span className="text-white">{fundData.fii_holding ? `${fundData.fii_holding}%` : 'N/A'}</span></div>
                     <div className="flex justify-between"><span className="text-gray-500 font-sans">DII</span><span className="text-white">{fundData.dii_holding ? `${fundData.dii_holding}%` : 'N/A'}</span></div>
                     <div className="flex justify-between"><span className="text-gray-500 font-sans">Public</span><span className="text-white">{fundData.shareholding?.public_holding ? `${fundData.shareholding.public_holding}%` : 'N/A'}</span></div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 font-sans">
+                        FPI
+                      </span>
+                      <span className="text-white">
+                        {fundData.fpi_holding 
+                          ? `${fundData.fpi_holding}%` 
+                          : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 font-sans">
+                        Free Float
+                      </span>
+                      <span className={`${
+                        fundData.free_float > 50 
+                          ? 'text-emerald-400' 
+                          : 'text-yellow-400'
+                      }`}>
+                        {fundData.free_float 
+                          ? `${fundData.free_float}%` 
+                          : 'N/A'}
+                      </span>
+                    </div>
                     <div className="flex justify-between border-t border-surface-800 pt-2 mt-2">
                       <span className="text-gray-500 font-sans">Promoter Pledge</span>
                       <span className={`${fundData.promoter_pledge > 25 ? "text-[#ff1744] font-bold" : fundData.promoter_pledge > 10 ? "text-[#10b981]" : "text-white"}`}>
@@ -1346,7 +1461,7 @@ const StockDetail = () => {
                 onClick={() => fetchNews(true)}
                 className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded border border-gray-600 transition-colors"
               >
-                ðŸ”„ Refresh
+                Refresh
               </button>
             </div>
             {isNewsLoading ? (
@@ -1392,7 +1507,7 @@ const StockDetail = () => {
                       {sentiment.positive_count} Positive
                     </span>
                     <span className="text-red-400 text-sm">
-                      â Œ {sentiment.negative_count} Negative
+                      {sentiment.negative_count} Negative
                     </span>
                     <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                       {sentiment.neutral_count} Neutral

@@ -56,6 +56,17 @@ class YFinanceService:
         try:
             ticker = yf.Ticker(symbol)
             
+            avg_52w = None
+            try:
+                hist_52w = ticker.history(period='1y')
+                if not hist_52w.empty:
+                    avg_52w = round(
+                        (hist_52w['High'].max() + 
+                         hist_52w['Low'].min()) / 2, 2
+                    )
+            except Exception:
+                pass
+            
             # METHOD 1: Most reliable - last 2 days history
             hist = ticker.history(period='2d', interval='1d')
             if not hist.empty:
@@ -77,7 +88,8 @@ class YFinanceService:
                     "change": change,
                     "change_percent": change_pct,
                     "volume": volume,
-                    "prev_close": prev_close
+                    "prev_close": prev_close,
+                    "avg_52w": avg_52w
                 }
             
             # METHOD 2: Fallback - fast_info
@@ -91,7 +103,8 @@ class YFinanceService:
                     "change": round(float(price - prev), 2),
                     "change_percent": round(float((price-prev)/prev*100), 2),
                     "volume": int(fast.get('three_month_average_volume', 0)),
-                    "prev_close": round(float(prev), 2)
+                    "prev_close": round(float(prev), 2),
+                    "avg_52w": avg_52w
                 }
                 
         except Exception as e:
@@ -177,16 +190,43 @@ class YFinanceService:
             def _fetch():
                 ticker = yf.Ticker(symbol)
                 info = ticker.info
+                
+                # Helper to safely multiply by 100
+                def to_pct(val):
+                    return val * 100 if val is not None else None
+                
+                # market cap is in Rs, screener is in Cr
+                market_cap = info.get("marketCap")
+                if market_cap:
+                    market_cap = market_cap / 10000000
+                
+                debt_to_equity = info.get("debtToEquity")
+                if debt_to_equity is not None:
+                    debt_to_equity = debt_to_equity / 100.0  # yfinance returns % for D/E
+                    
+                div_yield = info.get("dividendYield")
+                if div_yield is not None and div_yield < 1.0: # if it's decimal
+                    div_yield = div_yield * 100
+                    
                 return {
                     "symbol": symbol,
                     "pe_ratio": info.get("trailingPE"),
                     "pb_ratio": info.get("priceToBook"),
                     "eps": info.get("trailingEps"),
-                    "roe": info.get("returnOnEquity"),
-                    "roce": info.get("returnOnAssets"), # ROCE proxy
-                    "debt_to_equity": info.get("debtToEquity"),
-                    "promoter_holding": info.get("heldPercentInsiders"),
-                    "dividend_yield": info.get("dividendYield")
+                    "roe": to_pct(info.get("returnOnEquity")),
+                    "roce": to_pct(info.get("returnOnAssets")), # ROCE proxy
+                    "debt_to_equity": debt_to_equity,
+                    "promoter_holding": to_pct(info.get("heldPercentInsiders")),
+                    "dividend_yield": div_yield,
+                    "market_cap": market_cap,
+                    "book_value": info.get("bookValue"),
+                    "net_margin": to_pct(info.get("profitMargins")),
+                    "latest_opm": to_pct(info.get("operatingMargins")),
+                    "roa": to_pct(info.get("returnOnAssets")),
+                    "revenue_growth_yoy": to_pct(info.get("revenueGrowth")),
+                    "profit_growth_yoy": to_pct(info.get("earningsGrowth")),
+                    "source": "yfinance",
+                    "company_name": info.get("shortName") or symbol
                 }
             return await asyncio.to_thread(_fetch)
         except Exception as e:

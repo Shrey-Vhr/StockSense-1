@@ -6,17 +6,20 @@ from typing import Optional, Dict
 
 # Headers to mimic a real browser
 HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'en-IN,en;q=0.9',
-  'Accept-Encoding': 'gzip, deflate, br',
-  'Connection': 'keep-alive',
-  'Referer': 'https://www.screener.in/',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-IN,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Cache-Control': 'max-age=0',
 }
 
-# Cache fundamentals for 24 hours
-_fundamentals_cache: Dict = {}
-CACHE_TIMEOUT = 86400  # 24 hours
+_fundamental_cache = {}
+_FUND_CACHE_TTL = 21600  # 6 hours
 
 _last_screener_request = 0
 SCREENER_REQUEST_DELAY = 2  # seconds between requests
@@ -88,7 +91,7 @@ def parse_top_ratios(soup):
     try: return float(val)
     except: return None
   
-  return {
+  res = {
     'market_cap': parse_number(
       ratios.get('Market Cap') or 
       ratios.get('Mkt Cap')
@@ -135,7 +138,31 @@ def parse_top_ratios(soup):
     'gross_npa': parse_number(ratios.get('Gross NPA') or ratios.get('GNPA %')),
     'net_npa': parse_number(ratios.get('Net NPA') or ratios.get('NNPA %')),
     'car': parse_number(ratios.get('CAR')),
+    'ps_ratio': parse_number(
+      ratios.get('Price to Sales') or 
+      ratios.get('P/S') or
+      ratios.get('Price/Sales')
+    ),
+    'ev_ebitda': parse_number(
+      ratios.get('EV/EBITDA') or 
+      ratios.get('EV / EBITDA')
+    ),
   }
+  
+  high_low = ratios.get('High / Low')
+  if high_low and '/' in str(high_low):
+    try:
+      parts = str(high_low).split('/')
+      high_52w = parse_number(parts[0])
+      low_52w = parse_number(parts[1])
+      if high_52w is not None and low_52w is not None:
+        res['high_52w'] = high_52w
+        res['low_52w'] = low_52w
+        res['avg_52w'] = round((high_52w + low_52w) / 2, 2)
+    except Exception:
+      pass
+      
+  return res
 
 # Hardcoded peer overrides for stocks where
 # Screener.in sector classification is wrong
@@ -523,13 +550,11 @@ def parse_annual_results(soup):
 def scrape_screener_fundamentals(symbol: str) -> Optional[dict]:
   cache_key = symbol
   now = time.time()
-  
-  # Return cached data if fresh
-  if cache_key in _fundamentals_cache:
-    data, timestamp = _fundamentals_cache[cache_key]
-    if now - timestamp < CACHE_TIMEOUT:
-      print(f"Returning cached Screener.in data for {symbol}")
-      return data
+  if cache_key in _fundamental_cache:
+      data, ts = _fundamental_cache[cache_key]
+      if now - ts < _FUND_CACHE_TTL:
+          print(f"[CACHE HIT] Fundamentals for {symbol}")
+          return data
   
   clean_symbol = get_screener_symbol(symbol)
   
@@ -549,7 +574,7 @@ def scrape_screener_fundamentals(symbol: str) -> Optional[dict]:
             if response.status_code == 200:
                 temp_soup = BeautifulSoup(response.text, 'lxml')
                 # Check if ratio section has actual data
-                ratio_section = temp_soup.find('section', id='top-ratios')
+                ratio_section = temp_soup.find(id='top-ratios')
                 if ratio_section:
                     ratio_items = ratio_section.find_all('li')
                     if len(ratio_items) > 3:
@@ -627,6 +652,8 @@ def scrape_screener_fundamentals(symbol: str) -> Optional[dict]:
                 
                 if 'Promoters' in label:
                   shareholding['promoter_holding'] = parse_number(value)
+                elif 'FPI' in label or 'Foreign Portfolio' in label:
+                  shareholding['fpi_holding'] = parse_number(value)
                 elif 'FIIs' in label or 'Foreign' in label:
                   shareholding['fii_holding'] = parse_number(value)
                 elif 'DIIs' in label or 'Domestic' in label:
@@ -636,6 +663,15 @@ def scrape_screener_fundamentals(symbol: str) -> Optional[dict]:
       
       data['shareholding'] = shareholding
       data['promoter_holding'] = shareholding.get('promoter_holding')
+      
+      if data['promoter_holding'] is not None:
+          data['free_float'] = round(100 - data['promoter_holding'], 2)
+      else:
+          data['free_float'] = None
+          
+      fpi_val = shareholding.get('fpi_holding') or shareholding.get('fii_holding')
+      data['fpi_holding'] = fpi_val
+      
       data['fii_holding'] = shareholding.get('fii_holding')
       data['dii_holding'] = shareholding.get('dii_holding')
       
@@ -801,7 +837,7 @@ def scrape_screener_fundamentals(symbol: str) -> Optional[dict]:
     data['symbol'] = symbol
     
     # Cache the result
-    _fundamentals_cache[cache_key] = (data, now)
+    _fundamental_cache[cache_key] = (data, now)
     print(f"Screener.in data fetched for {clean_symbol}")
     
     return data
@@ -814,11 +850,11 @@ def scrape_screener_fundamentals(symbol: str) -> Optional[dict]:
     return None
 
 def clear_cache(symbol: str = None):
-  global _fundamentals_cache
-  if symbol and symbol in _fundamentals_cache:
-    del _fundamentals_cache[symbol]
+  global _fundamental_cache
+  if symbol and symbol in _fundamental_cache:
+    del _fundamental_cache[symbol]
   elif not symbol:
-    _fundamentals_cache = {}
+    _fundamental_cache = {}
 
 
 def calculate_fundamental_score(data: dict) -> int:
