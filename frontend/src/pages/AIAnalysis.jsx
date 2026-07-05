@@ -22,6 +22,7 @@ const AIAnalysis = () => {
       <!DOCTYPE html>
       <html>
       <head>
+        <meta charset="UTF-8">
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { 
