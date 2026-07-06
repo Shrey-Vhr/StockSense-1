@@ -196,9 +196,8 @@ class YFinanceService:
                     return val * 100 if val is not None else None
                 
                 # market cap is in Rs, screener is in Cr
-                market_cap = info.get("marketCap")
-                if market_cap:
-                    market_cap = market_cap / 10000000
+                raw_mcap = info.get("marketCap")
+                market_cap = raw_mcap / 10000000 if raw_mcap else None
                 
                 debt_to_equity = info.get("debtToEquity")
                 if debt_to_equity is not None:
@@ -207,6 +206,31 @@ class YFinanceService:
                 div_yield = info.get("dividendYield")
                 if div_yield is not None and div_yield < 1.0: # if it's decimal
                     div_yield = div_yield * 100
+                    
+                # 1. 52W Average
+                high_52 = info.get("fiftyTwoWeekHigh")
+                low_52 = info.get("fiftyTwoWeekLow")
+                avg_52w = (high_52 + low_52) / 2 if high_52 is not None and low_52 is not None else None
+                
+                # 2. P/S Ratio
+                ps_ratio = info.get("priceToSalesTrailing12Months")
+                if ps_ratio is None:
+                    total_rev = info.get("totalRevenue")
+                    if raw_mcap and total_rev:
+                        ps_ratio = raw_mcap / total_rev
+                        
+                # 3. EV/EBITDA
+                ev_ebitda = info.get("enterpriseToEbitda")
+                if ev_ebitda is None:
+                    ev = info.get("enterpriseValue")
+                    ebitda = info.get("ebitda")
+                    if ev and ebitda:
+                        ev_ebitda = ev / ebitda
+                        
+                # 4. Free Float
+                float_shares = info.get("floatShares")
+                shares_out = info.get("sharesOutstanding")
+                free_float = (float_shares / shares_out) * 100 if float_shares and shares_out else None
                     
                 return {
                     "symbol": symbol,
@@ -225,6 +249,10 @@ class YFinanceService:
                     "roa": to_pct(info.get("returnOnAssets")),
                     "revenue_growth_yoy": to_pct(info.get("revenueGrowth")),
                     "profit_growth_yoy": to_pct(info.get("earningsGrowth")),
+                    "avg_52w": avg_52w,
+                    "ps_ratio": ps_ratio,
+                    "ev_ebitda": ev_ebitda,
+                    "free_float": free_float,
                     "source": "yfinance",
                     "company_name": info.get("shortName") or symbol
                 }

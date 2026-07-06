@@ -1474,6 +1474,16 @@ const StockDetail = () => {
                       : 'N/A'}
                   </div>
                 </div>
+                <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Free Float: Percentage of shares available for trading">
+                  <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">
+                    Free Float
+                  </div>
+                  <div className="text-white font-mono font-bold">
+                    {fundData.free_float 
+                      ? `${parseFloat(fundData.free_float).toFixed(1)}%` 
+                      : 'N/A'}
+                  </div>
+                </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Return on Equity: Profit generated per ₹100 of shareholder money">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">ROE</div>
                   <div className="text-white font-mono font-bold">{formatMetric('roe', fundData.roe)}</div>
