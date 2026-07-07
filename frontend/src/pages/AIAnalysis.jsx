@@ -403,7 +403,7 @@ const AIAnalysis = () => {
     `;
 
     // Create blob and open in new tab for printing/saving as PDF
-    const blob = new Blob([content], { type: 'text/html' });
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const printWindow = window.open(url, '_blank');
     

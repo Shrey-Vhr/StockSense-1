@@ -1,5 +1,8 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status, Request
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
+import secrets
+import os
 from database import engine, Base, init_db
 
 from contextlib import asynccontextmanager
@@ -46,7 +49,37 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown logic if any
 
-app = FastAPI(title="StockSense API", lifespan=lifespan)
+security = HTTPBasic(auto_error=False)
+
+def verify_credentials(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+    if request.method == "OPTIONS":
+        return None
+        
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+        
+    correct_username = os.getenv("APP_USERNAME", "admin").encode("utf8")
+    correct_password = os.getenv("APP_PASSWORD", "secret").encode("utf8")
+    
+    provided_username = credentials.username.encode("utf8")
+    provided_password = credentials.password.encode("utf8")
+    
+    is_user_ok = secrets.compare_digest(provided_username, correct_username)
+    is_pass_ok = secrets.compare_digest(provided_password, correct_password)
+    
+    if not (is_user_ok and is_pass_ok):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+app = FastAPI(title="StockSense API", lifespan=lifespan, dependencies=[Depends(verify_credentials)])
 
 app.add_middleware(
   CORSMiddleware,

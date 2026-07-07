@@ -351,10 +351,10 @@ const Screener = () => {
                   <div className="px-4 py-6 text-center text-gray-500 text-sm">No saved screeners yet.</div>
                 ) : (
                   savedScreeners.map((s) => (
-                    <button
+                    <div
                       key={s.id}
                       onClick={() => loadScreener(s)}
-                      className="w-full text-left px-4 py-3 hover:bg-[#1c2333] transition-colors border-b border-[#30363d]/50 last:border-0 group flex justify-between items-start"
+                      className="w-full text-left px-4 py-3 hover:bg-[#1c2333] transition-colors border-b border-[#30363d]/50 last:border-0 group flex justify-between items-start cursor-pointer"
                     >
                       <div>
                         <div className="text-sm font-medium text-white">{s.name}</div>
@@ -365,11 +365,11 @@ const Screener = () => {
                       </div>
                       <button
                         onClick={(e) => deleteSavedScreener(s.id, e)}
-                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded transition-all cursor-default"
                       >
                         <Trash2 size={14} className="text-red-400" />
                       </button>
-                    </button>
+                    </div>
                   ))
                 )}
               </div>

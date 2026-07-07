@@ -764,10 +764,588 @@ const StockDetail = () => {
     `;
 
     // Create blob and open in new tab for printing/saving as PDF
-    const blob = new Blob([content], { type: 'text/html' });
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const printWindow = window.open(url, '_blank');
     
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        URL.revokeObjectURL(url);
+      }, 500);
+    };
+  };
+
+  const handleExportTechnicalsPDF = () => {
+    if (!techData) return;
+    
+    const content = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #1a1a1a;
+            font-size: 12px;
+            line-height: 1.5;
+          }
+          .header {
+            background: #0f4c35;
+            color: white;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+          }
+          .header h1 { font-size: 22px; font-weight: 700; }
+          .header p { font-size: 11px; opacity: 0.8; margin-top: 4px; }
+          .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+          }
+          .section {
+            margin: 0 24px 16px 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          .section-title {
+            background: #f9fafb;
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 12px;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+          .section-body { padding: 14px 16px; }
+          .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+          }
+          .metric-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+          }
+          .metric-label {
+            font-size: 9px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+          }
+          .metric-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a1a;
+          }
+          .uptrend { color: #059669; }
+          .downtrend { color: #dc2626; }
+          .neutral { color: #d97706; }
+          .score-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+          }
+          .score-number {
+            font-size: 36px;
+            font-weight: 800;
+            color: #059669;
+          }
+          .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+          }
+          .level-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 11px;
+          }
+          .support { color: #059669; font-weight: 700; }
+          .resistance { color: #dc2626; font-weight: 700; }
+          .disclaimer {
+            margin: 16px 24px;
+            font-size: 9px;
+            color: #9ca3af;
+            text-align: center;
+            border-top: 1px solid #f3f4f6;
+            padding-top: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Technical Analysis — ${cleanSymbol.replace('.NS', '')}</h1>
+          <p>Generated on ${new Date().toLocaleDateString('en-IN', { 
+            day: '2-digit', month: 'long', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          })}</p>
+          <div class="badge">StockSense</div>
+        </div>
+
+        <!-- Score -->
+        <div class="section">
+          <div class="section-title">Technical Score</div>
+          <div class="section-body">
+            <div class="score-box">
+              <div>
+                <div style="font-size:13px;color:#374151;font-weight:600">
+                  Overall Technical Score
+                </div>
+                <div style="font-size:11px;color:#6b7280;margin-top:4px">
+                  Based on trend, momentum, volume and structure
+                </div>
+              </div>
+              <div class="score-number">
+                ${techData.overall_technical_score}/100
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="section">
+          <div class="section-title">Key Indicators</div>
+          <div class="section-body">
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-label">Trend</div>
+                <div class="metric-value ${
+                  techData.trend?.status?.includes('Up') ? 'uptrend' :
+                  techData.trend?.status?.includes('Down') ? 'downtrend' : 'neutral'
+                }">${techData.trend?.status || 'N/A'}</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">RSI (14)</div>
+                <div class="metric-value">
+                  ${techData.momentum?.rsi?.value?.toFixed(1) || 'N/A'}
+                  <span style="font-size:10px;color:#6b7280">
+                    (${techData.momentum?.rsi?.signal || ''})
+                  </span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">MACD</div>
+                <div class="metric-value">
+                  ${techData.momentum?.macd?.crossover || 'N/A'}
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">ADX</div>
+                <div class="metric-value">
+                  ${techData.momentum?.adx?.value?.toFixed(1) || 'N/A'}
+                  <span style="font-size:10px;color:#6b7280">
+                    (${techData.momentum?.adx?.strength || ''})
+                  </span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Volume Ratio</div>
+                <div class="metric-value">
+                  ${techData.volume?.relative_volume?.toFixed(2) || 'N/A'}x
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Price vs EMA200</div>
+                <div class="metric-value ${
+                  techData.trend?.above_ema200 ? 'uptrend' : 'downtrend'
+                }">
+                  ${techData.trend?.above_ema200 ? 'Above' : 'Below'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMA Levels -->
+        <div class="section">
+          <div class="section-title">EMA Levels</div>
+          <div class="section-body">
+            <div class="two-col">
+              <div>
+                <div class="level-row">
+                  <span style="color:#6b7280">EMA 20</span>
+                  <span style="font-weight:600">
+                    ₹${techData.trend?.emas?.ema20?.toFixed(2) || 'N/A'}
+                  </span>
+                </div>
+                <div class="level-row">
+                  <span style="color:#6b7280">EMA 50</span>
+                  <span style="font-weight:600">
+                    ₹${techData.trend?.emas?.ema50?.toFixed(2) || 'N/A'}
+                  </span>
+                </div>
+                <div class="level-row">
+                  <span style="color:#6b7280">EMA 200</span>
+                  <span style="font-weight:600">
+                    ₹${techData.trend?.emas?.ema200?.toFixed(2) || 'N/A'}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div class="level-row">
+                  <span style="color:#6b7280">Support</span>
+                  <span class="support">
+                    ₹${techData.structure?.support_resistance?.support?.toFixed(2) || 'N/A'}
+                  </span>
+                </div>
+                <div class="level-row">
+                  <span style="color:#6b7280">Resistance</span>
+                  <span class="resistance">
+                    ₹${techData.structure?.support_resistance?.resistance?.toFixed(2) || 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="disclaimer">
+          This technical analysis is generated by StockSense for educational purposes only 
+          and does not constitute financial advice. StockSense | ${new Date().getFullYear()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, '_blank');
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        URL.revokeObjectURL(url);
+      }, 500);
+    };
+  };
+
+  const handleExportFundamentalsPDF = () => {
+    if (!fundData) return;
+    
+    const content = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #1a1a1a;
+            font-size: 12px;
+            line-height: 1.5;
+          }
+          .header {
+            background: #0f4c35;
+            color: white;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+          }
+          .header h1 { font-size: 22px; font-weight: 700; }
+          .header p { font-size: 11px; opacity: 0.8; margin-top: 4px; }
+          .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+          }
+          .section {
+            margin: 0 24px 16px 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          .section-title {
+            background: #f9fafb;
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 12px;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+          .section-body { padding: 14px 16px; }
+          .ratios-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+          }
+          .ratio-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+          }
+          .ratio-label {
+            font-size: 9px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+          }
+          .ratio-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a1a;
+          }
+          .good { color: #059669; }
+          .bad { color: #dc2626; }
+          .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+          }
+          .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 11px;
+          }
+          .data-label { color: #6b7280; }
+          .data-value { font-weight: 600; }
+          .score-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+          }
+          .score-number {
+            font-size: 36px;
+            font-weight: 800;
+            color: #059669;
+          }
+          .strength-item {
+            font-size: 10px;
+            color: #065f46;
+            background: #d1fae5;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 3px 0;
+          }
+          .weakness-item {
+            font-size: 10px;
+            color: #991b1b;
+            background: #fee2e2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 3px 0;
+          }
+          .disclaimer {
+            margin: 16px 24px;
+            font-size: 9px;
+            color: #9ca3af;
+            text-align: center;
+            border-top: 1px solid #f3f4f6;
+            padding-top: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Fundamental Analysis — ${cleanSymbol.replace('.NS', '')}</h1>
+          <p>Generated on ${new Date().toLocaleDateString('en-IN', { 
+            day: '2-digit', month: 'long', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          })} | Data: Screener.in</p>
+          <div class="badge">StockSense</div>
+        </div>
+
+        <!-- Score -->
+        <div class="section">
+          <div class="section-title">Fundamental Score</div>
+          <div class="section-body">
+            <div class="score-box">
+              <div>
+                <div style="font-size:13px;color:#374151;font-weight:600">
+                  ${fundData.company_name || cleanSymbol.replace('.NS', '')}
+                </div>
+                <div style="font-size:11px;color:#6b7280;margin-top:4px">
+                  Overall Fundamental Score
+                </div>
+              </div>
+              <div class="score-number">
+                ${fundData.fundamental_score}/100
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Ratios -->
+        <div class="section">
+          <div class="section-title">Key Ratios</div>
+          <div class="section-body">
+            <div class="ratios-grid">
+              <div class="ratio-card">
+                <div class="ratio-label">PE Ratio</div>
+                <div class="ratio-value">
+                  ${fundData.pe_ratio ? parseFloat(fundData.pe_ratio).toFixed(1) + 'x' : 'N/A'}
+                </div>
+              </div>
+              <div class="ratio-card">
+                <div class="ratio-label">PB Ratio</div>
+                <div class="ratio-value">
+                  ${fundData.pb_ratio ? parseFloat(fundData.pb_ratio).toFixed(1) + 'x' : 'N/A'}
+                </div>
+              </div>
+              <div class="ratio-card">
+                <div class="ratio-label">ROE</div>
+                <div class="ratio-value ${fundData.roe > 0.15 ? 'good' : ''}">
+                  ${fundData.roe ? (fundData.roe < 1 ? (fundData.roe * 100).toFixed(1) : parseFloat(fundData.roe).toFixed(1)) + '%' : 'N/A'}
+                </div>
+              </div>
+              <div class="ratio-card">
+                <div class="ratio-label">ROCE</div>
+                <div class="ratio-value">
+                  ${fundData.roce ? parseFloat(fundData.roce).toFixed(1) + '%' : 'N/A'}
+                </div>
+              </div>
+              <div class="ratio-card">
+                <div class="ratio-label">Debt/Equity</div>
+                <div class="ratio-value ${fundData.debt_to_equity < 1 ? 'good' : 'bad'}">
+                  ${fundData.debt_to_equity ? parseFloat(fundData.debt_to_equity).toFixed(2) + 'x' : 'N/A'}
+                </div>
+              </div>
+              <div class="ratio-card">
+                <div class="ratio-label">EPS</div>
+                <div class="ratio-value">
+                  ${fundData.eps ? '₹' + parseFloat(fundData.eps).toFixed(2) : 'N/A'}
+                </div>
+              </div>
+              <div class="ratio-card">
+                <div class="ratio-label">Book Value</div>
+                <div class="ratio-value">
+                  ${fundData.book_value ? '₹' + parseFloat(fundData.book_value).toFixed(2) : 'N/A'}
+                </div>
+              </div>
+              <div class="ratio-card">
+                <div class="ratio-label">Dividend Yield</div>
+                <div class="ratio-value">
+                  ${fundData.dividend_yield ? parseFloat(fundData.dividend_yield).toFixed(2) + '%' : 'N/A'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Growth & Shareholding -->
+        <div class="section">
+          <div class="section-title">Growth & Shareholding</div>
+          <div class="section-body">
+            <div class="two-col">
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;font-size:11px">
+                  Growth YoY
+                </div>
+                <div class="data-row">
+                  <span class="data-label">Revenue Growth</span>
+                  <span class="data-value ${fundData.revenue_growth_yoy > 10 ? 'good' : fundData.revenue_growth_yoy < 0 ? 'bad' : ''}">
+                    ${fundData.revenue_growth_yoy ? fundData.revenue_growth_yoy + '%' : 'N/A'}
+                  </span>
+                </div>
+                <div class="data-row">
+                  <span class="data-label">Profit Growth</span>
+                  <span class="data-value ${fundData.profit_growth_yoy > 10 ? 'good' : fundData.profit_growth_yoy < 0 ? 'bad' : ''}">
+                    ${fundData.profit_growth_yoy ? fundData.profit_growth_yoy + '%' : 'N/A'}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;font-size:11px">
+                  Shareholding Pattern
+                </div>
+                <div class="data-row">
+                  <span class="data-label">Promoter</span>
+                  <span class="data-value">
+                    ${fundData.promoter_holding ? fundData.promoter_holding + '%' : 'N/A'}
+                  </span>
+                </div>
+                <div class="data-row">
+                  <span class="data-label">FII/FPI</span>
+                  <span class="data-value">
+                    ${fundData.fii_holding ? fundData.fii_holding + '%' : 'N/A'}
+                  </span>
+                </div>
+                <div class="data-row">
+                  <span class="data-label">DII</span>
+                  <span class="data-value">
+                    ${fundData.dii_holding ? fundData.dii_holding + '%' : 'N/A'}
+                  </span>
+                </div>
+                <div class="data-row">
+                  <span class="data-label">Promoter Pledge</span>
+                  <span class="data-value ${fundData.promoter_pledge > 20 ? 'bad' : 'good'}">
+                    ${fundData.promoter_pledge !== null ? fundData.promoter_pledge + '%' : '0%'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strengths & Weaknesses -->
+        <div class="section">
+          <div class="section-title">Fundamental Score Card</div>
+          <div class="section-body">
+            <div class="two-col">
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;
+                            font-size:11px;color:#059669">
+                  Strengths
+                </div>
+                ${(fundData.strengths || []).map(s => 
+                  `<div class="strength-item">✓ ${s}</div>`
+                ).join('') || `<div style="color:#6b7280;font-size:11px">N/A</div>`}
+              </div>
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;
+                            font-size:11px;color:#dc2626">
+                  Weaknesses
+                </div>
+                ${(fundData.weaknesses || []).map(w => 
+                  `<div class="weakness-item">✗ ${w}</div>`
+                ).join('') || `<div style="color:#6b7280;font-size:11px">N/A</div>`}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="disclaimer">
+          Fundamental data sourced from Screener.in. This analysis is for educational 
+          purposes only and does not constitute financial advice. 
+          StockSense | ${new Date().getFullYear()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, '_blank');
     printWindow.onload = () => {
       setTimeout(() => {
         printWindow.print();
@@ -1347,8 +1925,27 @@ const StockDetail = () => {
           <div className="space-y-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-200">Technical Snapshot</h2>
-              <div className="px-3 py-1.5 rounded-xl text-sm font-bold bg-surface-900 border border-surface-700 text-gray-300">
-                <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Tech Score:</span> <span className="text-[#10b981] font-bold text-lg">{techData.overall_technical_score}/100</span>
+              <div className="flex items-center gap-3">
+                <div className="px-3 py-1.5 rounded-xl text-sm font-bold bg-surface-900 border border-surface-700 text-gray-300">
+                  <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Tech Score:</span> <span className="text-[#10b981] font-bold text-lg">{techData.overall_technical_score}/100</span>
+                </div>
+                <button
+                  onClick={handleExportTechnicalsPDF}
+                  className="flex items-center gap-1.5 px-3 py-1.5 
+                             bg-surface-900 border border-surface-800 
+                             text-gray-400 rounded-lg hover:text-white 
+                             hover:bg-surface-800 transition-colors 
+                             text-xs font-medium"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" 
+                       width="13" height="13" viewBox="0 0 24 24" 
+                       fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Export PDF
+                </button>
               </div>
             </div>
 
@@ -1421,6 +2018,24 @@ const StockDetail = () => {
                   </h2>
                 </div>
                 <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleExportFundamentalsPDF}
+                    disabled={!fundData}
+                    className="flex items-center gap-1.5 px-3 py-2 
+                               bg-surface-900 border border-surface-800 
+                               text-gray-400 rounded-lg hover:text-white 
+                               hover:bg-surface-800 transition-colors 
+                               text-xs font-medium disabled:opacity-50"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                         width="13" height="13" viewBox="0 0 24 24" 
+                         fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Export PDF
+                  </button>
                   <button 
                     onClick={handleRefreshFundamental}
                     className="text-xs bg-surface-900 hover:bg-[#30363d] border border-surface-800 px-3 py-2 rounded-lg text-gray-300 transition-colors"

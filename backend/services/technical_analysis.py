@@ -415,6 +415,7 @@ class TechnicalAnalysisService:
                 "bollinger_bands": TechnicalAnalysisService.calculate_bollinger_bands(df)
             },
             "structure": {
+                "current_price": TechnicalAnalysisService._safe_get(df['Close'].values) if df is not None and not df.empty else 0,
                 "market_structure": TechnicalAnalysisService.detect_market_structure(df),
                 "support_resistance": TechnicalAnalysisService.find_support_resistance(df)
             },

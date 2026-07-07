@@ -7,13 +7,23 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to attach JWT token
+// Request interceptor to attach Basic Auth token
 api.interceptors.request.use(
   (config) => {
+    const username = import.meta.env.VITE_APP_USERNAME;
+    const password = import.meta.env.VITE_APP_PASSWORD;
+    
+    if (username && password) {
+      const base64Credentials = btoa(`${username}:${password}`);
+      config.headers.Authorization = `Basic ${base64Credentials}`;
+    }
+    
+    // Also attach JWT if still used by some legacy endpoints
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => Promise.reject(error)
