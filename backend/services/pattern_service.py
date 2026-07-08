@@ -1094,6 +1094,9 @@ def get_pattern_analysis(
     print(f"📊 Candlestick patterns: {len(candle_patterns)}")
     patterns = candle_patterns + chart_patterns
     
+    if not current_price and not hist.empty:
+      current_price = float(hist['Close'].iloc[-1])
+
     trade_setup = calculate_trade_setup(
       patterns=patterns,
       current_price=current_price,
