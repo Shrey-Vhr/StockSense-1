@@ -1434,13 +1434,38 @@ const StockDetail = () => {
 
   const fetchInitialData = async () => {
     try {
-      const [tRes, hRes] = await Promise.all([
+      const [tRes, hRes, qRes] = await Promise.all([
         api.get(`/analysis/technical/${cleanSymbol}`),
-        api.get(`/stocks/history/${cleanSymbol}?period=1y&interval=1d`)
+        api.get(`/stocks/history/${cleanSymbol}?period=1y&interval=1d`),
+        api.get(`/stocks/quote/${cleanSymbol}`).catch(() => null)
       ]);
       setTechData(tRes.data);
       
-      const history = hRes.data?.history || [];
+      let history = hRes.data?.history || [];
+      const quoteData = qRes?.data;
+      
+      if (history.length > 0 && quoteData && quoteData.current_price) {
+        const lastCandle = history[history.length - 1];
+        const prevClose = quoteData.previous_close || 0;
+        const currentPrice = quoteData.current_price;
+        
+        const diff = Math.abs(parseFloat(lastCandle.close) - prevClose);
+        if (diff < 0.5 && quoteData.change_percent !== 0) {
+          const nextDateStr = new Date().toISOString().split('T')[0];
+          const newDate = nextDateStr > lastCandle.date ? nextDateStr : 
+                          new Date(new Date(lastCandle.date).getTime() + 86400000).toISOString().split('T')[0];
+          
+          history.push({
+            date: newDate,
+            open: quoteData.open || currentPrice,
+            high: quoteData.high || currentPrice,
+            low: quoteData.low || currentPrice,
+            close: currentPrice,
+            volume: quoteData.volume || 0
+          });
+        }
+      }
+      
       setHistoricalData(history);
       setChartLoading(false);
     } catch (e) {
@@ -1590,11 +1615,12 @@ const StockDetail = () => {
     };
 
     const candleData = historicalData
+      .filter(d => d.date && d.close != null && !isNaN(parseFloat(d.close)))
       .map(d => ({
         time: cleanDate(d.date),
-        open: parseFloat(d.open),
-        high: parseFloat(d.high),
-        low: parseFloat(d.low),
+        open: parseFloat(d.open) || parseFloat(d.close),
+        high: parseFloat(d.high) || parseFloat(d.close),
+        low: parseFloat(d.low) || parseFloat(d.close),
         close: parseFloat(d.close),
       }))
       .filter(d => d.time !== null);
@@ -1612,10 +1638,11 @@ const StockDetail = () => {
     });
 
     const volumeData = historicalData
+      .filter(d => d.date && d.volume != null && !isNaN(parseFloat(d.volume)))
       .map(d => ({
         time: cleanDate(d.date),
-        value: d.volume,
-        color: d.close >= d.open ? 'rgba(0, 200, 83, 0.3)' : 'rgba(255, 23, 68, 0.3)',
+        value: parseFloat(d.volume) || 0,
+        color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(0, 200, 83, 0.3)' : 'rgba(255, 23, 68, 0.3)',
       }))
       .filter(d => d.time !== null);
     volumeSeries.setData(volumeData);
