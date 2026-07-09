@@ -36,6 +36,22 @@ class SaveScreenerRequest(BaseModel):
     sort_order: str = "desc"
 
 
+from fastapi.responses import StreamingResponse
+
+# ---------------------------------------------------------------------------
+# GET /stream — Run screener with SSE
+# ---------------------------------------------------------------------------
+@router.get("/stream")
+async def run_screener_stream(conditions: str):
+    try:
+        conds = json.loads(conditions)
+        return StreamingResponse(
+            ScreenerEngine.run_stream(conditions=conds),
+            media_type="text/event-stream"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Screener failed: {str(e)}")
+
 # ---------------------------------------------------------------------------
 # POST /run — Run screener with custom conditions
 # ---------------------------------------------------------------------------

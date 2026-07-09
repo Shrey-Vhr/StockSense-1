@@ -16,6 +16,7 @@ import ProtectedRoute from './components/Layout/ProtectedRoute'
 import SplashScreen from './components/SplashScreen'
 import { useState, useEffect } from 'react'
 import { useNotifications } from "./hooks/useNotifications";
+import { Toaster } from 'react-hot-toast';
 
 function NotificationManager() {
   useNotifications();
@@ -72,6 +73,23 @@ function App() {
       />
       <div className="dot-grid" />
       {showSplash && <SplashScreen />}
+      <Toaster 
+        position="bottom-right"
+        toastOptions={{
+          className: '!bg-surface-850 !text-gray-100 !border !border-surface-800 font-sans',
+          style: {
+            background: '#1A1D24', // surface-850 fallback
+            color: '#F3F4F6', // text-gray-100
+            border: '1px solid #2B303B' // border-surface-800
+          },
+          success: {
+            iconTheme: {
+              primary: '#34d399', // emerald-400
+              secondary: '#1A1D24', // surface-850
+            },
+          },
+        }}
+      />
       <NotificationManager />
       <AppContent />
     </BrowserRouter>

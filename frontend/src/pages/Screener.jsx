@@ -152,6 +152,7 @@ const Screener = () => {
 
   // Run status
   const [hasRunOnce, setHasRunOnce] = useState(false);
+  const [progress, setProgress] = useState(null);
 
   // ─── Fetch indicator catalogue on mount ──────────────────────────────────
   useEffect(() => {
@@ -186,24 +187,58 @@ const Screener = () => {
   };
 
   // ─── Run screener ────────────────────────────────────────────────────────
-  const runScreener = useCallback(async () => {
+  const runScreener = useCallback(() => {
     if (conditions.length === 0) return;
     setLoading('screener', true);
     setHasRunOnce(true);
-    try {
-      const res = await api.post('/screener/run', {
-        conditions,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        limit,
-      });
-      setScreenerData(res.data);
-    } catch (err) {
-      console.error('Screener run failed:', err);
-    } finally {
+    setScreenerData({ results: [], summary: null });
+    setProgress({ processed: 0, total: 100 });
+
+    const query = encodeURIComponent(JSON.stringify(conditions));
+    const es = new EventSource(`${import.meta.env.VITE_API_URL}/screener/stream?conditions=${query}`);
+
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.error) {
+          console.error(data.error);
+          es.close();
+          setLoading('screener', false);
+          setProgress(null);
+        } else if (data.progress !== undefined) {
+          setProgress({ processed: data.progress, total: data.total });
+        } else if (data.summary) {
+          const current = useStore.getState();
+          setScreenerData({ results: current.screenerResults, summary: data });
+          es.close();
+          setLoading('screener', false);
+          setProgress(null);
+        } else {
+          const current = useStore.getState();
+          const newResults = [...current.screenerResults, data];
+          newResults.sort((a, b) => {
+            const valA = a[sortBy] ?? (sortBy === 'score' ? 0 : 0);
+            const valB = b[sortBy] ?? (sortBy === 'score' ? 0 : 0);
+            return sortOrder === 'desc' ? valB - valA : valA - valB;
+          });
+          newResults.forEach((r, i) => r.rank = i + 1);
+          setScreenerData({ 
+            results: newResults.slice(0, limit), 
+            summary: current.screenerSummary 
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    es.onerror = (error) => {
+      console.error("SSE error", error);
+      es.close();
       setLoading('screener', false);
-    }
-  }, [conditions, sortBy, sortOrder, limit]);
+      setProgress(null);
+    };
+  }, [conditions, sortBy, sortOrder, limit, setScreenerData, setLoading]);
 
   // ─── Save screener ──────────────────────────────────────────────────────
   const saveScreener = async () => {
@@ -284,12 +319,24 @@ const Screener = () => {
     : [];
 
   // ─── Render ──────────────────────────────────────────────────────────────
-  if (isLoading.screener && !hasRunOnce) {
+  if (isLoading.screener && !hasRunOnce && !progress) {
     return <ScreenerSkeleton />;
   }
 
   return (
     <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-5 h-full flex flex-col">
+
+      {/* ── PROGRESS BAR ────────────────────────────────────────────────── */}
+      {progress && (
+        <div className="w-full bg-surface-800 rounded-full h-1.5 mb-2 overflow-hidden">
+          <motion.div
+            className="h-1.5 bg-emerald-500 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${(progress.processed / Math.max(progress.total, 1)) * 100}%` }}
+            transition={{ duration: 0.2 }}
+          />
+        </div>
+      )}
 
       {/* ── HEADER ──────────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">

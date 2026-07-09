@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
 import { Activity, BookOpen, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, ShieldAlert, AlertTriangle, BellPlus, X, BarChart2, Building2, Brain, Minus } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../utils/api';
 import useStore from '../store/useStore';
 import PatternAnalysis from '../components/PatternAnalysis';
@@ -383,10 +384,14 @@ const StockDetail = () => {
         { symbol: cleanSymbol }
       );
       setWatchlistAdded(true);
+      toast.success('Added to Watchlist');
       setTimeout(() => setWatchlistAdded(false), 3000);
     } catch (e) {
       if (e.response?.data?.detail === 'Stock already in watchlist') {
         setWatchlistAdded(true);
+        toast.success('Already in Watchlist');
+      } else {
+        toast.error('Failed to add to Watchlist');
       }
     }
   };
@@ -1795,7 +1800,7 @@ const StockDetail = () => {
       setAiAnalysis(res.data.analysis);
     } catch (e) {
       console.error(e);
-      alert("AI Analysis failed. Check console or API Key.");
+      toast.error("AI Analysis failed. Check console or API Key.");
     } finally {
       setAiLoading(false);
     }
@@ -1811,10 +1816,10 @@ const StockDetail = () => {
       });
       setShowAlertModal(false);
       setAlertValue('');
-      alert("Alert created successfully!");
+      toast.success("Alert created successfully!");
     } catch (e) {
       console.error(e);
-      alert("Failed to create alert.");
+      toast.error("Failed to create alert.");
     }
   };
 
