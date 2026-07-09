@@ -31,7 +31,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/stocks/search?q=${query}`);
         if (res.ok) {
           const data = await res.json();
-          setResults(data);
+          setResults(data.results || []);
           setSelectedIndex(0);
         }
       } catch (error) {
