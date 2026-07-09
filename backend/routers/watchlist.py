@@ -118,9 +118,20 @@ def get_watchlist_stocks(
         ((price - prev_close) / prev_close * 100)
         if prev_close else 0, 2
       )
+
+      # Fetch 7d history for sparkline
+      try:
+          hist = ticker.history(period="7d")
+          sparkline = hist['Close'].tolist() if not hist.empty else []
+          # Ensure JSON serializable floats
+          sparkline = [round(float(x), 2) for x in sparkline]
+      except:
+          sparkline = []
+          
     except:
       price = 0
       change_pct = 0
+      sparkline = []
     
     stocks.append({
       'id': ws.id,
@@ -128,6 +139,7 @@ def get_watchlist_stocks(
       'name': ws.symbol.replace('.NS', ''),
       'price': price,
       'change_pct': change_pct,
+      'sparkline': sparkline,
       'notes': ws.notes,
       'added_at': ws.added_at.isoformat() 
                   if ws.added_at else None

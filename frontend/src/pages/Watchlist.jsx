@@ -4,6 +4,34 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { WatchlistSkeleton } from '../components/Skeleton';
 
+const Sparkline = ({ data, isPositive }) => {
+  if (!data || data.length < 2) return <div className="w-16 h-8 opacity-50 flex items-center justify-center text-xs text-gray-600">-</div>;
+  
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * 100;
+    const y = 100 - ((d - min) / range) * 100;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg className="w-16 h-8" viewBox="0 -5 100 110" preserveAspectRatio="none">
+      <polyline
+        fill="none"
+        stroke={isPositive ? '#10b981' : '#ef4444'}
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+};
+
 const Watchlist = () => {
   const navigate = useNavigate();
   const [watchlists, setWatchlists] = useState([]);
@@ -332,8 +360,9 @@ const Watchlist = () => {
                 ) : (
                   <div>
                     {/* Table Header */}
-                    <div className="hidden sm:grid grid-cols-5 gap-2 px-3 py-2 text-gray-600 text-xs font-semibold uppercase tracking-wide border-b border-surface-800 mb-1">
+                    <div className="hidden sm:grid grid-cols-6 gap-2 px-3 py-2 text-gray-600 text-xs font-semibold uppercase tracking-wide border-b border-surface-800 mb-1">
                       <span>STOCK</span>
+                      <span className="text-center">7D TREND</span>
                       <span className="text-right">
                         PRICE
                       </span>
@@ -356,7 +385,7 @@ const Watchlist = () => {
                           duration: 0.2, 
                           delay: i * 0.05 
                         }}
-                        className="flex flex-col sm:grid sm:grid-cols-5 gap-1 sm:gap-2 px-3 py-3 rounded-xl hover:bg-surface-800/50 cursor-pointer border-b border-surface-800/50 last:border-b-0 items-center transition-colors"
+                        className="flex flex-col sm:grid sm:grid-cols-6 gap-1 sm:gap-2 px-3 py-3 rounded-xl hover:bg-surface-800/50 cursor-pointer border-b border-surface-800/50 last:border-b-0 items-center transition-colors"
                         onClick={() => {
                           const s = stock.symbol.toUpperCase();
                           const isETF = s.includes('BEES') || s.includes('ETF') || s.includes('MON100');
@@ -371,6 +400,10 @@ const Watchlist = () => {
                             <p className="text-gray-500 text-xs mt-0.5 font-mono">
                               {stock.symbol}
                             </p>
+                          </div>
+
+                          <div className="hidden sm:flex items-center justify-center">
+                            <Sparkline data={stock.sparkline} isPositive={stock.change_pct >= 0} />
                           </div>
 
                           <p className="hidden sm:block text-gray-200 text-sm text-right font-mono font-medium">
