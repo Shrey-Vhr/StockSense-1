@@ -48,6 +48,43 @@ const MetricCard = ({ label, value, format, goodAbove, goodBelow }) => {
   );
 };
 
+const QuickLevelsCard = ({ aiTradeSetup }) => {
+  if (!aiTradeSetup) return null;
+
+  return (
+    <div className="absolute bottom-4 right-4 z-10 bg-surface-900/80 backdrop-blur-sm border border-emerald-500/30 rounded-lg p-3 text-xs w-48 shadow-lg pointer-events-none">
+      <div className="flex items-center gap-1.5 mb-2 border-b border-surface-800 pb-1.5">
+        <Target size={14} className="text-emerald-400" />
+        <span className="text-white font-bold tracking-wide uppercase text-[10px]">AI Setup</span>
+      </div>
+      <div className="space-y-1.5 font-mono">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400">Entry</span>
+          <span className="text-emerald-400 font-bold">{aiTradeSetup.entry || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400">SL</span>
+          <span className="text-red-400 font-bold">{aiTradeSetup.sl || aiTradeSetup.stop_loss || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400">T1</span>
+          <span className="text-teal-400 font-bold">{aiTradeSetup.t1 || aiTradeSetup.target_1 || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400">T2</span>
+          <span className="text-teal-400 font-bold">{aiTradeSetup.t2 || aiTradeSetup.target_2 || 'N/A'}</span>
+        </div>
+        {(aiTradeSetup.t3 || aiTradeSetup.target_3) && (
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400">T3</span>
+            <span className="text-teal-400 font-bold">{aiTradeSetup.t3 || aiTradeSetup.target_3}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const InstitutionalTab = ({ symbol, fundData }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1899,6 +1936,7 @@ const StockDetail = () => {
               </div>
             </div>
             <div ref={chartContainerRef} className="w-full h-[400px]" />
+            <QuickLevelsCard aiTradeSetup={aiAnalysis?.trade_setup} />
           </div>
         )}
       </div>
