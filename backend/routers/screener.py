@@ -68,13 +68,7 @@ async def run_screener(body: RunScreenerRequest):
         )
         if isinstance(result, dict) and "error" in result and not result.get("results"):
             raise HTTPException(status_code=500, detail=result["error"])
-            
-        return {
-            "results": result.get("results", []),
-            "execution_time": result.get("execution_time", 0),
-            "failed_stocks": result.get("failed_stocks", []),
-            "summary": result.get("summary", {})
-        }
+        return result
     except HTTPException:
         raise
     except Exception as e:
