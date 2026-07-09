@@ -491,90 +491,83 @@ class ScreenerEngine:
             return [{"symbol": s} for s in NIFTY_50_SYMBOLS]
 
     @staticmethod
-    async def run_stream(conditions: list):
-        start_time = time.time()
-        stocks = ScreenerEngine.load_universe()
-        if not stocks:
-            yield f"data: {json.dumps({'error': 'Stock universe empty'})}\n\n"
-            return
+    async def _process_stock(sym, meta, tech_conditions, fund_conditions, inst_conditions, conditions, sem, failed_stocks):
+        import time
+        import asyncio
+        async with sem:
+            # 1. Tech
+            def fetch_and_compute_tech():
+                for attempt in range(3):
+                    try:
+                        import warnings
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            import yfinance as yf
+                            df = yf.download(tickers=sym, period="1y", progress=False, threads=False)
+                        if df is not None and not df.empty and len(df) >= 50:
+                            return _compute_technical_values(df)
+                    except Exception:
+                        pass
+                    time.sleep(0.5)
+                return None
 
-        total_screened = len(stocks)
-        symbols = [s["symbol"] for s in stocks]
-        symbol_meta = {s["symbol"]: s for s in stocks}
-
-        # Split conditions into technical, fundamental, institutional
-        tech_conditions  = [c for c in conditions if c.get("indicator") not in FUNDAMENTAL_INDICATORS and c.get("indicator") not in INSTITUTIONAL_INDICATORS]
-        fund_conditions  = [c for c in conditions if c.get("indicator") in FUNDAMENTAL_INDICATORS]
-        inst_conditions  = [c for c in conditions if c.get("indicator") in INSTITUTIONAL_INDICATORS]
-
-        chunk_size = 50
-        processed = 0
-        total_passed = 0
-
-        for i in range(0, total_screened, chunk_size):
-            chunk_symbols = symbols[i:i+chunk_size]
+            tech_res = await asyncio.to_thread(fetch_and_compute_tech)
+            if not tech_res:
+                failed_stocks.append(sym)
+                return None
+                
+            today_vals, yesterday_vals = tech_res
+            if today_vals is None:
+                failed_stocks.append(sym)
+                return None
+                
+            if not all(_evaluate_condition(c, today_vals, yesterday_vals) for c in tech_conditions):
+                return None
+                
+            item = {
+                "symbol": sym,
+                "meta": meta,
+                "today": today_vals,
+                "yesterday": yesterday_vals,
+            }
             
-            def fetch_data():
-                return yf.download(
-                    tickers=chunk_symbols,
-                    period="1y",
-                    group_by="ticker",
-                    threads=True,
-                    progress=False
-                )
-
-            df_all = await asyncio.to_thread(fetch_data)
-
-            # ---- Step 2: Evaluate technical conditions per stock ----
-            tech_passed = []
-            for sym in chunk_symbols:
-                try:
-                    stock_df = df_all[sym] if len(chunk_symbols) > 1 else df_all
-                    stock_df = stock_df.dropna(subset=["Close"])
-                    if len(stock_df) < 50:
-                        continue
-
-                    today_vals, yesterday_vals = _compute_technical_values(stock_df)
-                    if today_vals is None:
-                        continue
-
-                    passed = all(_evaluate_condition(c, today_vals, yesterday_vals) for c in tech_conditions)
-                    if not passed:
-                        continue
-
-                    tech_passed.append({
-                        "symbol": sym,
-                        "meta": symbol_meta[sym],
-                        "today": today_vals,
-                        "yesterday": yesterday_vals,
-                    })
-                except Exception:
-                    continue
-
-            # ---- Step 3: Evaluate fundamental conditions ----
-            async def _process_fundamentals(item):
-                if not fund_conditions:
-                    return item
-
-                fund_vals = await asyncio.to_thread(_fetch_fundamental_values, item["symbol"])
+            # 2. Fund
+            if fund_conditions:
+                def fetch_fund():
+                    for attempt in range(3):
+                        try:
+                            return _fetch_fundamental_values(sym)
+                        except Exception:
+                            pass
+                        time.sleep(0.5)
+                    return None
+                    
+                fund_vals = await asyncio.to_thread(fetch_fund)
+                if fund_vals is None:
+                    failed_stocks.append(sym)
+                    return None
                 item["today"].update(fund_vals)
-
-                passed = all(_evaluate_condition(c, item["today"], item.get("yesterday", {})) for c in fund_conditions)
-                return item if passed else None
-
-            tasks = [_process_fundamentals(item) for item in tech_passed]
-            results = await asyncio.gather(*tasks)
-            final_items = [r for r in results if r is not None]
-
-            # ---- Step 3.5: Evaluate institutional conditions ----
-            async def _process_institutional(item):
-                if not inst_conditions:
-                    return item
+                if not all(_evaluate_condition(c, item["today"], item.get("yesterday", {})) for c in fund_conditions):
+                    return None
                     
+            # 3. Inst
+            if inst_conditions:
                 from services.institutional_service import get_institutional_data
-                try:
-                    inst_data = await asyncio.to_thread(get_institutional_data, item["symbol"])
+                def fetch_inst():
+                    for attempt in range(3):
+                        try:
+                            return get_institutional_data(sym)
+                        except Exception:
+                            pass
+                        time.sleep(0.5)
+                    return None
                     
+                inst_data = await asyncio.to_thread(fetch_inst)
+                if inst_data is None:
+                    failed_stocks.append(sym)
+                    return None
+                    
+                try:
                     sms = inst_data.get('smart_money_score', 0)
                     pt = inst_data.get('promoter_activity', {}).get('trend', 'Stable')
                     bulk = inst_data.get('bulk_deals', [])
@@ -585,184 +578,18 @@ class ScreenerEngine:
                     item["today"]["has_bulk_deal"] = has_bulk_buying
                     item["today"]["has_bulk_buying"] = has_bulk_buying
                 except Exception as e:
-                    logger.error(f"Error fetching institutional data for {item['symbol']}: {e}")
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error parsing institutional data for {sym}: {e}")
                     item["today"]["smart_money_score"] = 50
                     item["today"]["promoter_trend"] = "Stable"
                     item["today"]["has_bulk_deal"] = False
                     item["today"]["has_bulk_buying"] = False
                     
-                passed = all(_evaluate_condition(c, item["today"], item.get("yesterday", {})) for c in inst_conditions)
-                return item if passed else None
-
-            inst_tasks = [_process_institutional(item) for item in final_items]
-            inst_results = await asyncio.gather(*inst_tasks)
-            final_items = [r for r in inst_results if r is not None]
-
-            # ---- Step 4 & 6: Compute score and Yield ----
-            for item in final_items:
-                t = item["today"]
-                sym = item["symbol"]
-                
-                score = 50
-                rsi = t.get("rsi")
-                if rsi is not None:
-                    if 40 <= rsi <= 60:
-                        score += 5
-                    elif rsi > 70:
-                        score -= 10
-                    elif rsi < 30:
-                        score += 10
-                if t.get("price_vs_ema200") is not None and t["price_vs_ema200"] > 0:
-                    score += 10
-                adx = t.get("adx")
-                if adx is not None:
-                    if adx > 30:
-                        score += 10
-                    elif adx > 20:
-                        score += 5
-                vol_r = t.get("volume_ratio")
-                if vol_r is not None and vol_r > 1.5:
-                    score += 10
-                item["score"] = max(0, min(100, score))
-                
-                live_price = get_live_price_for_screener(sym)
+                if not all(_evaluate_condition(c, item["today"], item.get("yesterday", {})) for c in inst_conditions):
+                    return None
                     
-                row = {
-                    "symbol":           sym,
-                    "name":             item["meta"].get("name", sym),
-                    "sector":           item["meta"].get("sector", ""),
-                    "price":            round(t.get("price") or 0, 2),
-                    "live_price":       live_price.get('price'),
-                    "price_source":     live_price.get('source'),
-                    "change_percent":   round(live_price.get('change_percent') if live_price.get('source') == 'angel_one' else (t.get("change_percent") or 0), 2),
-                    "is_live":          live_price.get('is_live', False),
-                    "score":            item.get("score", 0),
-                }
-                used_indicators = set(c.get("indicator") for c in conditions)
-                for ind in used_indicators:
-                    v = t.get(ind)
-                    row[ind] = round(v, 4) if v is not None else None
-
-                total_passed += 1
-                yield f"data: {json.dumps(row)}\n\n"
-
-            processed += len(chunk_symbols)
-            yield f"data: {json.dumps({'progress': processed, 'total': total_screened})}\n\n"
-
-        elapsed = round(time.time() - start_time, 2)
-        summary = {
-            "summary": True,
-            "total_screened":   total_screened,
-            "total_passed":     total_passed,
-            "elapsed_seconds":  elapsed,
-        }
-        yield f"data: {json.dumps(summary)}\n\n"
-
-    @staticmethod
-    async def run(conditions: list, sort_by: str = "score", sort_order: str = "desc", limit: int = 20):
-        start_time = time.time()
-        stocks = ScreenerEngine.load_universe()
-        if not stocks:
-            return {"error": "Stock universe empty", "results": [], "summary": {}}
-
-        total_screened = len(stocks)
-        symbols = [s["symbol"] for s in stocks]
-        symbol_meta = {s["symbol"]: s for s in stocks}
-
-        # Split conditions into technical, fundamental, institutional
-        tech_conditions  = [c for c in conditions if c.get("indicator") not in FUNDAMENTAL_INDICATORS and c.get("indicator") not in INSTITUTIONAL_INDICATORS]
-        fund_conditions  = [c for c in conditions if c.get("indicator") in FUNDAMENTAL_INDICATORS]
-        inst_conditions  = [c for c in conditions if c.get("indicator") in INSTITUTIONAL_INDICATORS]
-
-        # ---- Step 1: Bulk download historical data ----
-        def fetch_data():
-            return yf.download(
-                tickers=symbols,
-                period="1y",
-                group_by="ticker",
-                threads=True,
-                progress=False
-            )
-
-        df_all = await asyncio.to_thread(fetch_data)
-
-        # ---- Step 2: Evaluate technical conditions per stock ----
-        tech_passed = []
-        for sym in symbols:
-            try:
-                stock_df = df_all[sym] if len(symbols) > 1 else df_all
-                stock_df = stock_df.dropna(subset=["Close"])
-                if len(stock_df) < 50:
-                    continue
-
-                today_vals, yesterday_vals = _compute_technical_values(stock_df)
-                if today_vals is None:
-                    continue
-
-                # Check all technical conditions
-                passed = all(_evaluate_condition(c, today_vals, yesterday_vals) for c in tech_conditions)
-                if not passed:
-                    continue
-
-                tech_passed.append({
-                    "symbol": sym,
-                    "meta": symbol_meta[sym],
-                    "today": today_vals,
-                    "yesterday": yesterday_vals,
-                })
-            except Exception:
-                continue
-
-        # ---- Step 3: Evaluate fundamental conditions (only for tech-passed stocks) ----
-        async def _process_fundamentals(item):
-            if not fund_conditions:
-                return item
-
-            fund_vals = await asyncio.to_thread(_fetch_fundamental_values, item["symbol"])
-            # Merge into today values
-            item["today"].update(fund_vals)
-
-            passed = all(_evaluate_condition(c, item["today"], item.get("yesterday", {})) for c in fund_conditions)
-            return item if passed else None
-
-        tasks = [_process_fundamentals(item) for item in tech_passed]
-        results = await asyncio.gather(*tasks)
-        final_items = [r for r in results if r is not None]
-
-        # ---- Step 3.5: Evaluate institutional conditions ----
-        async def _process_institutional(item):
-            if not inst_conditions:
-                return item
-                
-            from services.institutional_service import get_institutional_data
-            try:
-                inst_data = await asyncio.to_thread(get_institutional_data, item["symbol"])
-                
-                sms = inst_data.get('smart_money_score', 0)
-                pt = inst_data.get('promoter_activity', {}).get('trend', 'Stable')
-                bulk = inst_data.get('bulk_deals', [])
-                has_bulk_buying = any('buy' in str(d.get('buy_sell','')).lower() for d in bulk[:3])
-                
-                item["today"]["smart_money_score"] = sms
-                item["today"]["promoter_trend"] = pt
-                item["today"]["has_bulk_deal"] = has_bulk_buying
-                item["today"]["has_bulk_buying"] = has_bulk_buying
-            except Exception as e:
-                logger.error(f"Error fetching institutional data for {item['symbol']}: {e}")
-                item["today"]["smart_money_score"] = 50
-                item["today"]["promoter_trend"] = "Stable"
-                item["today"]["has_bulk_deal"] = False
-                item["today"]["has_bulk_buying"] = False
-                
-            passed = all(_evaluate_condition(c, item["today"], item.get("yesterday", {})) for c in inst_conditions)
-            return item if passed else None
-
-        inst_tasks = [_process_institutional(item) for item in final_items]
-        inst_results = await asyncio.gather(*inst_tasks)
-        final_items = [r for r in inst_results if r is not None]
-
-        # ---- Step 4: Compute a simple composite score ----
-        for item in final_items:
+            # 4. Score
             t = item["today"]
             score = 50
             rsi = t.get("rsi")
@@ -785,8 +612,105 @@ class ScreenerEngine:
             if vol_r is not None and vol_r > 1.5:
                 score += 10
             item["score"] = max(0, min(100, score))
+            
+            return item
 
-        # ---- Step 5: Sort ----
+    @staticmethod
+    async def run_stream(conditions: list):
+        import time
+        import json
+        import asyncio
+        start_time = time.time()
+        stocks = ScreenerEngine.load_universe()
+        if not stocks:
+            yield f"data: {json.dumps({'error': 'Stock universe empty'})}\n\n"
+            return
+
+        total_screened = len(stocks)
+        symbols = [s["symbol"] for s in stocks]
+        symbol_meta = {s["symbol"]: s for s in stocks}
+
+        tech_conditions  = [c for c in conditions if c.get("indicator") not in FUNDAMENTAL_INDICATORS and c.get("indicator") not in INSTITUTIONAL_INDICATORS]
+        fund_conditions  = [c for c in conditions if c.get("indicator") in FUNDAMENTAL_INDICATORS]
+        inst_conditions  = [c for c in conditions if c.get("indicator") in INSTITUTIONAL_INDICATORS]
+
+        sem = asyncio.Semaphore(50)
+        failed_stocks = []
+
+        async def process_and_format(sym):
+            item = await ScreenerEngine._process_stock(sym, symbol_meta[sym], tech_conditions, fund_conditions, inst_conditions, conditions, sem, failed_stocks)
+            if not item:
+                return None
+            
+            t = item["today"]
+            live_price = await asyncio.to_thread(get_live_price_for_screener, sym)
+                
+            row = {
+                "symbol":           sym,
+                "name":             item["meta"].get("name", sym),
+                "sector":           item["meta"].get("sector", ""),
+                "price":            round(t.get("price") or 0, 2),
+                "live_price":       live_price.get('price'),
+                "price_source":     live_price.get('source'),
+                "change_percent":   round(live_price.get('change_percent') if live_price.get('source') == 'angel_one' else (t.get("change_percent") or 0), 2),
+                "is_live":          live_price.get('is_live', False),
+                "score":            item.get("score", 0),
+            }
+            used_indicators = set(c.get("indicator") for c in conditions)
+            for ind in used_indicators:
+                v = t.get(ind)
+                row[ind] = round(v, 4) if v is not None else None
+            return row
+
+        tasks = [process_and_format(sym) for sym in symbols]
+        processed = 0
+        total_passed = 0
+        
+        for coro in asyncio.as_completed(tasks):
+            res = await coro
+            processed += 1
+            if res:
+                total_passed += 1
+                yield f"data: {json.dumps(res)}\n\n"
+            
+            if processed % 10 == 0 or processed == total_screened:
+                yield f"data: {json.dumps({'progress': processed, 'total': total_screened})}\n\n"
+
+        elapsed = round(time.time() - start_time, 2)
+        summary = {
+            "summary": True,
+            "total_screened":   total_screened,
+            "total_passed":     total_passed,
+            "failed_count":     len(failed_stocks),
+            "execution_time":   elapsed,
+            "elapsed_seconds":  elapsed,
+        }
+        yield f"data: {json.dumps(summary)}\n\n"
+
+    @staticmethod
+    async def run(conditions: list, sort_by: str = "score", sort_order: str = "desc", limit: int = 20):
+        import time
+        import asyncio
+        start_time = time.time()
+        stocks = ScreenerEngine.load_universe()
+        if not stocks:
+            return {"error": "Stock universe empty", "results": [], "summary": {}}
+
+        total_screened = len(stocks)
+        symbols = [s["symbol"] for s in stocks]
+        symbol_meta = {s["symbol"]: s for s in stocks}
+
+        tech_conditions  = [c for c in conditions if c.get("indicator") not in FUNDAMENTAL_INDICATORS and c.get("indicator") not in INSTITUTIONAL_INDICATORS]
+        fund_conditions  = [c for c in conditions if c.get("indicator") in FUNDAMENTAL_INDICATORS]
+        inst_conditions  = [c for c in conditions if c.get("indicator") in INSTITUTIONAL_INDICATORS]
+
+        sem = asyncio.Semaphore(50)
+        failed_stocks = []
+
+        tasks = [ScreenerEngine._process_stock(sym, symbol_meta[sym], tech_conditions, fund_conditions, inst_conditions, conditions, sem, failed_stocks) for sym in symbols]
+        results = await asyncio.gather(*tasks)
+        final_items = [r for r in results if r is not None]
+
         def _sort_key(item):
             if sort_by == "score":
                 return item.get("score", 0)
@@ -795,14 +719,22 @@ class ScreenerEngine:
         reverse = sort_order.lower() != "asc"
         final_items.sort(key=_sort_key, reverse=reverse)
 
-        # ---- Step 6: Build output ----
         output = []
-        market_open = is_market_open()
-        for rank, item in enumerate(final_items[:limit], 1):
+        limit_items = final_items[:limit]
+        
+        def fetch_live_prices():
+            prices = {}
+            for item in limit_items:
+                prices[item["symbol"]] = get_live_price_for_screener(item["symbol"])
+            return prices
+            
+        live_prices = await asyncio.to_thread(fetch_live_prices)
+
+        for rank, item in enumerate(limit_items, 1):
             t = item["today"]
             sym = item["symbol"]
             
-            live_price = get_live_price_for_screener(sym)
+            live_price = live_prices.get(sym, {})
                 
             row = {
                 "rank":             rank,
@@ -816,7 +748,6 @@ class ScreenerEngine:
                 "is_live":          live_price.get('is_live', False),
                 "score":            item.get("score", 0),
             }
-            # Attach every indicator value that was used in conditions (+ sort_by)
             used_indicators = set(c.get("indicator") for c in conditions)
             if sort_by and sort_by != "score":
                 used_indicators.add(sort_by)
@@ -829,9 +760,12 @@ class ScreenerEngine:
         elapsed = round(time.time() - start_time, 2)
         return {
             "results": output,
+            "execution_time": elapsed,
+            "failed_stocks": failed_stocks,
             "summary": {
                 "total_screened":   total_screened,
                 "total_passed":     len(final_items),
+                "failed_count":     len(failed_stocks),
                 "elapsed_seconds":  elapsed,
             }
         }
