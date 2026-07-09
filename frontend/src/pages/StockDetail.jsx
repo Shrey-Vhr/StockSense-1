@@ -49,16 +49,24 @@ const MetricCard = ({ label, value, format, goodAbove, goodBelow }) => {
   );
 };
 
-const QuickLevelsCard = ({ aiTradeSetup }) => {
+const QuickLevelsCard = ({ aiTradeSetup, showAiLevels, setShowAiLevels }) => {
   if (!aiTradeSetup) return null;
 
   return (
-    <div className="absolute bottom-4 right-4 z-10 bg-surface-900/80 backdrop-blur-sm border border-emerald-500/30 rounded-lg p-3 text-xs w-48 shadow-lg pointer-events-none">
-      <div className="flex items-center gap-1.5 mb-2 border-b border-surface-800 pb-1.5">
-        <Target size={14} className="text-emerald-400" />
-        <span className="text-white font-bold tracking-wide uppercase text-[10px]">AI Setup</span>
+    <div className="absolute bottom-4 right-4 z-10 bg-surface-900/80 backdrop-blur-sm border border-emerald-500/30 rounded-lg p-3 text-xs w-52 shadow-lg">
+      <div className="flex items-center justify-between mb-2 border-b border-surface-800 pb-1.5">
+        <div className="flex items-center gap-1.5">
+          <Target size={14} className="text-emerald-400" />
+          <span className="text-white font-bold tracking-wide uppercase text-[10px]">AI Setup</span>
+        </div>
+        <button 
+          onClick={(e) => { e.stopPropagation(); setShowAiLevels(!showAiLevels); }}
+          className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors ${showAiLevels ? 'bg-emerald-500/20 text-emerald-400' : 'bg-surface-800 text-gray-400 hover:text-gray-200 hover:bg-surface-700'}`}
+        >
+          {showAiLevels ? 'HIDE' : 'SHOW'}
+        </button>
       </div>
-      <div className="space-y-1.5 font-mono">
+      <div className="space-y-1.5 font-mono pointer-events-none">
         <div className="flex justify-between items-center">
           <span className="text-gray-400">Entry</span>
           <span className="text-emerald-400 font-bold">{aiTradeSetup.entry || 'N/A'}</span>
@@ -1402,6 +1410,9 @@ const StockDetail = () => {
 
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
+  const candleSeriesRef = useRef(null);
+  const aiPriceLinesRef = useRef([]);
+  const [showAiLevels, setShowAiLevels] = useState(false);
 
   const isMarketOpen = () => {
     const now = new Date();
@@ -1667,6 +1678,7 @@ const StockDetail = () => {
       }))
       .filter(d => d.time !== null);
     candleSeries.setData(candleData);
+    candleSeriesRef.current = candleSeries;
 
     // Volume series
     const volumeSeries = chart.addHistogramSeries({
@@ -1767,8 +1779,48 @@ const StockDetail = () => {
       window.removeEventListener('resize', handleResize);
       chart.remove();
       chartRef.current = null;
+      candleSeriesRef.current = null;
     };
   }, [historicalData]);
+
+  // ─── AI Levels drawing effect ────────────────────────────────────────────────
+  useEffect(() => {
+    const series = candleSeriesRef.current;
+    if (!series) return;
+
+    // Remove existing lines
+    aiPriceLinesRef.current.forEach(line => series.removePriceLine(line));
+    aiPriceLinesRef.current = [];
+
+    if (showAiLevels && aiAnalysis?.trade_setup) {
+      const ts = aiAnalysis.trade_setup;
+
+      const addLine = (priceStr, color, title, style) => {
+        if (!priceStr) return;
+        const match = String(priceStr).match(/[\d,.]+/);
+        if (match) {
+          const price = parseFloat(match[0].replace(/,/g, ''));
+          if (!isNaN(price) && price > 0) {
+            const line = series.createPriceLine({
+              price,
+              color,
+              lineWidth: 2,
+              lineStyle: style || 2, // 0 = Solid, 1 = Dotted, 2 = Dashed
+              axisLabelVisible: true,
+              title,
+            });
+            aiPriceLinesRef.current.push(line);
+          }
+        }
+      };
+
+      addLine(ts.entry, '#10b981', 'Entry', 0); // Solid
+      addLine(ts.sl || ts.stop_loss, '#ff1744', 'SL', 2); // Dashed
+      addLine(ts.t1 || ts.target_1, '#00b0ff', 'T1', 2);
+      addLine(ts.t2 || ts.target_2, '#00b0ff', 'T2', 2);
+      if (ts.t3 || ts.target_3) addLine(ts.t3 || ts.target_3, '#00b0ff', 'T3', 2);
+    }
+  }, [showAiLevels, aiAnalysis]);
 
   const handleGenerateAI = async () => {
     if (!techData) return;
@@ -1941,7 +1993,11 @@ const StockDetail = () => {
               </div>
             </div>
             <div ref={chartContainerRef} className="w-full h-[400px]" />
-            <QuickLevelsCard aiTradeSetup={aiAnalysis?.trade_setup} />
+            <QuickLevelsCard 
+              aiTradeSetup={aiAnalysis?.trade_setup} 
+              showAiLevels={showAiLevels} 
+              setShowAiLevels={setShowAiLevels} 
+            />
           </div>
         )}
       </div>
