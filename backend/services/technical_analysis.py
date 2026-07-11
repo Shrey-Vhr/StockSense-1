@@ -408,7 +408,9 @@ class TechnicalAnalysisService:
             "volume": {
                 "obv": TechnicalAnalysisService.calculate_obv(df),
                 "vwap": TechnicalAnalysisService.calculate_vwap(df),
-                "relative_volume": TechnicalAnalysisService.calculate_relative_volume(df)
+                "relative_volume": TechnicalAnalysisService.calculate_relative_volume(df),
+                "current_volume": float(df['Volume'].values[-1]) if df is not None and len(df) > 0 else None,
+                "average_volume": float(np.nanmean(df['Volume'].values[-21:-1])) if df is not None and len(df) > 20 else (float(np.nanmean(df['Volume'].values[:-1])) if df is not None and len(df) > 1 else None)
             },
             "volatility": {
                 "atr": TechnicalAnalysisService.calculate_atr(df),

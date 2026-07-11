@@ -1007,9 +1007,14 @@ const StockDetail = () => {
                 </div>
               </div>
               <div class="metric-card">
-                <div class="metric-label">Volume Ratio</div>
+                <div class="metric-label">Volume</div>
                 <div class="metric-value">
-                  ${techData.volume?.relative_volume?.toFixed(2) || 'N/A'}x
+                  ${techData.volume?.current_volume 
+                    ? (techData.volume.current_volume >= 10000000 ? (techData.volume.current_volume/10000000).toFixed(2) + 'Cr' : techData.volume.current_volume >= 100000 ? (techData.volume.current_volume/100000).toFixed(2) + 'L' : techData.volume.current_volume.toLocaleString('en-IN')) 
+                    : 'N/A'}
+                  <span style="font-size:10px;color:#6b7280;display:block;margin-top:2px;">
+                    ${techData.volume?.relative_volume?.toFixed(1) || 'N/A'}x Avg
+                  </span>
                 </div>
               </div>
               <div class="metric-card">
@@ -2080,7 +2085,16 @@ const StockDetail = () => {
                 { label: 'Trend', value: techData.trend?.status, isGood: techData.trend?.status?.includes('Up'), customFormat: null },
                 { label: 'RSI (14)', value: `${techData.momentum?.rsi?.value?.toFixed(1) || 'N/A'} `, suffix: techData.momentum?.rsi?.signal ? `(${techData.momentum?.rsi?.signal})` : '' },
                 { label: 'MACD', value: techData.momentum?.macd?.crossover },
-                { label: 'Volume', value: `${techData.volume?.relative_volume?.toFixed(1) || 'N/A'}x `, suffix: 'Avg' },
+                { 
+                  label: 'Volume', 
+                  value: techData.volume?.current_volume 
+                    ? (techData.volume.current_volume >= 10000000 ? (techData.volume.current_volume/10000000).toFixed(2) + 'Cr' : techData.volume.current_volume >= 100000 ? (techData.volume.current_volume/100000).toFixed(2) + 'L' : techData.volume.current_volume.toLocaleString('en-IN')) 
+                    : (techData.volume?.relative_volume ? `${techData.volume.relative_volume.toFixed(1)}x` : 'N/A'), 
+                  suffix: techData.volume?.current_volume && techData.volume?.relative_volume ? `(${techData.volume.relative_volume.toFixed(1)}x Avg)` : (techData.volume?.current_volume ? '' : 'Avg'),
+                  subtext: techData.volume?.average_volume 
+                    ? `Avg: ${techData.volume.average_volume >= 10000000 ? (techData.volume.average_volume/10000000).toFixed(2) + 'Cr' : techData.volume.average_volume >= 100000 ? (techData.volume.average_volume/100000).toFixed(2) + 'L' : techData.volume.average_volume.toLocaleString('en-IN')}` 
+                    : null
+                },
                 { label: 'News Sentiment', value: sentiment ? `${sentiment.overall_sentiment} (${sentiment.score}/10)` : 'N/A', isGood: sentiment?.overall_sentiment === 'Positive' ? true : sentiment?.overall_sentiment === 'Negative' ? false : null }
               ].map((metric, i) => (
                 <motion.div
@@ -2101,6 +2115,7 @@ const StockDetail = () => {
                   <div className={`text-sm font-semibold mt-1.5 ${metric.isGood === true ? 'text-emerald-400' : metric.isGood === false ? 'text-red-400' : 'text-gray-100'}`}>
                     {metric.value} {metric.suffix && <span className="text-xs font-sans text-gray-500">{metric.suffix}</span>}
                   </div>
+                  {metric.subtext && <div className="text-[10px] text-gray-500 mt-1">{metric.subtext}</div>}
                 </motion.div>
               ))}
             </div>

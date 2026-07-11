@@ -643,6 +643,10 @@ class ScreenerEngine:
                     v = t.get(ind)
                     row[ind] = round(v, 4) if v is not None else None
 
+                for k, v in row.items():
+                    if isinstance(v, (float, int)) and (pd.isna(v) or np.isinf(v)):
+                        row[k] = None
+
                 total_passed += 1
                 yield f"data: {json.dumps(row)}\n\n"
 
@@ -823,6 +827,10 @@ class ScreenerEngine:
             for ind in used_indicators:
                 v = t.get(ind)
                 row[ind] = round(v, 4) if v is not None else None
+
+            for k, v in row.items():
+                if isinstance(v, (float, int)) and (pd.isna(v) or np.isinf(v)):
+                    row[k] = None
 
             output.append(row)
 
