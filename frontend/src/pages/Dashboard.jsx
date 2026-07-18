@@ -212,14 +212,14 @@ const Dashboard = () => {
                   <div 
                     key={stock.symbol} 
                     onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    className="flex justify-between items-center w-full bg-surface-800/40 rounded-lg p-3 hover:bg-surface-700/50 transition-colors cursor-pointer"
+                    className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-surface-800/60 transition-colors cursor-pointer"
                   >
-                    <span className="font-semibold text-slate-100 flex-1">{stock.symbol.replace('.NS', '')}</span>
-                    <span className="text-slate-400 text-sm font-medium flex-1 text-center">
+                    <span className="text-base font-semibold text-slate-100 flex-1">{stock.symbol.replace('.NS', '')}</span>
+                    <span className="text-sm font-medium text-slate-400 flex-1 text-center">
                       ₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? 'N/A'}
                     </span>
                     <div className="flex-1 flex justify-end">
-                      <span className={`text-sm font-semibold px-2 py-0.5 rounded ${stock.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${stock.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                         {stock.change_percent >= 0 ? '+' : ''}{stock.change_percent?.toFixed(2)}%
                       </span>
                     </div>
@@ -243,14 +243,14 @@ const Dashboard = () => {
                   <div 
                     key={stock.symbol} 
                     onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    className="flex justify-between items-center w-full bg-surface-800/40 rounded-lg p-3 hover:bg-surface-700/50 transition-colors cursor-pointer"
+                    className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-surface-800/60 transition-colors cursor-pointer"
                   >
-                    <span className="font-semibold text-slate-100 flex-1">{stock.symbol.replace('.NS', '')}</span>
-                    <span className="text-slate-400 text-sm font-medium flex-1 text-center">
+                    <span className="text-base font-semibold text-slate-100 flex-1">{stock.symbol.replace('.NS', '')}</span>
+                    <span className="text-sm font-medium text-slate-400 flex-1 text-center">
                       ₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? 'N/A'}
                     </span>
                     <div className="flex-1 flex justify-end">
-                      <span className={`text-sm font-semibold px-2 py-0.5 rounded ${stock.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${stock.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                         {stock.change_percent >= 0 ? '+' : ''}{stock.change_percent?.toFixed(2)}%
                       </span>
                     </div>
@@ -315,21 +315,18 @@ const Dashboard = () => {
           </div>
           
           {/* Custom Screener CTA */}
-          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5">
+          <div className="bg-surface-900 border border-surface-800 rounded-2xl p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-white flex items-center">
-                <Activity className="text-emerald-400 mr-2" size={20} /> Stock Screener
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                STOCK SCREENER
               </h2>
-              <Link to="/screener" className="text-sm text-emerald-400 hover:underline flex items-center">
-                Open Screener <ChevronRight size={16} />
-              </Link>
             </div>
-            <div className="bg-surface-900 border border-surface-800 rounded-xl p-6 text-center">
+            <div className="flex flex-col items-center text-center mt-2">
               <Activity size={36} className="mx-auto mb-3 text-emerald-400 opacity-60" />
               <p className="text-gray-300 font-medium mb-1">Build Your Own Screen</p>
-              <p className="text-gray-500 text-sm mb-4">Define custom conditions using 35+ technical & fundamental indicators.</p>
-              <Link to="/screener" className="inline-flex items-center px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-surface-950 font-bold rounded-lg transition-colors text-sm">
-                <Activity size={16} className="mr-2" /> Launch Screener
+              <p className="text-gray-500 text-sm mb-5">Define custom conditions using 35+ technical & fundamental indicators.</p>
+              <Link to="/screener" className="flex items-center justify-center bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-shadow w-full text-center">
+                <Activity size={18} className="mr-2" /> Launch Screener
               </Link>
             </div>
           </div>
