@@ -8,6 +8,7 @@ import SectorHeatmap from '../components/Dashboard/SectorHeatmap';
 import TrendingSection from '../components/Dashboard/TrendingSection';
 import useCountUp from '../hooks/useCountUp';
 import { DashboardSkeleton } from '../components/Skeleton';
+import Sparkline from '../components/Sparkline';
 
 const AnimatedPrice = ({ value }) => {
   const animated = useCountUp(
@@ -34,6 +35,26 @@ const Dashboard = () => {
   } = useStore();
   
   const navigate = useNavigate();
+  const [indexSparklines, setIndexSparklines] = useState({});
+
+  useEffect(() => {
+    if (marketOverview && marketOverview.length > 0) {
+      marketOverview.slice(0, 3).forEach((idx) => {
+        setIndexSparklines(prev => {
+          if (prev[idx.symbol]) return prev;
+          
+          api.get(`/stocks/history/${idx.symbol}?period=1mo&interval=1d`).then(histRes => {
+            if (histRes.data && histRes.data.history) {
+               const closes = histRes.data.history.map(h => h.close || h.Close);
+               setIndexSparklines(p => ({ ...p, [idx.symbol]: closes }));
+            }
+          }).catch(e => console.error(e));
+          
+          return { ...prev, [idx.symbol]: [] };
+        });
+      });
+    }
+  }, [marketOverview]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -158,20 +179,15 @@ const Dashboard = () => {
                 transition={{ duration: 0.4, delay: i * 0.1, ease: 'easeOut' }}
                 whileHover={{ y: -2 }}
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-slate-400">{idx.symbol === '^NSEI' ? 'Nifty 50' : idx.symbol === '^NSEBANK' ? 'BankNifty' : idx.symbol}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-medium text-slate-400">{idx.symbol === '^NSEI' ? 'NIFTY 50' : idx.symbol === '^NSEBANK' ? 'BANKNIFTY' : idx.symbol}</span>
                     <span className="text-2xl font-bold text-slate-50 tracking-tight"><AnimatedPrice value={idx.current_price ?? idx.price ?? 0} /></span>
+                    <span className={`text-sm font-semibold ${idx.change_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {idx.change_percent >= 0 ? '+' : ''}{idx.change_percent?.toFixed(2)}%
+                    </span>
                   </div>
-                  <div className={`px-2.5 py-1 rounded-md text-sm font-semibold ${idx.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                    {idx.change_percent >= 0 ? '+' : ''}{idx.change_percent?.toFixed(2)}%
-                  </div>
-                </div>
-                {/* Sparkline placeholder */}
-                <div className="mt-4 h-12 w-full flex items-end space-x-1 opacity-50">
-                   {[...Array(20)].map((_, j) => (
-                     <div key={j} className={`w-full ${idx.change_percent >= 0 ? 'bg-emerald-400' : 'bg-red-400'} rounded-t-sm`} style={{ height: `${Math.random() * 100}%` }}></div>
-                   ))}
+                  <Sparkline data={indexSparklines[idx.symbol]?.length > 1 ? indexSparklines[idx.symbol] : []} width={120} height={40} />
                 </div>
               </motion.div>
             ))}
