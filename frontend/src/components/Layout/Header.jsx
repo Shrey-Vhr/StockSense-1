@@ -160,27 +160,15 @@ const Header = ({ toggleSidebar }) => {
               {Number(bankNifty.change) >= 0 ? '+' : ''}{bankNifty.change}%
             </span>
           </div>
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
-            marketStatus === 'Open'
-              ? 'bg-emerald-500/10 border-emerald-500/20'
-              : 'bg-surface-850 border-surface-800'
-          }`}>
-            <Circle 
-              size={8} 
-              className={
-                marketStatus === 'Open' 
-                  ? 'fill-emerald-400 text-emerald-400 animate-pulse' 
-                  : 'fill-gray-500 text-gray-500'
-              } 
-            />
-            <span className={`text-xs font-medium ${
-              marketStatus === 'Open' 
-                ? 'text-emerald-400' 
-                : 'text-gray-400'
-            }`}>
-              Market {marketStatus}
-            </span>
-          </div>
+          {marketStatus === 'Open' ? (
+            <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full text-xs font-semibold">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span> MARKET OPEN
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 bg-slate-700/50 text-slate-400 px-3 py-1.5 rounded-full text-xs font-semibold">
+              <span className="w-2 h-2 bg-slate-500 rounded-full"></span> MARKET CLOSED
+            </div>
+          )}
         </div>
       </div>
 
