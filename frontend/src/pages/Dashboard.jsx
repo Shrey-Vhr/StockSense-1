@@ -329,9 +329,14 @@ const Dashboard = () => {
                   key={i} 
                   className="block group border-b border-surface-800 pb-3 mb-3 last:border-0 last:mb-0"
                 >
-                  <h3 className="text-sm text-slate-300 leading-snug hover:text-emerald-400 transition-colors">
-                    {news.sentiment === 'Positive' ? '↑ ' : news.sentiment === 'Negative' ? '↓ ' : news.sentiment === 'Neutral' ? '— ' : ''}{news.title}
-                  </h3>
+                  <div className="flex items-start gap-2">
+                    {news.sentiment === 'Positive' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded">POS</span>}
+                    {news.sentiment === 'Negative' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">NEG</span>}
+                    {news.sentiment === 'Neutral' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-slate-700/50 text-slate-400 px-1.5 py-0.5 rounded">NEU</span>}
+                    <h3 className="text-sm text-slate-300 leading-snug hover:text-emerald-400 transition-colors">
+                      {news.title}
+                    </h3>
+                  </div>
                   <div className="text-xs text-slate-600 mt-1">
                     {news.source} • {news.published_display || formatDate(news.published_date)}
                   </div>
