@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Flame } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../../utils/api';
+import Sparkline from '../Sparkline';
 
 const TrendingSection = () => {
   const [stocks, setStocks] = useState([]);
+  const [sparklines, setSparklines] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -14,9 +16,22 @@ const TrendingSection = () => {
       try {
         const res = await api.get('/stocks/trending?n=8');
         setStocks(res.data);
+        setLoading(false);
+        
+        // Fetch sparklines asynchronously
+        res.data.forEach(async (stock) => {
+          try {
+            const histRes = await api.get(`/stocks/history/${stock.symbol}?period=7d&interval=1d`);
+            if (histRes.data && histRes.data.history) {
+               const closes = histRes.data.history.map(h => h.close || h.Close);
+               setSparklines(prev => ({ ...prev, [stock.symbol]: closes }));
+            }
+          } catch(e) {
+            console.error(`Failed to fetch history for ${stock.symbol}`);
+          }
+        });
       } catch(e) {
         console.error('Trending fetch error:', e);
-      } finally {
         setLoading(false);
       }
     };
@@ -61,14 +76,17 @@ const TrendingSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             onClick={() => navigate(`/stock/${stock.symbol}`)}
-            className="flex justify-between items-center w-full bg-surface-800/40 rounded-lg p-3 hover:bg-surface-700/50 transition-colors cursor-pointer"
+            className="flex items-center justify-between gap-3 w-full bg-surface-800/40 rounded-lg p-3 hover:bg-surface-700/50 transition-colors cursor-pointer"
           >
             <span className="font-semibold text-slate-100 flex-1">
               {stock.symbol.replace('.NS', '')}
             </span>
-            <span className="text-slate-400 text-sm font-medium flex-1 text-center">
+            <span className="text-slate-400 text-sm font-medium">
               ₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? 'N/A'}
             </span>
+            <div className="mx-2 shrink-0">
+              <Sparkline data={sparklines[stock.symbol]} width={60} height={24} />
+            </div>
             <div className="flex-1 flex justify-end">
               <span className={`text-sm font-semibold px-2 py-0.5 rounded ${stock.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                 {stock.change_percent >= 0 ? '+' : ''}{stock.change_percent?.toFixed(2)}%
