@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, BarChart2, LineChart, PieChart, Newspaper, BrainCircuit, LogOut, X, TrendingUp, Eye } from 'lucide-react';
+import { LayoutDashboard, BarChart2, LineChart, PieChart, Newspaper, BrainCircuit, LogOut, X, TrendingUp, Eye, CandlestickChart } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
@@ -41,13 +41,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       `}>
         {/* Logo Area */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-surface-800">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-glow">
-              <LineChart className="text-white w-5 h-5" />
+          <div className="flex items-center gap-2.5 px-2 py-1">
+            {/* The Icon Box */}
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg shadow-emerald-500/30">
+              <CandlestickChart className="w-5 h-5 text-white" strokeWidth={2.5} />
             </div>
-            <span className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 to-emerald-500">
-              StockSense
-            </span>
+            {/* The Text */}
+            <div className="flex flex-col leading-none">
+              <span className="text-lg font-bold text-white tracking-tight">StockSense</span>
+              <span className="text-[10px] font-medium text-slate-500 uppercase tracking-widest mt-0.5">AI Terminal</span>
+            </div>
           </div>
           <button className="md:hidden text-gray-400 hover:text-white" onClick={toggleSidebar}>
             <X size={20} />
