@@ -217,7 +217,7 @@ const InstitutionalTab = ({ symbol, fundData }) => {
           <span className="text-gray-400">Free Float</span>
           <span className="text-emerald-400 font-bold font-mono">
             {fundData?.free_float 
-              ? `${fundData.free_float}%` 
+              ? `${parseFloat(fundData.free_float).toFixed(2)}%` 
               : 'N/A'}
           </span>
         </div>
@@ -726,9 +726,7 @@ const StockDetail = () => {
                     <div class="tf-level-val t">${data.target_1}</div>
                   </div>
                 </div>` : ''}
-                <div class="reasoning">${(data.reasoning || '').substring(0, 200)}${
-                  (data.reasoning || '').length > 200 ? '...' : ''
-                }</div>
+                <div class="reasoning">${data.reasoning || ''}</div>
               </div>
               `).join('')}
             </div>
@@ -2890,11 +2888,16 @@ const StockDetail = () => {
                       {Object.entries(aiAnalysis.timeframes).map(([tf, data]) => (
                         <div key={tf} className="bg-surface-900 border border-surface-800 rounded-xl p-5">
                           <div className="flex justify-between items-center mb-3">
-                            <h4 className="text-white font-bold uppercase tracking-wider text-sm">
+                            <h4 className="text-white font-bold uppercase tracking-wider text-sm flex items-center gap-2">
                               {tf === 'intraday' ? 'Intraday' :
                                tf === 'swing' ? 'Swing (Days)' :
                                tf === 'midterm' ? 'Midterm (Months)' :
                                'Long Term (Years)'}
+                              {tf === 'swing' && data.setup_type && (
+                                <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30">
+                                  {data.setup_type}
+                                </span>
+                              )}
                             </h4>
                             <span className={`text-xs font-bold px-2 py-1 rounded-full ${
                               data.verdict?.includes('Take') || 

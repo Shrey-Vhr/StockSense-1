@@ -144,109 +144,105 @@ const Dashboard = () => {
         <h1 className="text-2xl font-bold text-white">Market Overview</h1>
       </div>
 
-      {/* Top Indices Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {safeArray(marketOverview).slice(0, 3).map((idx, i) => (
-          <motion.div 
-            key={i} 
-            className="bg-surface-850 border border-surface-800 rounded-2xl p-5 hover:border-emerald-500/30 hover:shadow-glow transition-all duration-200 group"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: i * 0.1, ease: 'easeOut' }}
-            whileHover={{ y: -2 }}
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-gray-200 font-semibold text-base group-hover:text-emerald-400 transition-colors">{idx.symbol === '^NSEI' ? 'Nifty 50' : idx.symbol === '^NSEBANK' ? 'BankNifty' : idx.symbol}</h3>
-                <div className="mt-2 text-2xl font-bold text-white font-mono"><AnimatedPrice value={idx.current_price ?? idx.price ?? 0} /></div>
-              </div>
-              <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border ${idx.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                {idx.change_percent >= 0 ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
-                <span className="font-mono font-medium">{Math.abs(idx.change_percent).toFixed(2)}%</span>
-              </div>
-            </div>
-            {/* Sparkline placeholder */}
-            <div className="mt-4 h-12 w-full flex items-end space-x-1 opacity-50">
-               {[...Array(20)].map((_, j) => (
-                 <div key={j} className={`w-full ${idx.change_percent >= 0 ? 'bg-emerald-400' : 'bg-red-400'} rounded-t-sm`} style={{ height: `${Math.random() * 100}%` }}></div>
-               ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      <TrendingSection />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Movers */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Top Gainers */}
-          <motion.div 
-            className="bg-surface-850 border border-surface-800 rounded-2xl p-5"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-          >
-            <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2 mb-4">
-              <span className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                ↗
-              </span>
-              Top Gainers
-            </h2>
-            <div className="relative">
-              <div className="flex overflow-x-auto pb-4 space-x-4 custom-scrollbar">
-                {safeArray(topGainers).map((stock) => (
-                  <motion.div 
-                    key={stock.symbol} 
-                    onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    className="flex-shrink-0 bg-surface-850 border border-surface-800 rounded-xl p-4 min-w-[140px] hover:bg-surface-800 cursor-pointer"
-                    whileHover={{ y: -4, borderColor: 'rgba(16,185,129,0.4)' }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <div className="font-bold text-gray-100 text-sm">{stock.symbol.replace('.NS', '')}</div>
-                    <div className="text-gray-500 text-xs mt-1">₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toFixed(2) ?? 'N/A'}</div>
-                    <div className="text-emerald-400 font-semibold text-sm mt-2">+{stock.change_percent?.toFixed(2)}%</div>
-                  </motion.div>
-                ))}
-              </div>
-              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-surface-850 to-transparent pointer-events-none" />
-            </div>
-          </motion.div>
+        {/* Left Column - 2/3s */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Top Indices Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {safeArray(marketOverview).slice(0, 3).map((idx, i) => (
+              <motion.div 
+                key={i} 
+                className="bg-surface-900 border border-surface-800 rounded-2xl p-6 flex flex-col gap-4 hover:border-surface-700 transition-colors duration-200 group"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.1, ease: 'easeOut' }}
+                whileHover={{ y: -2 }}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-slate-400">{idx.symbol === '^NSEI' ? 'Nifty 50' : idx.symbol === '^NSEBANK' ? 'BankNifty' : idx.symbol}</span>
+                    <span className="text-2xl font-bold text-slate-50 tracking-tight"><AnimatedPrice value={idx.current_price ?? idx.price ?? 0} /></span>
+                  </div>
+                  <div className={`px-2.5 py-1 rounded-md text-sm font-semibold ${idx.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                    {idx.change_percent >= 0 ? '+' : ''}{idx.change_percent?.toFixed(2)}%
+                  </div>
+                </div>
+                {/* Sparkline placeholder */}
+                <div className="mt-4 h-12 w-full flex items-end space-x-1 opacity-50">
+                   {[...Array(20)].map((_, j) => (
+                     <div key={j} className={`w-full ${idx.change_percent >= 0 ? 'bg-emerald-400' : 'bg-red-400'} rounded-t-sm`} style={{ height: `${Math.random() * 100}%` }}></div>
+                   ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
 
-          {/* Top Losers */}
-          <motion.div 
-            className="bg-surface-850 border border-surface-800 rounded-2xl p-5"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 }}
-          >
-            <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2 mb-4">
-              <span className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
-                ↘
-              </span>
-              Top Losers
-            </h2>
-            <div className="relative">
-              <div className="flex overflow-x-auto pb-4 space-x-4 custom-scrollbar">
-                {safeArray(topLosers).map((stock) => (
-                  <motion.div 
+          <TrendingSection />
+
+          {/* Movers Grid (Gainers & Losers) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Top Gainers */}
+            <motion.div 
+              className="bg-surface-900 border border-surface-800 rounded-2xl p-6 flex flex-col gap-4 h-full"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                TOP GAINERS
+              </h2>
+              <div className="flex flex-col gap-2 flex-grow">
+                {safeArray(topGainers).map((stock) => (
+                  <div 
                     key={stock.symbol} 
                     onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    className="flex-shrink-0 bg-surface-850 border border-surface-800 rounded-xl p-4 min-w-[140px] hover:bg-surface-800 cursor-pointer"
-                    whileHover={{ y: -4, borderColor: 'rgba(16,185,129,0.4)' }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
+                    className="flex justify-between items-center w-full bg-surface-800/40 rounded-lg p-3 hover:bg-surface-700/50 transition-colors cursor-pointer"
                   >
-                    <div className="font-bold text-gray-100 text-sm">{stock.symbol.replace('.NS', '')}</div>
-                    <div className="text-gray-500 text-xs mt-1">₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toFixed(2) ?? 'N/A'}</div>
-                    <div className="text-red-400 font-semibold text-sm mt-2">{stock.change_percent?.toFixed(2)}%</div>
-                  </motion.div>
+                    <span className="font-semibold text-slate-100 flex-1">{stock.symbol.replace('.NS', '')}</span>
+                    <span className="text-slate-400 text-sm font-medium flex-1 text-center">
+                      ₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? 'N/A'}
+                    </span>
+                    <div className="flex-1 flex justify-end">
+                      <span className={`text-sm font-semibold px-2 py-0.5 rounded ${stock.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                        {stock.change_percent >= 0 ? '+' : ''}{stock.change_percent?.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
                 ))}
               </div>
-              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-surface-850 to-transparent pointer-events-none" />
-            </div>
-          </motion.div>
+            </motion.div>
+
+            {/* Top Losers */}
+            <motion.div 
+              className="bg-surface-900 border border-surface-800 rounded-2xl p-6 flex flex-col gap-4 h-full"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                TOP LOSERS
+              </h2>
+              <div className="flex flex-col gap-2 flex-grow">
+                {safeArray(topLosers).map((stock) => (
+                  <div 
+                    key={stock.symbol} 
+                    onClick={() => navigate(`/stock/${stock.symbol}`)}
+                    className="flex justify-between items-center w-full bg-surface-800/40 rounded-lg p-3 hover:bg-surface-700/50 transition-colors cursor-pointer"
+                  >
+                    <span className="font-semibold text-slate-100 flex-1">{stock.symbol.replace('.NS', '')}</span>
+                    <span className="text-slate-400 text-sm font-medium flex-1 text-center">
+                      ₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? 'N/A'}
+                    </span>
+                    <div className="flex-1 flex justify-end">
+                      <span className={`text-sm font-semibold px-2 py-0.5 rounded ${stock.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                        {stock.change_percent >= 0 ? '+' : ''}{stock.change_percent?.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
           
           {/* Indices & ETFs Quick Access */}
           <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5">
@@ -314,34 +310,30 @@ const Dashboard = () => {
         </div>
 
         {/* Right Column - News */}
-        <div className="space-y-6">
+        <div className="lg:col-span-1">
           <motion.div 
-            className="bg-surface-850 border border-surface-800 rounded-2xl p-5 h-full"
+            className="bg-surface-900 border border-surface-800 rounded-2xl p-6 flex flex-col gap-4 h-full"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, delay: 0.3 }}
           >
-            <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2 mb-4">
-              <span className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                📰
-              </span>
-              Market News
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+              MARKET NEWS
             </h2>
-            <div>
+            <div className="flex flex-col flex-grow">
               {safeArray(marketNews).map((news, i) => (
                 <a 
                   href={news.url} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   key={i} 
-                  className="block group py-3 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/50 -mx-2 px-2 rounded-lg transition-colors cursor-pointer"
+                  className="block group border-b border-surface-800 pb-3 mb-3 last:border-0 last:mb-0"
                 >
-                  <div className="text-emerald-400 text-xs font-semibold uppercase tracking-wide">{news.source}</div>
-                  <h3 className="text-gray-200 text-sm mt-1 leading-snug group-hover:text-gray-50">
+                  <h3 className="text-sm text-slate-300 leading-snug hover:text-emerald-400 transition-colors">
                     {news.sentiment === 'Positive' ? '↑ ' : news.sentiment === 'Negative' ? '↓ ' : news.sentiment === 'Neutral' ? '— ' : ''}{news.title}
                   </h3>
-                  <div className="text-gray-500 text-xs mt-2">
-                    {news.published_display || formatDate(news.published_date)}
+                  <div className="text-xs text-slate-600 mt-1">
+                    {news.source} • {news.published_display || formatDate(news.published_date)}
                   </div>
                 </a>
               ))}

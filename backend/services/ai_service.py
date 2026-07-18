@@ -50,6 +50,11 @@ class AIService:
             "You are an expert Indian stock market analyst with 20 years of experience in NSE/BSE markets. "
             "You specialize in swing trading using technical and fundamental analysis. "
             "You analyze stocks for a retail investor who wants clear, actionable recommendations with full explanations. "
+            "Enforce analysis of quarterly trajectories, institutional trends, and peer valuations. "
+            "Use the `red_flags` array to output specific warning types for the frontend (e.g., Institutional Selling, Revenue Decline, Overvaluation). "
+            "For SWING trades, heavily weight the Daily Trend (EMA 20/50) and Relative Strength vs Nifty. Ignore long-term fundamental valuation for the swing entry trigger. "
+            "If ADX is below 20 (choppy market) OR Relative Strength is negative (underperforming Nifty), automatically give the Swing verdict as 'Wait' or 'Avoid' regardless of how good the fundamentals are. "
+            "Ensure the JSON output for timeframes.swing includes a new field called setup_type (e.g., 'Pullback', 'Breakout', 'Range Bound'). "
             "Always respond in valid JSON format only."
         )
         
@@ -80,6 +85,11 @@ class AIService:
         patterns = tech.get('patterns', [])
         pattern_str = ", ".join([p['name'] for p in patterns]) if patterns else "None"
         
+        atr = tech.get('volatility', {}).get('atr', 'N/A')
+        rs = tech.get('relative_strength', {})
+        rs_5_day = rs.get('rs_5_day', 'N/A')
+        rs_20_day = rs.get('rs_20_day', 'N/A')
+        
         # We can extract EMA status logically
         emas = tech.get('trend', {}).get('emas', {})
         e20, e50 = emas.get('ema20'), emas.get('ema50')
@@ -105,6 +115,52 @@ class AIService:
                        quote.get('company_name', symbol))
         market_cap = fund.get('market_cap', 
                      quote.get('market_cap', 'N/A'))
+                     
+        # --- NEW EXTRACTIONS ---
+        inst = data_bundle.get('institutional', {})
+        
+        # 1. Institutional Trend
+        promoter_activity = inst.get('promoter_activity', {}).get('trend', 'Stable')
+        fii_trend = inst.get('institutional_verdict', 'Neutral')
+        promoter_pledge_percent = fund.get('promoter_pledge', 'N/A')
+        institutional_trend = {
+            "promoter_activity": promoter_activity,
+            "fii_trend": fii_trend,
+            "promoter_pledge_percent": promoter_pledge_percent
+        }
+        
+        # 2. Quarterly Trajectory
+        q_res = fund.get('quarterly_results', {})
+        quarterly_trajectory = {
+            "quarters": q_res.get('quarters', []),
+            "revenue": q_res.get('revenue', []),
+            "net_profit": q_res.get('net_profit', [])
+        }
+        
+        # 3. Peer Comparison
+        peers = fund.get('peers', [])
+        industry_pe = "N/A"
+        industry_avg_roe = "N/A"
+        if peers:
+            pe_list = [p['pe_ratio'] for p in peers if p.get('pe_ratio') is not None]
+            roce_list = [p['roce'] for p in peers if p.get('roce') is not None]
+            industry_pe = round(sum(pe_list)/len(pe_list), 2) if pe_list else "N/A"
+            industry_avg_roe = round(sum(roce_list)/len(roce_list), 2) if roce_list else "N/A"
+        
+        peer_comparison = {
+            "industry_pe": industry_pe,
+            "industry_avg_roe": industry_avg_roe
+        }
+        
+        # 4. Sector specific prompt logic
+        sector_prompt = ""
+        sector_lower = str(sector).lower()
+        if "pharma" in sector_lower:
+            sector_prompt = "SECTOR CONTEXT (Pharma): Focus heavily on USFDA risks, product pipeline, and R&D spending."
+        elif "it" in sector_lower or "information technology" in sector_lower or "software" in sector_lower:
+            sector_prompt = "SECTOR CONTEXT (IT): Focus heavily on client concentration, deal wins, attrition, and USDINR impact."
+        elif "bank" in sector_lower or "finance" in sector_lower or "nbfc" in sector_lower:
+            sector_prompt = "SECTOR CONTEXT (Banks/Financials): Focus heavily on Asset Quality (NPAs), Credit Growth, and NIMs (Net Interest Margins)."
         
         logger.info(f"Fund data extracted: PE={pe}, ROE={roe_val}, "
                     f"D/E={de}, RevGrowth={rev_growth}, "
@@ -120,9 +176,15 @@ class AIService:
 For {symbol} ({company_name}) at ₹{price}, 
 give ONLY trade setup details. No fluff.
 
+{sector_prompt}
+
 Technical: Trend={trend}, RSI={rsi}, 
 MACD={macd_signal}, Support=₹{support}, 
 Resistance=₹{resistance}, Pattern={pattern_str}
+
+Institutional: Promoter Activity={institutional_trend['promoter_activity']}, FII Trend={institutional_trend['fii_trend']}, Promoter Pledge={institutional_trend['promoter_pledge_percent']}%
+Quarterly Trajectory: Quarters={quarterly_trajectory['quarters']}, Rev={quarterly_trajectory['revenue']}, Profit={quarterly_trajectory['net_profit']}
+Peers: Ind PE={peer_comparison['industry_pe']}, Ind ROE={peer_comparison['industry_avg_roe']}%
 
 Respond in this exact JSON:
 {{
@@ -160,6 +222,7 @@ Respond in this exact JSON:
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
+      "setup_type": "Pullback/Breakout/Range Bound",
       "holding_period": "X-Y days",
       "entry": "price",
       "stop_loss": "price",
@@ -196,9 +259,25 @@ Respond in this exact JSON:
 Assess ALL risks for {symbol} ({company_name}) at ₹{price}.
 Be brutally honest about what can go wrong.
 
+{sector_prompt}
+
 Data: Trend={trend}, RSI={rsi}, ADX={adx},
 Tech Score={tech_score}/100, Fund Score={fund_score}/100,
 Promoter={promoter}%, Support=₹{support}
+
+Institutional: Promoter Activity={institutional_trend['promoter_activity']}, FII Trend={institutional_trend['fii_trend']}, Promoter Pledge={institutional_trend['promoter_pledge_percent']}%
+Quarterly Trajectory: Quarters={quarterly_trajectory['quarters']}, Rev={quarterly_trajectory['revenue']}, Profit={quarterly_trajectory['net_profit']}
+Peers: Ind PE={peer_comparison['industry_pe']}, Ind ROE={peer_comparison['industry_avg_roe']}%
+
+SWING TRADING PARAMETERS (7-20 days):
+- Relative Strength (RS): 5D ({rs_5_day}%) | 20D ({rs_20_day}%) 
+  (If RS is positive, stock is outperforming Nifty. Prioritize positive RS stocks).
+- Volatility (ATR): {atr}
+
+SWING SETUP LOGIC:
+1. Setup Type: Classify this swing setup as either "Pullback to EMA 20/50", "Breakout with Volume", or "Range Bound".
+2. Stop Loss Calculation: Use a volatility-based stop loss. SL = Entry - (1.5 * ATR) OR recent swing low, whichever is tighter. Do not use wide support levels for swing SL.
+3. Target Calculation: Target must be at least 1:2 Risk:Reward based on the ATR stop loss.
 
 Respond in this exact JSON:
 {{
@@ -240,6 +319,7 @@ Respond in this exact JSON:
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
+      "setup_type": "Pullback/Breakout/Range Bound",
       "holding_period": "X-Y days",
       "entry": "price",
       "stop_loss": "price",
@@ -276,10 +356,16 @@ Respond in this exact JSON:
 Deep dive on {symbol} ({company_name}) fundamentals only.
 Ignore short term price action almost entirely.
 
+{sector_prompt}
+
 Fundamentals: PE={pe}, ROE={roe_val}%, D/E={de},
 Revenue Growth={rev_growth}%, Profit Growth={profit_growth}%,
 Promoter={promoter}%, Fund Score={fund_score}/100,
 Price=₹{price}, Market Cap={market_cap}
+
+Institutional: Promoter Activity={institutional_trend['promoter_activity']}, FII Trend={institutional_trend['fii_trend']}, Promoter Pledge={institutional_trend['promoter_pledge_percent']}%
+Quarterly Trajectory: Quarters={quarterly_trajectory['quarters']}, Rev={quarterly_trajectory['revenue']}, Profit={quarterly_trajectory['net_profit']}
+Peers: Ind PE={peer_comparison['industry_pe']}, Ind ROE={peer_comparison['industry_avg_roe']}%
 
 Respond in this exact JSON:
 {{
@@ -317,6 +403,7 @@ Respond in this exact JSON:
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
+      "setup_type": "Pullback/Breakout/Range Bound",
       "holding_period": "weeks",
       "entry": "price",
       "stop_loss": "price",
@@ -352,6 +439,8 @@ Respond in this exact JSON:
             user_prompt = f"""Analyze {symbol} ({company_name}) 
 comprehensively for all trade timeframes.
 
+{sector_prompt}
+
 Price: ₹{price} | Change: {change}%
 Technical: Trend={trend}, Score={tech_score}/100,
 RSI={rsi}, MACD={macd_signal}, ADX={adx},
@@ -362,8 +451,22 @@ Fundamental: Score={fund_score}/100, PE={pe},
 ROE={roe_val}%, D/E={de}, Rev Growth={rev_growth}%,
 Profit Growth={profit_growth}%, Promoter={promoter}%
 
+Institutional: Promoter Activity={institutional_trend['promoter_activity']}, FII Trend={institutional_trend['fii_trend']}, Promoter Pledge={institutional_trend['promoter_pledge_percent']}%
+Quarterly Trajectory: Quarters={quarterly_trajectory['quarters']}, Rev={quarterly_trajectory['revenue']}, Profit={quarterly_trajectory['net_profit']}
+Peers: Ind PE={peer_comparison['industry_pe']}, Ind ROE={peer_comparison['industry_avg_roe']}%
+
 Market: {market_regime} | Sector: {sector_perf}
 News: {top_headlines}
+
+SWING TRADING PARAMETERS (7-20 days):
+- Relative Strength (RS): 5D ({rs_5_day}%) | 20D ({rs_20_day}%) 
+  (If RS is positive, stock is outperforming Nifty. Prioritize positive RS stocks).
+- Volatility (ATR): {atr}
+
+SWING SETUP LOGIC:
+1. Setup Type: Classify this swing setup as either "Pullback to EMA 20/50", "Breakout with Volume", or "Range Bound".
+2. Stop Loss Calculation: Use a volatility-based stop loss. SL = Entry - (1.5 * ATR) OR recent swing low, whichever is tighter. Do not use wide support levels for swing SL.
+3. Target Calculation: Target must be at least 1:2 Risk:Reward based on the ATR stop loss.
 
 Respond in this exact JSON:
 {{
@@ -401,6 +504,7 @@ Respond in this exact JSON:
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
+      "setup_type": "Pullback/Breakout/Range Bound",
       "holding_period": "X-Y days",
       "entry": "price",
       "stop_loss": "price",

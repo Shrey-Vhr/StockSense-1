@@ -324,6 +324,39 @@ class TechnicalAnalysisService:
         return patterns
 
     @staticmethod
+    def calculate_relative_strength(stock_df):
+        try:
+            nifty = yf.Ticker("^NSEI")
+            nifty_df = nifty.history(period="2mo", interval="1d")
+            
+            if len(stock_df) < 21 or len(nifty_df) < 21:
+                return {"rs_5_day": None, "rs_20_day": None}
+                
+            stock_current = TechnicalAnalysisService._safe_get(stock_df['Close'].values, -1)
+            stock_5d = TechnicalAnalysisService._safe_get(stock_df['Close'].values, -6)
+            stock_20d = TechnicalAnalysisService._safe_get(stock_df['Close'].values, -21)
+            
+            nifty_current = TechnicalAnalysisService._safe_get(nifty_df['Close'].values, -1)
+            nifty_5d = TechnicalAnalysisService._safe_get(nifty_df['Close'].values, -6)
+            nifty_20d = TechnicalAnalysisService._safe_get(nifty_df['Close'].values, -21)
+            
+            if not all([stock_current, stock_5d, stock_20d, nifty_current, nifty_5d, nifty_20d]):
+                return {"rs_5_day": None, "rs_20_day": None}
+                
+            stock_5d_ret = ((stock_current - stock_5d) / stock_5d) * 100
+            nifty_5d_ret = ((nifty_current - nifty_5d) / nifty_5d) * 100
+            
+            stock_20d_ret = ((stock_current - stock_20d) / stock_20d) * 100
+            nifty_20d_ret = ((nifty_current - nifty_20d) / nifty_20d) * 100
+            
+            return {
+                "rs_5_day": round(stock_5d_ret - nifty_5d_ret, 2),
+                "rs_20_day": round(stock_20d_ret - nifty_20d_ret, 2)
+            }
+        except Exception as e:
+            return {"rs_5_day": None, "rs_20_day": None}
+
+    @staticmethod
     def get_full_technical_snapshot(symbol: str):
         try:
             if not symbol.endswith(".NS") and not symbol.endswith(".BO") and not symbol.startswith("^"):
@@ -416,6 +449,7 @@ class TechnicalAnalysisService:
                 "atr": TechnicalAnalysisService.calculate_atr(df),
                 "bollinger_bands": TechnicalAnalysisService.calculate_bollinger_bands(df)
             },
+            "relative_strength": TechnicalAnalysisService.calculate_relative_strength(df),
             "structure": {
                 "current_price": TechnicalAnalysisService._safe_get(df['Close'].values) if df is not None and not df.empty else 0,
                 "market_structure": TechnicalAnalysisService.detect_market_structure(df),

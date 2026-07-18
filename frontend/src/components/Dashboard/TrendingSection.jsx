@@ -24,21 +24,16 @@ const TrendingSection = () => {
   }, []);
 
   if (loading) return (
-    <div className="bg-surface-850 border border-surface-800 
-                    rounded-2xl p-5">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="bg-surface-900 border border-surface-800 rounded-2xl p-6 flex flex-col gap-4">
+      <div className="flex items-center gap-2">
         <Flame size={18} className="text-orange-400" />
-        <h2 className="text-lg font-bold text-white">
-          Trending Now
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+          TRENDING NOW
         </h2>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex flex-col gap-2">
         {[...Array(6)].map((_, i) => (
-          <div key={i} 
-               className="min-w-[160px] h-24 
-                          bg-surface-900 rounded-xl 
-                          animate-pulse border 
-                          border-surface-800" />
+          <div key={i} className="h-10 bg-surface-800 rounded-lg animate-pulse" />
         ))}
       </div>
     </div>
@@ -47,21 +42,18 @@ const TrendingSection = () => {
   if (!stocks.length) return null;
 
   return (
-    <div className="bg-surface-850 border border-surface-800 
-                    rounded-2xl p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Flame size={18} className="text-orange-400 
-                                    animate-pulse" />
-        <h2 className="text-lg font-bold text-white">
-          Trending Now
+    <div className="bg-surface-900 border border-surface-800 rounded-2xl p-6 flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <Flame size={18} className="text-orange-400 animate-pulse" />
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+          TRENDING NOW
         </h2>
-        <span className="text-xs text-gray-500 ml-1">
+        <span className="text-xs text-gray-500 ml-1 mb-3">
           Most active in market right now
         </span>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto 
-                      pb-2 scrollbar-hide">
+      <div className="flex flex-col gap-2">
         {stocks.map((stock, i) => (
           <motion.div
             key={stock.symbol}
@@ -69,33 +61,18 @@ const TrendingSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             onClick={() => navigate(`/stock/${stock.symbol}`)}
-            className="min-w-[160px] bg-surface-900 
-                       border border-surface-800 rounded-xl p-4 
-                       cursor-pointer hover:border-emerald-500/30 
-                       hover:bg-surface-800 transition-all 
-                       flex-shrink-0"
+            className="flex justify-between items-center w-full bg-surface-800/40 rounded-lg p-3 hover:bg-surface-700/50 transition-colors cursor-pointer"
           >
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-white font-bold text-sm">
-                {stock.symbol.replace('.NS', '')}
+            <span className="font-semibold text-slate-100 flex-1">
+              {stock.symbol.replace('.NS', '')}
+            </span>
+            <span className="text-slate-400 text-sm font-medium flex-1 text-center">
+              ₹{(stock.current_price ?? stock.price ?? stock.ltp ?? stock.last_price)?.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? 'N/A'}
+            </span>
+            <div className="flex-1 flex justify-end">
+              <span className={`text-sm font-semibold px-2 py-0.5 rounded ${stock.change_percent >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                {stock.change_percent >= 0 ? '+' : ''}{stock.change_percent?.toFixed(2)}%
               </span>
-              <span className={`flex items-center text-xs 
-                               font-bold font-mono ${
-                stock.is_positive ? 'text-emerald-400' : 'text-red-400'
-              }`}>
-                {stock.is_positive 
-                  ? <TrendingUp size={12} className="mr-0.5" /> 
-                  : <TrendingDown size={12} className="mr-0.5" />}
-                {stock.is_positive ? '+' : ''}
-                {stock.change_percent}%
-              </span>
-            </div>
-
-            <div className="text-gray-200 font-mono font-semibold 
-                           text-sm">
-              ₹{stock.price?.toLocaleString('en-IN', {
-                maximumFractionDigits: 2
-              })}
             </div>
           </motion.div>
         ))}

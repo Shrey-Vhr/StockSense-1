@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, Query, Body
 from typing import Dict, Any, List
 import logging
+import asyncio
 from services.ai_service import AIService
+from services.institutional_service import get_institutional_data
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,15 @@ async def analyze_stock(symbol: str, data_bundle: Dict[str, Any] = Body(...)):
     """
     analysis_type = data_bundle.get('analysis_type', 'full')
     logger.info(f"Received analysis_type: {analysis_type}")
+    
+    # Fetch and attach institutional data
+    try:
+        inst_data = await asyncio.to_thread(get_institutional_data, symbol, False)
+        data_bundle['institutional'] = inst_data
+    except Exception as e:
+        logger.error(f"Failed to fetch institutional data for {symbol}: {e}")
+        data_bundle['institutional'] = {}
+        
     result = await AIService.generate_stock_analysis(symbol, data_bundle, analysis_type)
     if "error" in result:
         # Check if rate limited or API error
