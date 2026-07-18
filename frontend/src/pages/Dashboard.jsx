@@ -261,11 +261,11 @@ const Dashboard = () => {
           </div>
           
           {/* Indices & ETFs Quick Access */}
-          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5">
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center">
-              <BarChart2 className="text-emerald-400 mr-2" size={20} /> Indices & ETFs
+          <div className="bg-surface-900 border border-surface-800 rounded-2xl p-6">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+              INDICES & ETFS
             </h2>
-            <div className="grid grid-cols-3 gap-3 mt-4">
+            <div className="flex flex-col gap-1">
               {[
                 {symbol: '^NSEI', name: 'Nifty 50', type: 'index'},
                 {symbol: '^NSEBANK', name: 'Bank Nifty', type: 'index'},
@@ -273,7 +273,11 @@ const Dashboard = () => {
                 {symbol: 'NIFTYBEES.NS', name: 'Nifty BeES', type: 'etf'},
                 {symbol: 'GOLDBEES.NS', name: 'Gold BeES', type: 'etf'},
                 {symbol: 'MON100.NS', name: 'NASDAQ 100', type: 'etf'},
-              ].map(item => (
+              ].map(item => {
+                const data = safeArray(marketOverview).find(m => m.symbol === item.symbol);
+                const price = data?.current_price ?? data?.price;
+                const change = data?.change_percent;
+                return (
                 <div 
                   key={item.symbol}
                   onClick={() => navigate(
@@ -281,25 +285,31 @@ const Dashboard = () => {
                       ? `/index/${item.symbol.replace('^', 'IDX-')}`
                       : `/etf/${item.symbol}`
                   )}
-                  className="bg-surface-900 border border-surface-800 rounded-xl p-3 cursor-pointer hover:border-emerald-500/40 transition-colors">
-                  <p className="text-xs text-gray-400">
-                    {item.type.toUpperCase()}
-                  </p>
-                  <p className="text-white font-bold text-sm">
+                  className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-surface-800/50 transition-colors cursor-pointer">
+                  <span className="text-sm font-medium text-slate-300 w-1/3">
                     {item.name}
-                  </p>
-                  <p className="text-emerald-400 text-xs mt-1">
-                    View Analysis →
-                  </p>
+                  </span>
+                  <span className="text-sm font-semibold text-slate-100 w-1/3 text-center">
+                    {price ? `₹${price.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '-'}
+                  </span>
+                  <div className="w-1/3 flex justify-end">
+                    {change !== undefined ? (
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${change >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                        {change >= 0 ? '+' : ''}{change.toFixed(2)}%
+                      </span>
+                    ) : (
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-surface-700/50 text-slate-400">-</span>
+                    )}
+                  </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
           
           {/* Sector Performance */}
-          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5">
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center">
-              <BarChart2 className="text-emerald-400 mr-2" size={20} /> Sector Performance
+          <div className="bg-surface-900 border border-surface-800 rounded-2xl p-6">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+              SECTOR PERFORMANCE
             </h2>
             <SectorHeatmap sectors={sectorPerformance} isLoading={isLoading.dashboard} />
           </div>
