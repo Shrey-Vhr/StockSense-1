@@ -8,7 +8,6 @@ import SectorHeatmap from '../components/Dashboard/SectorHeatmap';
 import TrendingSection from '../components/Dashboard/TrendingSection';
 import useCountUp from '../hooks/useCountUp';
 import { DashboardSkeleton } from '../components/Skeleton';
-import Sparkline from '../components/Sparkline';
 
 const AnimatedPrice = ({ value }) => {
   const animated = useCountUp(
@@ -35,26 +34,6 @@ const Dashboard = () => {
   } = useStore();
   
   const navigate = useNavigate();
-  const [indexSparklines, setIndexSparklines] = useState({});
-
-  useEffect(() => {
-    if (marketOverview && marketOverview.length > 0) {
-      marketOverview.slice(0, 3).forEach((idx) => {
-        setIndexSparklines(prev => {
-          if (prev[idx.symbol]) return prev;
-          
-          api.get(`/stocks/history/${idx.symbol}?period=1mo&interval=1d`).then(histRes => {
-            if (histRes.data && histRes.data.history) {
-               const closes = histRes.data.history.map(h => h.close || h.Close);
-               setIndexSparklines(p => ({ ...p, [idx.symbol]: closes }));
-            }
-          }).catch(e => console.error(e));
-          
-          return { ...prev, [idx.symbol]: [] };
-        });
-      });
-    }
-  }, [marketOverview]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -183,11 +162,11 @@ const Dashboard = () => {
                   <div className="flex flex-col gap-1">
                     <span className="text-sm font-medium text-slate-400">{idx.symbol === '^NSEI' ? 'NIFTY 50' : idx.symbol === '^NSEBANK' ? 'BANKNIFTY' : idx.symbol}</span>
                     <span className="text-2xl font-bold text-slate-50 tracking-tight"><AnimatedPrice value={idx.current_price ?? idx.price ?? 0} /></span>
-                    <span className={`text-sm font-semibold ${idx.change_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {idx.change_percent >= 0 ? '+' : ''}{idx.change_percent?.toFixed(2)}%
+                    <span className={`text-sm font-semibold flex gap-2 ${idx.change_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      <span>{idx.change_percent >= 0 ? '+' : ''}{idx.change?.toFixed(2) ?? ((idx.current_price ?? idx.price ?? 0) - ((idx.current_price ?? idx.price ?? 0) / (1 + (idx.change_percent ?? 0)/100))).toFixed(2)}</span>
+                      <span>({idx.change_percent >= 0 ? '+' : ''}{idx.change_percent?.toFixed(2)}%)</span>
                     </span>
                   </div>
-                  <Sparkline data={indexSparklines[idx.symbol]?.length > 1 ? indexSparklines[idx.symbol] : []} width={120} height={40} />
                 </div>
               </motion.div>
             ))}
