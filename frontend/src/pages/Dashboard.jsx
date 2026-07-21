@@ -160,7 +160,7 @@ const Dashboard = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col gap-1">
-                    <span className="text-sm font-medium text-slate-400">{idx.symbol === '^NSEI' ? 'NIFTY 50' : idx.symbol === '^NSEBANK' ? 'BANKNIFTY' : idx.symbol}</span>
+                    <span className="text-sm font-medium text-slate-400">{idx.symbol === '^NSEI' ? 'NIFTY 50' : idx.symbol === '^NSEBANK' ? 'BANKNIFTY' : idx.symbol === '^BSESN' ? 'SENSEX' : (idx.name ? idx.name.toUpperCase() : idx.symbol)}</span>
                     <span className="text-2xl font-bold text-slate-50 tracking-tight"><AnimatedPrice value={idx.current_price ?? idx.price ?? 0} /></span>
                     <span className={`text-sm font-semibold flex gap-2 ${idx.change_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                       <span>{idx.change_percent >= 0 ? '+' : ''}{idx.change?.toFixed(2) ?? ((idx.current_price ?? idx.price ?? 0) - ((idx.current_price ?? idx.price ?? 0) / (1 + (idx.change_percent ?? 0)/100))).toFixed(2)}</span>

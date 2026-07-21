@@ -264,17 +264,14 @@ class YFinanceService:
     @staticmethod
     @ttl_cache(ttl_seconds=60)
     async def get_market_overview():
-        # Try Angel One first for indices
-        if angel_one.is_connected:
-            indices = await asyncio.to_thread(angel_one.get_market_indices)
-            if indices:
-                return indices
-
         indices = {
             "Nifty 50": "^NSEI",
             "Bank Nifty": "^NSEBANK",
+            "Sensex": "^BSESN",
             "Nifty IT": "^CNXIT",
-            "Nifty Pharma": "^CNXPHARMA"
+            "Nifty BeES": "NIFTYBEES.NS",
+            "Gold BeES": "GOLDBEES.NS",
+            "NASDAQ 100": "MON100.NS"
         }
         
         async def fetch_index(name, symbol):
@@ -287,6 +284,21 @@ class YFinanceService:
                 
         tasks = [fetch_index(name, sym) for name, sym in indices.items()]
         results = await asyncio.gather(*tasks)
+        
+        if angel_one.is_connected:
+            try:
+                a1_indices = await asyncio.to_thread(angel_one.get_market_indices)
+                if a1_indices:
+                    for res in results:
+                        if res.get('symbol') == '^NSEI' and 'nifty50' in a1_indices:
+                            res.update(a1_indices['nifty50'])
+                            res['current_price'] = a1_indices['nifty50'].get('price')
+                        elif res.get('symbol') == '^NSEBANK' and 'banknifty' in a1_indices:
+                            res.update(a1_indices['banknifty'])
+                            res['current_price'] = a1_indices['banknifty'].get('price')
+            except Exception as e:
+                logger.error(f"Angel one override error: {e}")
+                
         return results
 
     @staticmethod
