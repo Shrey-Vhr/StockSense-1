@@ -7,7 +7,6 @@
 
 # Node modules
 node_modules/
-frontend/node_modules/
 dist/
 build/
 npm-debug.log*
@@ -24,8 +23,11 @@ env/
 backend/venv/
 backend/env/
 backend/__pycache__/
+
+# Database
 *.sqlite3
 *.db
+stocksense.db
 backend/stocksense.db
 
 # OS Files
@@ -45,3 +47,11 @@ Thumbs.db
 backend/logs/
 frontend/.env
 backend/.env
+
+# Root lockfile (frontend has its own)
+/package-lock.json
+
+# Scaffolding / migration scripts (one-off, not part of the app)
+user_inputs.txt
+frontend/*.cjs
+frontend/temp.*

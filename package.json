@@ -1,5 +1,15 @@
 {
-  "dependencies": {
-    "lightweight-charts": "^5.2.0"
-  }
+  "name": "stocksense",
+  "version": "1.0.0",
+  "description": "AI-powered swing trading terminal for the Indian stock market (NSE)",
+  "private": true,
+  "scripts": {
+    "start": "start.bat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shrey-Vhr/StockSense.git"
+  },
+  "author": "Shrey Vohra",
+  "license": "MIT"
 }
