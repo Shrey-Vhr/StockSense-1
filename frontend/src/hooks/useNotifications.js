@@ -1,12 +1,23 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
+import { useAuth } from "./useAuth";
 
 export function useNotifications() {
   const navigate = useNavigate();
   const intervalRef = useRef(null);
+  const isAuthenticated = useAuth((state) => state.isAuthenticated);
 
   useEffect(() => {
+    // If not authenticated, clear any existing interval and do nothing
+    if (!isAuthenticated) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
     // Request permission on mount
     if (
       "Notification" in window &&
@@ -57,5 +68,5 @@ export function useNotifications() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [navigate]);
+  }, [navigate, isAuthenticated]);
 }
