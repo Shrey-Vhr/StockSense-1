@@ -1,114 +1,137 @@
 @charset "UTF-8";
+@import './styles/tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-body {
-  background-color: #0a0e13;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Smooth transitions globally */
-* {
-  transition-property: background-color, border-color, 
-                        color, fill, stroke, opacity, 
-                        box-shadow, transform;
-  transition-duration: 150ms;
-  transition-timing-function: ease-in-out;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #0f1419;
-}
-::-webkit-scrollbar-thumb {
-  background: #2a3441;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #3a4555;
-}
-
 @layer base {
+  /* Font-family is set on :root and inherited, not applied to `*`.
+   * The old universal selector matched every element directly, which meant a
+   * `font-mono` container could never pass monospace down to its children —
+   * every one of them was individually re-set to Inter. That is why 117
+   * `font-mono` usages had almost no visible effect. */
+  :root {
+    font-family: theme('fontFamily.sans');
+    color-scheme: dark;
+  }
+
   body {
-    @apply text-[#e6edf3];
+    background-color: rgb(var(--surface-950));
+    color: rgb(var(--text-primary));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Inter ships proportional figures by default, so every digit is a different
+   * width. On a screen that repaints prices every 10 seconds the numbers visibly
+   * jitter and columns never line up. Tabular figures fix both. */
+  .font-mono,
+  input[type='number'],
+  table {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /* One focus ring for the whole app.
+   * Previously a global `input:focus` box-shadow fought 18 separate
+   * `focus:ring-*` classes — two of which were a different colour — so focus
+   * could render as two mismatched rings at once. `:focus-visible` also stops
+   * the ring appearing on mouse clicks while keeping it for keyboard users. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand-400));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: rgb(var(--brand-500) / 0.35);
+    color: rgb(var(--text-primary));
   }
 }
 
 @layer utilities {
-  .animate-flash-green {
-    animation: flashGreen 0.5s ease-out;
+  /* Opt in to tabular figures anywhere numbers are compared vertically. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
   }
-  .animate-flash-red {
-    animation: flashRed 0.5s ease-out;
-  }
+
+  /* Names kept as-is — StockDetail drives these from its price poller. */
+  .animate-flash-green { animation: flashUp   var(--dur-slow) var(--ease-out); }
+  .animate-flash-red   { animation: flashDown var(--dur-slow) var(--ease-out); }
+
+  .animate-fade-in { animation: fadeIn var(--dur-base) var(--ease-out); }
 }
 
-@keyframes flashGreen {
-  0% { background-color: transparent; }
-  50% { background-color: rgba(0, 200, 83, 0.3); }
+/* ── Scrollbars ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--surface-700));
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--surface-600));
+  background-clip: content-box;
+}
+* {
+  scrollbar-color: rgb(var(--surface-700)) transparent;
+  scrollbar-width: thin;
+}
+
+/* ── Keyframes ──────────────────────────────────────────────────────────── */
+@keyframes flashUp {
+  0%   { background-color: transparent; }
+  40%  { background-color: rgb(var(--up) / 0.18); }
   100% { background-color: transparent; }
 }
 
-@keyframes flashRed {
-  0% { background-color: transparent; }
-  50% { background-color: rgba(255, 23, 68, 0.3); }
+@keyframes flashDown {
+  0%   { background-color: transparent; }
+  40%  { background-color: rgb(var(--down) / 0.18); }
   100% { background-color: transparent; }
 }
 
-/* Smooth page transitions */
-.page-enter {
-  opacity: 0;
-  transform: translateY(8px);
-}
-.page-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 200ms ease-out, 
-              transform 200ms ease-out;
-}
-
-/* Card hover lift */
-.card-hover {
-  transition: transform 150ms ease, 
-              box-shadow 150ms ease;
-}
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-}
-
-/* Emerald glow on focus */
-input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
-}
-
-/* Fade in animation */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fadeIn 200ms ease-out;
+  to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Ambient background ─────────────────────────────────────────────────── */
+/* Neutral rather than emerald-tinted: a green wash over the whole viewport
+ * competes with the green that actually means "price up". */
 .dot-grid {
   position: fixed;
   inset: 0;
   background-image: radial-gradient(
-    rgba(16, 185, 129, 0.08) 1.5px,
-    transparent 1.5px
+    rgb(255 255 255 / 0.025) 1px,
+    transparent 1px
   );
-  background-size: 28px 28px;
+  background-size: 32px 32px;
   z-index: 1;
   pointer-events: none;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+/* The app had none, despite 36 framer-motion elements, 22 animate-pulse uses
+ * and an infinite shimmer on every skeleton. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .dot-grid { display: none; }
 }
