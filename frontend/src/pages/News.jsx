@@ -49,9 +49,16 @@ const News = () => {
       </div>
 
       {(() => {
-        const positiveNews = marketNews.filter(n => n.sentiment === 'Positive');
-        const negativeNews = marketNews.filter(n => n.sentiment === 'Negative');
-        const neutralNews = marketNews.filter(n => !n.sentiment || n.sentiment === 'Neutral');
+        // The news API is inconsistent about sentiment casing: the same endpoint
+        // returns "POSITIVE" on some responses and "Positive" on others. The old
+        // case-sensitive match therefore dropped every article from all three
+        // buckets on the upper-case responses, rendering a blank page. Compare
+        // case-insensitively, and treat anything that is not explicitly positive
+        // or negative as neutral so no article can silently vanish again.
+        const sentimentOf = (n) => (n.sentiment || '').toUpperCase();
+        const positiveNews = marketNews.filter(n => sentimentOf(n) === 'POSITIVE');
+        const negativeNews = marketNews.filter(n => sentimentOf(n) === 'NEGATIVE');
+        const neutralNews = marketNews.filter(n => !['POSITIVE', 'NEGATIVE'].includes(sentimentOf(n)));
 
         const renderNewsCards = (newsList) => (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -68,11 +75,11 @@ const News = () => {
                     <div className="text-xs text-[#10b981] font-medium">{news.source}</div>
                     {news.sentiment && (
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                        news.sentiment === 'Positive' ? 'bg-green-900/50 text-green-400'
-                        : news.sentiment === 'Negative' ? 'bg-red-900/50 text-red-400'
+                        sentimentOf(news) === 'POSITIVE' ? 'bg-green-900/50 text-green-400'
+                        : sentimentOf(news) === 'NEGATIVE' ? 'bg-red-900/50 text-red-400'
                         : 'bg-gray-700 text-gray-400'
                       }`}>
-                        {news.sentiment === 'Positive' ? '↑' : news.sentiment === 'Negative' ? '↓' : '—'} {news.sentiment}
+                        {sentimentOf(news) === 'POSITIVE' ? '↑' : sentimentOf(news) === 'NEGATIVE' ? '↓' : '—'} {news.sentiment}
                       </span>
                     )}
                   </div>

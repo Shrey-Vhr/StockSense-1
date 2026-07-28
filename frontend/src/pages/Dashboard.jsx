@@ -323,18 +323,23 @@ const Dashboard = () => {
               MARKET NEWS
             </h2>
             <div className="flex flex-col flex-grow">
-              {safeArray(marketNews).map((news, i) => (
-                <a 
-                  href={news.url} 
-                  target="_blank" 
+              {safeArray(marketNews).map((news, i) => {
+                // The news API is inconsistent about sentiment casing ("POSITIVE"
+                // on some responses, "Positive" on others), so the case-sensitive
+                // checks below rendered no badge at all on the upper-case ones.
+                const sentiment = (news.sentiment || '').toUpperCase();
+                return (
+                <a
+                  href={news.url}
+                  target="_blank"
                   rel="noopener noreferrer"
-                  key={i} 
+                  key={i}
                   className="block group border-b border-surface-800 pb-3 mb-3 last:border-0 last:mb-0"
                 >
                   <div className="flex items-start gap-2">
-                    {news.sentiment === 'Positive' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded">POS</span>}
-                    {news.sentiment === 'Negative' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">NEG</span>}
-                    {news.sentiment === 'Neutral' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-slate-700/50 text-slate-400 px-1.5 py-0.5 rounded">NEU</span>}
+                    {sentiment === 'POSITIVE' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded">POS</span>}
+                    {sentiment === 'NEGATIVE' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">NEG</span>}
+                    {sentiment === 'NEUTRAL' && <span className="shrink-0 mt-0.5 text-[10px] font-bold uppercase bg-slate-700/50 text-slate-400 px-1.5 py-0.5 rounded">NEU</span>}
                     <h3 className="text-sm text-slate-300 leading-snug hover:text-emerald-400 transition-colors">
                       {news.title}
                     </h3>
@@ -343,7 +348,8 @@ const Dashboard = () => {
                     {news.source} • {news.published_display || formatDate(news.published_date)}
                   </div>
                 </a>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
         </div>
