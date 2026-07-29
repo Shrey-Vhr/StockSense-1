@@ -62,6 +62,20 @@
   .animate-flash-red   { animation: flashDown var(--dur-slow) var(--ease-out); }
 
   .animate-fade-in { animation: fadeIn var(--dur-base) var(--ease-out); }
+
+  /* Skeleton shimmer. Was one framer-motion loop per box — a dozen JS-driven
+   * infinite animations before any data arrived. CSS runs off the main thread
+   * and is already covered by the reduced-motion rule below. */
+  .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      rgb(var(--surface-800)) 25%,
+      rgb(var(--surface-700)) 50%,
+      rgb(var(--surface-800)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
 }
 
 /* ── Scrollbars ─────────────────────────────────────────────────────────── */
@@ -103,6 +117,11 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
 }
 
 /* ── Ambient background ─────────────────────────────────────────────────── */

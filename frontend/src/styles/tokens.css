@@ -42,6 +42,16 @@
   --down-strong:  246  70  93;   /* candle bodies, filled bars           */
   --flat:         155 163 175;   /* unchanged / no data                  */
 
+  /* ── Chart series ──────────────────────────────────────────────────────────
+   * Overlay lines (EMAs) are data, but they are not *direction*, so they must
+   * not borrow the up/down colours. The old EMA 200 was #ff5252 — a red line
+   * that read as bearish no matter what the trend was actually doing. Amber
+   * separates it from both the down colour and the other two series.
+   */
+  --series-1: 124 134 236;   /* EMA 20  */
+  --series-2:  96 165 250;   /* EMA 50  */
+  --series-3: 251 191  36;   /* EMA 200 */
+
   /* ── Surfaces ──────────────────────────────────────────────────────────────
    * Descending lightness as the number rises, matching Tailwind convention.
    * Mapped onto the class names already in use so this phase is a re-colour,
