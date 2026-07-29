@@ -77,6 +77,17 @@ export function volumeOptions() {
   };
 }
 
+/**
+ * Per-bar volume colour.
+ *
+ * Must be a concrete rgba() string: lightweight-charts parses colours with its
+ * own parser, which does not understand CSS variables and throws
+ * "Cannot parse color" — taking the whole chart down with it.
+ */
+export function volumeBarColor(isUp) {
+  return tokenColor(isUp ? 'up-strong' : 'down-strong', 0.28);
+}
+
 /** EMA overlay colours, keyed by period. */
 export function emaColor(period) {
   if (period <= 20) return tokenColor('series-1');
