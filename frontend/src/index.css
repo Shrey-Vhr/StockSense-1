@@ -63,6 +63,10 @@
 
   .animate-fade-in { animation: fadeIn var(--dur-base) var(--ease-out); }
 
+  /* Splash progress. Was injected into the document with
+   * dangerouslySetInnerHTML from inside SplashScreen. */
+  .animate-splash-load { animation: splashLoad 2.4s var(--ease-out) forwards; }
+
   /* Skeleton shimmer. Was one framer-motion loop per box — a dozen JS-driven
    * infinite animations before any data arrived. CSS runs off the main thread
    * and is already covered by the reduced-motion rule below. */
@@ -122,6 +126,11 @@
 @keyframes shimmer {
   from { background-position: 200% 0; }
   to   { background-position: -200% 0; }
+}
+
+@keyframes splashLoad {
+  from { width: 0%; }
+  to   { width: 100%; }
 }
 
 /* ── Ambient background ─────────────────────────────────────────────────── */

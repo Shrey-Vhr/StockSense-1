@@ -66,26 +66,41 @@ function App() {
         v7_relativeSplatPath: true
       }}
     >
-      <div className="fixed top-0 left-0 right-0 h-0.5 z-[9999] pointer-events-none"
-           style={{
-             background: 'linear-gradient(90deg, transparent 0%, #10b981 30%, #34d399 50%, #10b981 70%, transparent 100%)'
-           }}
+      <div
+        className="fixed top-0 left-0 right-0 h-px z-[9999] pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent 0%, rgb(var(--brand-500)) 30%, rgb(var(--brand-400)) 50%, rgb(var(--brand-500)) 70%, transparent 100%)',
+        }}
       />
       <div className="dot-grid" />
       {showSplash && <SplashScreen />}
-      <Toaster 
+      {/* Styled from the tokens rather than hardcoded hex. The previous values
+          were also wrong: the comments claimed surface-850 and surface-800 but
+          #1A1D24 / #2B303B matched neither, so toasts never quite lined up with
+          any other panel in the app. */}
+      <Toaster
         position="bottom-right"
         toastOptions={{
-          className: '!bg-surface-850 !text-gray-100 !border !border-surface-800 font-sans',
+          className: 'font-sans',
           style: {
-            background: '#1A1D24', // surface-850 fallback
-            color: '#F3F4F6', // text-gray-100
-            border: '1px solid #2B303B' // border-surface-800
+            background: 'rgb(var(--surface-850))',
+            color: 'rgb(var(--text-primary))',
+            border: '1px solid rgb(var(--surface-700))',
+            borderRadius: '12px',
+            fontSize: '13px',
+            boxShadow: 'var(--shadow-lg)',
           },
           success: {
             iconTheme: {
-              primary: '#34d399', // emerald-400
-              secondary: '#1A1D24', // surface-850
+              primary: 'rgb(var(--up))',
+              secondary: 'rgb(var(--surface-850))',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: 'rgb(var(--down))',
+              secondary: 'rgb(var(--surface-850))',
             },
           },
         }}

@@ -1,18 +1,48 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Menu, Bell, Activity, Circle } from 'lucide-react';
+import { Search, Menu, Bell, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import useDebounce from '../../hooks/useDebounce';
+import { cn } from '../../lib/cn';
+import { surfaceIn } from '../../lib/motion';
+import { formatNumber, formatPercent, direction } from '../../lib/format';
+import { Badge, Button } from '../ui';
 
-const Header = ({ toggleSidebar }) => {
+/** Live index chip. Tabular numerals stop the price shifting width on each poll. */
+const Ticker = ({ label, price, change, flash }) => {
+  const dir = direction(change);
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2 px-2.5 h-8 rounded-lg border transition-colors duration-slow',
+        'bg-surface-850 border-surface-800',
+        flash,
+      )}
+    >
+      <span className="text-2xs font-medium uppercase tracking-wider text-gray-500">{label}</span>
+      <span className="text-xs font-medium text-gray-100 font-mono tnum">{price}</span>
+      <span
+        className={cn(
+          'text-xs font-medium font-mono tnum',
+          dir === 'up' ? 'text-up' : dir === 'down' ? 'text-down' : 'text-flat',
+        )}
+      >
+        {formatPercent(change)}
+      </span>
+    </div>
+  );
+};
+
+const Header = ({ toggleSidebar, onOpenCommandPalette }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
 
-  const [nifty, setNifty] = useState({ price: 'Loading...', change: 0, flash: '' });
-  const [bankNifty, setBankNifty] = useState({ price: 'Loading...', change: 0, flash: '' });
+  const [nifty, setNifty] = useState({ price: '—', change: null, flash: '' });
+  const [bankNifty, setBankNifty] = useState({ price: '—', change: null, flash: '' });
   const [marketStatus, setMarketStatus] = useState('Open');
 
   const [alerts, setAlerts] = useState([]);
@@ -37,11 +67,15 @@ const Header = ({ toggleSidebar }) => {
 
   const navigate = useNavigate();
   const searchRef = useRef(null);
+  const alertsRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowDropdown(false);
+      }
+      if (alertsRef.current && !alertsRef.current.contains(event.target)) {
+        setShowAlerts(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -53,6 +87,7 @@ const Header = ({ toggleSidebar }) => {
       api.get(`/stocks/search?q=${debouncedSearch}`).then(res => {
         setSearchResults(res.data.results);
         setShowDropdown(true);
+        setActiveIndex(-1);
       }).catch(e => console.error(e));
     } else {
       setSearchResults([]);
@@ -76,17 +111,17 @@ const Header = ({ toggleSidebar }) => {
 
         if (n50) {
           setNifty(prev => ({
-            price: n50.current_price?.toFixed(2),
-            change: n50.change_percent?.toFixed(2),
-            flash: prev.price && prev.price !== n50.current_price?.toFixed(2) ? 'bg-emerald-500/10' : ''
+            price: formatNumber(n50.current_price),
+            change: n50.change_percent,
+            flash: prev.price && prev.price !== formatNumber(n50.current_price) ? 'bg-brand-500/10' : ''
           }));
           setTimeout(() => setNifty(p => ({...p, flash: ''})), 500);
         }
         if (bn) {
           setBankNifty(prev => ({
-            price: bn.current_price?.toFixed(2),
-            change: bn.change_percent?.toFixed(2),
-            flash: prev.price && prev.price !== bn.current_price?.toFixed(2) ? 'bg-emerald-500/10' : ''
+            price: formatNumber(bn.current_price),
+            change: bn.change_percent,
+            flash: prev.price && prev.price !== formatNumber(bn.current_price) ? 'bg-brand-500/10' : ''
           }));
           setTimeout(() => setBankNifty(p => ({...p, flash: ''})), 500);
         }
@@ -139,136 +174,208 @@ const Header = ({ toggleSidebar }) => {
     setShowDropdown(false);
   };
 
+  // The search dropdown was mouse-only — no arrow keys, no Enter to pick a
+  // result, no way to dismiss it from the keyboard.
+  const handleSearchKeyDown = (e) => {
+    if (!showDropdown || searchResults.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex(i => (i < searchResults.length - 1 ? i + 1 : i));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex(i => (i > 0 ? i - 1 : -1));
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault();
+      handleResultClick(searchResults[activeIndex]);
+    } else if (e.key === 'Escape') {
+      setShowDropdown(false);
+    }
+  };
+
+  const isOpen = marketStatus === 'Open';
+  const unread = alerts.length;
+
   return (
-    <header className="h-16 bg-surface-900/80 backdrop-blur-md border-b border-surface-800 flex items-center justify-between px-4 lg:px-8 z-30 relative sticky top-0">
-      <div className="flex items-center">
-        <button onClick={toggleSidebar} className="lg:hidden mr-4 text-gray-400 hover:text-white p-2 rounded-lg hover:bg-surface-850 transition-colors">
-          <Menu size={24} />
-        </button>
-        <div className="hidden md:flex items-center space-x-3 font-mono text-sm">
-          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-surface-850 border border-surface-800 transition-colors duration-500 ${nifty.flash}`}>
-            <span className="text-gray-500 text-xs font-sans">NIFTY 50</span>
-            <span className="text-gray-100 font-medium">{nifty.price}</span>
-            <span className={Number(nifty.change) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-              {Number(nifty.change) >= 0 ? '+' : ''}{nifty.change}%
+    <header className="h-16 shrink-0 bg-surface-900/80 backdrop-blur-md border-b border-surface-800
+                       flex items-center justify-between gap-3 px-3 lg:px-6 z-30 relative sticky top-0">
+      <div className="flex items-center gap-3 min-w-0">
+        {/* Was lg:hidden while the sidebar appears at md: — between 768 and
+            1024px this button rendered but did nothing at all. */}
+        <Button
+          variant="ghost"
+          size="md"
+          iconOnly
+          icon={Menu}
+          aria-label="Open navigation"
+          onClick={toggleSidebar}
+          className="md:hidden"
+        />
+
+        <div className="hidden md:flex items-center gap-2 min-w-0">
+          <Ticker label="Nifty 50" price={nifty.price} change={nifty.change} flash={nifty.flash} />
+          <Ticker label="BankNifty" price={bankNifty.price} change={bankNifty.change} flash={bankNifty.flash} />
+
+          <Badge
+            variant={isOpen ? 'up' : 'neutral'}
+            size="md"
+            dot
+            className="h-8 px-2.5"
+            title={`NSE trading session runs 09:15–15:30 IST. Market is ${marketStatus.toLowerCase()}.`}
+          >
+            <span className="uppercase tracking-wider font-semibold">
+              Market {marketStatus}
             </span>
-          </div>
-          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-surface-850 border border-surface-800 transition-colors duration-500 ${bankNifty.flash}`}>
-            <span className="text-gray-500 text-xs font-sans">BANKNIFTY</span>
-            <span className="text-gray-100 font-medium">{bankNifty.price}</span>
-            <span className={Number(bankNifty.change) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-              {Number(bankNifty.change) >= 0 ? '+' : ''}{bankNifty.change}%
-            </span>
-          </div>
-          {marketStatus === 'Open' ? (
-            <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full text-xs font-semibold">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span> MARKET OPEN
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 bg-slate-700/50 text-slate-400 px-3 py-1.5 rounded-full text-xs font-semibold">
-              <span className="w-2 h-2 bg-slate-500 rounded-full"></span> MARKET CLOSED
-            </div>
-          )}
+          </Badge>
         </div>
       </div>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center gap-2 shrink-0">
         <div className="relative hidden md:block" ref={searchRef}>
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
+          <form onSubmit={handleSearchSubmit} role="search" className="relative">
+            <Search
+              size={15}
+              aria-hidden="true"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+            />
             <input
               type="text"
-              placeholder="Search symbol (e.g. RELIANCE)"
+              role="combobox"
+              aria-expanded={showDropdown && searchResults.length > 0}
+              aria-controls="header-search-results"
+              aria-autocomplete="list"
+              aria-label="Search symbol"
+              placeholder="Search symbol…"
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 if (!showDropdown) setShowDropdown(true);
               }}
               onFocus={() => setShowDropdown(true)}
-              className="bg-surface-850 border border-surface-800 text-sm rounded-full pl-10 pr-4 py-2 w-48 lg:w-72 text-gray-100 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40 transition-all placeholder-gray-500"
+              onKeyDown={handleSearchKeyDown}
+              className="h-9 w-48 lg:w-72 rounded-lg bg-surface-850 border border-surface-800
+                         pl-9 pr-16 text-sm text-gray-100 placeholder:text-gray-600
+                         transition-colors duration-fast hover:border-surface-700
+                         focus:border-brand-500"
             />
+            <kbd
+              onClick={onOpenCommandPalette}
+              className="absolute right-2 top-1/2 -translate-y-1/2 hidden lg:flex items-center
+                         h-5 px-1.5 rounded border border-surface-700 bg-surface-800
+                         text-2xs font-medium text-gray-500 cursor-pointer
+                         transition-colors duration-fast hover:text-gray-300"
+              title="Open command palette"
+            >
+              ⌘K
+            </kbd>
           </form>
+
           <AnimatePresence>
             {showDropdown && searchResults.length > 0 && (
-              <motion.div
-                className="absolute top-full mt-2 w-full bg-surface-850 border border-surface-800 rounded-xl shadow-card overflow-hidden z-50 max-h-80 overflow-y-auto"
-                initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                transition={{ duration: 0.15 }}
+              <motion.ul
+                id="header-search-results"
+                role="listbox"
+                aria-label="Search results"
+                variants={surfaceIn}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="absolute top-full mt-2 w-full max-h-80 overflow-y-auto z-50
+                           bg-surface-850 border border-surface-700 rounded-xl shadow-lg"
               >
                 {searchResults.map((result, idx) => (
-                  <motion.div
-                    key={idx}
+                  <li
+                    key={`${result.symbol}-${idx}`}
+                    role="option"
+                    aria-selected={idx === activeIndex}
                     onClick={() => handleResultClick(result)}
-                    className="p-3 hover:bg-surface-800 cursor-pointer border-b border-surface-800 last:border-b-0 transition-colors flex justify-between items-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: idx * 0.03 }}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                    className={cn(
+                      'px-3 py-2.5 cursor-pointer flex items-center justify-between gap-3',
+                      'border-b border-surface-800 last:border-b-0 transition-colors duration-fast',
+                      idx === activeIndex ? 'bg-surface-800' : 'hover:bg-surface-800/60',
+                    )}
                   >
-                    <div className="flex items-center">
-                      <span className="mr-2 text-lg">
-                        {result.type === 'index' ? '📊' : result.type === 'etf' ? '💹' : '📈'}
-                      </span>
-                      <div>
-                        <div className="font-bold text-emerald-400 flex items-center gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-100 font-mono">
                           {result.symbol.replace('.NS', '')}
-                          {result.type === 'etf' && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-400 border border-teal-500/30 uppercase tracking-wider">ETF</span>
-                          )}
-                          {result.type === 'index' && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30 uppercase tracking-wider">IDX</span>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-400">{result.name}</div>
+                        </span>
+                        {result.type === 'etf' && <Badge variant="brand">ETF</Badge>}
+                        {result.type === 'index' && <Badge variant="brand">IDX</Badge>}
                       </div>
+                      <div className="text-xs text-gray-500 truncate mt-0.5">{result.name}</div>
                     </div>
-                    <div className="text-xs text-gray-500">{result.sector}</div>
-                  </motion.div>
+                    <span className="text-2xs text-gray-600 shrink-0">{result.sector}</span>
+                  </li>
                 ))}
-              </motion.div>
+              </motion.ul>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="relative">
-          <button onClick={() => setShowAlerts(!showAlerts)} className="text-gray-400 hover:text-gray-100 transition-colors relative p-2 rounded-xl hover:bg-surface-850">
-            <Bell size={20} />
-            {(alerts.length > 0 || hasAlerts) && (
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-surface-900"></span>
-            )}
-          </button>
+        <div className="relative" ref={alertsRef}>
+          <Button
+            variant="ghost"
+            size="md"
+            iconOnly
+            icon={Bell}
+            aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+            aria-expanded={showAlerts}
+            onClick={() => setShowAlerts(!showAlerts)}
+            className="relative"
+          />
+          {(unread > 0 || hasAlerts) && (
+            <span
+              aria-hidden="true"
+              className="absolute top-1 right-1 min-w-[1rem] h-4 px-1 flex items-center justify-center
+                         rounded-full bg-down text-2xs font-semibold text-white
+                         ring-2 ring-surface-900 pointer-events-none"
+            >
+              {unread > 9 ? '9+' : unread || ''}
+            </span>
+          )}
 
           <AnimatePresence>
             {showAlerts && (
               <motion.div
-                className="absolute right-0 mt-2 w-80 bg-surface-850 border border-surface-800 rounded-xl shadow-card z-50 overflow-hidden"
-                initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                transition={{ duration: 0.15 }}
+                variants={surfaceIn}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="absolute right-0 mt-2 w-80 z-50 overflow-hidden
+                           bg-surface-850 border border-surface-700 rounded-xl shadow-lg"
               >
-                <div className="flex justify-between items-center p-3 border-b border-surface-800 bg-surface-900">
-                  <h3 className="font-bold text-gray-100 flex items-center text-sm">
-                    <Activity size={16} className="mr-2 text-emerald-400"/> Notifications
-                  </h3>
-                  {alerts.length > 0 && (
-                    <button onClick={() => {setAlerts([]); setShowAlerts(false);}} className="text-xs text-gray-400 hover:text-gray-100">
-                      Clear All
-                    </button>
+                <div className="flex justify-between items-center px-4 py-3 border-b border-surface-800">
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-100">
+                    <Activity size={14} className="text-brand-400" aria-hidden="true" />
+                    Notifications
+                  </h2>
+                  {unread > 0 && (
+                    <Button variant="ghost" size="sm" onClick={() => { setAlerts([]); setShowAlerts(false); }}>
+                      Clear all
+                    </Button>
                   )}
                 </div>
                 <div className="max-h-80 overflow-y-auto">
-                  {alerts.length === 0 ? (
-                    <div className="p-6 text-center text-gray-500 text-sm">No recent alerts.</div>
+                  {unread === 0 ? (
+                    <div className="px-4 py-8 text-center">
+                      <p className="text-sm text-gray-400">No alerts yet</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Price alerts you set on a stock will appear here.
+                      </p>
+                    </div>
                   ) : (
                     alerts.map((a, i) => (
-                      <div key={i} className="p-3 border-b border-surface-800 last:border-b-0 hover:bg-surface-800/60 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <span className="font-bold text-emerald-400 text-sm">{a.symbol}</span>
-                          <span className="text-xs text-gray-500">Just now</span>
+                      <div
+                        key={i}
+                        className="px-4 py-3 border-b border-surface-800 last:border-b-0
+                                   transition-colors duration-fast hover:bg-surface-800/60"
+                      >
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="text-sm font-medium text-brand-400 font-mono">{a.symbol}</span>
+                          <span className="text-2xs text-gray-600 shrink-0">Just now</span>
                         </div>
-                        <p className="text-sm text-gray-300 mt-1">{a.message}</p>
+                        <p className="text-xs text-gray-400 mt-1 leading-relaxed">{a.message}</p>
                       </div>
                     ))
                   )}

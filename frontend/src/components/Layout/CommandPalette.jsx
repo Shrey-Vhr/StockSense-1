@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, CornerDownLeft, ArrowUpDown } from 'lucide-react';
+import api from '../../utils/api';
+import { cn } from '../../lib/cn';
+import { surfaceIn, overlay } from '../../lib/motion';
+import { Badge, Spinner } from '../ui';
 
 const CommandPalette = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
@@ -9,6 +13,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef(null);
+  const listRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,12 +33,12 @@ const CommandPalette = ({ isOpen, onClose }) => {
       }
       setIsLoading(true);
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/stocks/search?q=${query}`);
-        if (res.ok) {
-          const data = await res.json();
-          setResults(data.results || []);
-          setSelectedIndex(0);
-        }
+        // Was a bare `fetch` against import.meta.env.VITE_API_URL — the only
+        // request in the app that skipped the axios client, so it sent no
+        // Authorization header and bypassed the shared 401 handling.
+        const res = await api.get(`/stocks/search?q=${query}`);
+        setResults(res.data.results || []);
+        setSelectedIndex(0);
       } catch (error) {
         console.error("Error fetching stocks:", error);
       } finally {
@@ -69,6 +74,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, results, selectedIndex]);
 
+  // Keyboard selection could run off the bottom of the scroll container.
+  useEffect(() => {
+    listRef.current
+      ?.querySelector(`[data-index="${selectedIndex}"]`)
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [selectedIndex]);
+
   const handleSelect = (item) => {
     navigate(`/stock/${item.symbol}`);
     onClose();
@@ -77,79 +89,118 @@ const CommandPalette = ({ isOpen, onClose }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh]">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[16vh] px-4">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={overlay}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
           />
 
-          {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="relative w-full max-w-xl bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Search stocks"
+            variants={surfaceIn}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="relative w-full max-w-xl overflow-hidden
+                       bg-surface-900 border border-surface-700 rounded-2xl shadow-overlay"
           >
-            {/* Search Input */}
-            <div className="flex items-center px-4 py-3 border-b border-gray-800">
-              <Search className="w-5 h-5 text-gray-400 mr-3" />
+            <div className="flex items-center gap-3 px-4 h-14 border-b border-surface-800">
+              <Search size={17} className="text-gray-500 shrink-0" aria-hidden="true" />
               <input
                 ref={inputRef}
                 type="text"
-                className="flex-1 bg-transparent text-gray-100 placeholder-gray-500 outline-none text-lg"
-                placeholder="Search stocks by symbol or name..."
+                role="combobox"
+                aria-expanded={results.length > 0}
+                aria-controls="command-palette-results"
+                aria-autocomplete="list"
+                aria-label="Search stocks by symbol or name"
+                className="flex-1 bg-transparent text-base text-gray-100 placeholder:text-gray-600 outline-none"
+                placeholder="Search stocks by symbol or name…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              {isLoading && (
-                <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-              )}
+              {isLoading && <Spinner size="sm" className="text-brand-400 shrink-0" />}
             </div>
 
-            {/* Results */}
             {results.length > 0 && (
-              <div className="max-h-96 overflow-y-auto p-2">
+              <ul
+                id="command-palette-results"
+                role="listbox"
+                ref={listRef}
+                className="max-h-80 overflow-y-auto p-2"
+              >
                 {results.map((item, index) => (
-                  <button
+                  <li
                     key={item.symbol}
-                    className={`w-full text-left px-4 py-3 rounded-lg flex items-center justify-between transition-colors ${
-                      index === selectedIndex
-                        ? 'bg-indigo-500/20 text-indigo-400'
-                        : 'text-gray-300 hover:bg-gray-800'
-                    }`}
+                    data-index={index}
+                    role="option"
+                    aria-selected={index === selectedIndex}
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setSelectedIndex(index)}
+                    className={cn(
+                      'px-3 py-2.5 rounded-lg flex items-center justify-between gap-3 cursor-pointer',
+                      'transition-colors duration-fast',
+                      index === selectedIndex ? 'bg-brand-500/12' : 'hover:bg-surface-800',
+                    )}
                   >
-                    <div>
-                      <div className="font-medium">{item.symbol}</div>
-                      <div className="text-sm opacity-70 truncate max-w-sm">{item.name}</div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn(
+                            'text-sm font-medium font-mono',
+                            index === selectedIndex ? 'text-brand-400' : 'text-gray-100',
+                          )}
+                        >
+                          {item.symbol.replace('.NS', '')}
+                        </span>
+                        {item.type === 'etf' && <Badge variant="brand">ETF</Badge>}
+                        {item.type === 'index' && <Badge variant="brand">IDX</Badge>}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate mt-0.5">{item.name}</div>
                     </div>
                     {item.sector && (
-                      <div className="text-xs px-2 py-1 bg-gray-800 rounded-md text-gray-400">
-                        {item.sector}
-                      </div>
+                      <span className="text-2xs text-gray-600 shrink-0">{item.sector}</span>
                     )}
-                  </button>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
-            
+
             {query.trim() && results.length === 0 && !isLoading && (
-              <div className="p-8 text-center text-gray-500">
-                No stocks found for "{query}"
+              <div className="px-4 py-10 text-center">
+                <p className="text-sm text-gray-400">No stocks found</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Nothing matches “{query}”. Try a different symbol or company name.
+                </p>
               </div>
             )}
-            
+
             {!query.trim() && (
-              <div className="p-4 text-center text-gray-500 text-sm">
-                Type a stock name or symbol to search. Press <kbd className="bg-gray-800 px-1 py-0.5 rounded text-gray-300">Enter</kbd> to select.
+              <div className="px-4 py-10 text-center">
+                <p className="text-sm text-gray-400">Search 2,100+ NSE stocks</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Start typing a symbol or company name.
+                </p>
               </div>
             )}
+
+            <div className="flex items-center gap-4 px-4 h-10 border-t border-surface-800 bg-surface-950/50">
+              <span className="flex items-center gap-1.5 text-2xs text-gray-600">
+                <ArrowUpDown size={11} aria-hidden="true" /> Navigate
+              </span>
+              <span className="flex items-center gap-1.5 text-2xs text-gray-600">
+                <CornerDownLeft size={11} aria-hidden="true" /> Select
+              </span>
+              <span className="flex items-center gap-1.5 text-2xs text-gray-600">
+                <kbd className="px-1 rounded border border-surface-700 bg-surface-800">Esc</kbd> Close
+              </span>
+            </div>
           </motion.div>
         </div>
       )}
