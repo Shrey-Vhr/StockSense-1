@@ -44,9 +44,12 @@ export function THead({ sticky = true, className, children, ...props }) {
   );
 }
 
-export function TBody({ className, children, ...props }) {
+export function TBody({ divided = true, className, children, ...props }) {
+  // A prop rather than a `divide-y-0` override from the caller: two `divide-*`
+  // utilities on one element resolve by stylesheet order, not by which one the
+  // caller wrote last, so overriding from outside is unreliable.
   return (
-    <tbody className={cn('divide-y divide-surface-800', className)} {...props}>
+    <tbody className={cn(divided && 'divide-y divide-surface-800', className)} {...props}>
       {children}
     </tbody>
   );
@@ -104,7 +107,23 @@ export function Th({
   );
 }
 
-export function Tr({ interactive = false, className, children, ...props }) {
+export function Tr({ interactive = false, onClick, className, children, ...props }) {
+  // Clickable rows were plain divs with onClick and no way to reach them from
+  // the keyboard. Making the row focusable and operable with Enter/Space is the
+  // minimum; Phase 13 revisits whether the first cell should carry a real link.
+  const interactiveProps = interactive && onClick
+    ? {
+        tabIndex: 0,
+        onClick,
+        onKeyDown: (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick(e);
+          }
+        },
+      }
+    : { onClick };
+
   return (
     <tr
       className={cn(
@@ -112,6 +131,7 @@ export function Tr({ interactive = false, className, children, ...props }) {
         interactive && 'hover:bg-surface-800/50 cursor-pointer',
         className,
       )}
+      {...interactiveProps}
       {...props}
     >
       {children}

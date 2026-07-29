@@ -9,11 +9,19 @@ const useCountUp = (
   const [count, setCount] = useState(start);
   const frameRef = useRef(null);
   const startTimeRef = useRef(null);
+  // Tracks what is currently on screen so an update animates from there.
+  const currentRef = useRef(start);
+  currentRef.current = count;
 
   useEffect(() => {
     if (!end && end !== 0) return;
-    
-    const startVal = start;
+
+    // Was `start` (0) on every run, so each new price counted up from zero —
+    // on a dashboard that repolls every 15 seconds, the index appeared to
+    // collapse to 0.00 and climb back each time. Animating from the value
+    // already displayed keeps the first mount identical (count starts at 0)
+    // while making subsequent updates a short tick rather than a full reset.
+    const startVal = currentRef.current;
     const endVal = parseFloat(end);
     
     if (isNaN(endVal)) return;
