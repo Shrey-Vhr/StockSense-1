@@ -1,23 +1,35 @@
 import { useState, useEffect } from 'react';
-import { PieChart as PieChartIcon, Plus, TrendingUp, TrendingDown, DollarSign, BrainCircuit, ShieldAlert } from 'lucide-react';
+import {
+  PieChart as PieChartIcon, Plus, BrainCircuit, Trash2, AlertTriangle, X,
+} from 'lucide-react';
 import useStore from '../store/useStore';
 import api from '../utils/api';
+import {
+  Badge, Button, Card, DeltaBadge, EmptyState, Field, Input,
+  MetricTile, Modal, PageHeader,
+  Table, THead, TBody, Th, Tr, Td,
+} from '../components/ui';
+import { cn } from '../lib/cn';
+import { formatCurrency, formatPercent, direction, displaySymbol } from '../lib/format';
 
 const Portfolio = () => {
-  const { portfolioHoldings, setPortfolioHoldings, addHolding, removeHolding } = useStore();
+  const { portfolioHoldings, setPortfolioHoldings } = useStore();
   const [showAddForm, setShowAddForm] = useState(false);
-  
+
   // Form state
   const [symbol, setSymbol] = useState('');
   const [quantity, setQuantity] = useState('');
   const [buyPrice, setBuyPrice] = useState('');
-  
+
   const [aiReview, setAiReview] = useState(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [performance, setPerformance] = useState(null);
-  
-  // Real-time prices map to avoid constant fetching
-  const [currentPrices, setCurrentPrices] = useState({});
+
+  // Replaces three blocking `alert()` calls. A browser alert stops the page,
+  // cannot be styled, and on a failed "Sell" gave no indication which holding
+  // it referred to.
+  const [error, setError] = useState('');
+  const [pendingRemoval, setPendingRemoval] = useState(null);
 
   // Fetch holdings from backend
   useEffect(() => {
@@ -53,18 +65,19 @@ const Portfolio = () => {
   }, [portfolioHoldings])
 
   const handleRemove = async (id) => {
+    setPendingRemoval(null);
     try {
       await api.delete(`/portfolio/remove/${id}`)
       setPortfolioHoldings(portfolioHoldings.filter(h => h.id !== id))
     } catch (e) {
-      alert('Failed to remove holding')
+      setError('Could not remove that holding. Please try again.')
     }
   }
 
   const handleAddHolding = async (e) => {
     e.preventDefault();
     if (!symbol || !quantity || !buyPrice) return;
-    
+
     let cleanSymbol = symbol.toUpperCase();
     if (!cleanSymbol.includes('.NS')) cleanSymbol += '.NS';
 
@@ -77,17 +90,16 @@ const Portfolio = () => {
       const res = await api.get('/portfolio')
       setPortfolioHoldings(res.data)
     } catch (e) {
-      alert('Failed to add holding')
+      setError(`Could not add ${cleanSymbol}. Check the symbol and try again.`)
       return
     }
-    
+
     setSymbol('');
     setQuantity('');
     setBuyPrice('');
     setShowAddForm(false);
+    setError('');
   };
-
-
 
   const handleAIReview = async () => {
     setIsAiLoading(true);
@@ -103,208 +115,368 @@ const Portfolio = () => {
       setAiReview(res.data.portfolio_review);
     } catch (e) {
       console.error(e);
-      alert("AI Review failed. Check console.");
+      setError('AI review failed. Please try again in a moment.');
     } finally {
       setIsAiLoading(false);
     }
   };
 
+  const totalPnl = performance?.total_pnl ?? 0;
+  const totalPnlPct = performance?.total_pnl_percent ?? 0;
+  const pnlDirection = direction(totalPnl);
+
+  const allocations = Object.entries(performance?.sector_allocation || {})
+    .sort((a, b) => b[1] - a[1]);
+
+  /** One holding, rendered as a row on desktop and a card on mobile. */
+  const holdingFigures = (h) => {
+    const cmp = h.current_price || h.avg_buy_price;
+    const pnl = h.pnl || 0;
+    const pnlPct = h.avg_buy_price > 0 ? ((cmp - h.avg_buy_price) / h.avg_buy_price) * 100 : 0;
+    return { cmp, pnl, pnlPct };
+  };
+
   return (
-    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-white flex items-center">
-          <PieChartIcon className="mr-2 text-[#10b981]" /> My Portfolio
-        </h1>
-        <div className="flex space-x-3">
-          <button 
-            onClick={handleAIReview}
-            disabled={isAiLoading || portfolioHoldings.length === 0}
-            className="bg-[#161b22] border border-[#10b981]/50 hover:bg-[#10b981]/10 text-[#10b981] px-4 py-2 rounded-lg flex items-center transition-colors disabled:opacity-50"
-          >
-            {isAiLoading ? <BrainCircuit className="animate-pulse mr-1" size={18}/> : <BrainCircuit className="mr-1" size={18} />}
-            AI Review
-          </button>
-          <button 
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-[#161b22] border border-[#30363d] hover:border-[#10b981] text-white px-4 py-2 rounded-lg flex items-center transition-colors"
-          >
-            <Plus size={18} className="mr-1 text-[#10b981]" /> Add Holding
-          </button>
+    <div className="p-4 sm:p-6 max-w-[1400px] mx-auto space-y-5">
+      <PageHeader
+        title="Portfolio"
+        subtitle="Your holdings, live P&L and sector exposure."
+        icon={PieChartIcon}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              icon={BrainCircuit}
+              onClick={handleAIReview}
+              loading={isAiLoading}
+              disabled={isAiLoading || portfolioHoldings.length === 0}
+            >
+              AI review
+            </Button>
+            <Button variant="primary" icon={Plus} onClick={() => setShowAddForm(v => !v)}>
+              Add holding
+            </Button>
+          </>
+        }
+      />
+
+      {error && (
+        <div
+          role="alert"
+          className="flex items-start justify-between gap-3 rounded-xl border border-down/30 bg-down/10 px-4 py-3"
+        >
+          <span className="flex items-start gap-2 text-sm text-down">
+            <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden="true" />
+            {error}
+          </span>
+          <Button variant="ghost" size="sm" iconOnly icon={X} aria-label="Dismiss error" onClick={() => setError('')} />
         </div>
-      </div>
+      )}
 
       {showAddForm && (
-        <form onSubmit={handleAddHolding} className="bg-[#161b22] border border-[#10b981]/50 rounded-xl p-5 flex flex-wrap gap-4 items-end">
-          <div className="flex-1 min-w-[150px]">
-            <label className="block text-xs text-gray-400 mb-1">Symbol</label>
-            <input type="text" value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="e.g. INFOSYS" className="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-white" required />
-          </div>
-          <div className="flex-1 min-w-[100px]">
-            <label className="block text-xs text-gray-400 mb-1">Quantity</label>
-            <input type="number" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="0" className="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-white" required min="1" />
-          </div>
-          <div className="flex-1 min-w-[100px]">
-            <label className="block text-xs text-gray-400 mb-1">Buy Price</label>
-            <input type="number" step="0.05" value={buyPrice} onChange={e => setBuyPrice(e.target.value)} placeholder="0.00" className="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-white" required min="0" />
-          </div>
-          <button type="submit" className="bg-[#10b981] text-black font-bold py-2 px-6 rounded hover:bg-amber-500 transition-colors">
-            Save
-          </button>
-        </form>
+        <Card title="Add a holding">
+          <form onSubmit={handleAddHolding} className="flex flex-col sm:flex-row sm:items-end gap-3">
+            <Field label="Symbol" required className="flex-1 min-w-[150px]">
+              {(p) => (
+                <Input
+                  value={symbol}
+                  onChange={e => setSymbol(e.target.value)}
+                  placeholder="e.g. INFY"
+                  required
+                  {...p}
+                />
+              )}
+            </Field>
+            <Field label="Quantity" required className="flex-1 min-w-[110px]">
+              {(p) => (
+                <Input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={e => setQuantity(e.target.value)}
+                  placeholder="0"
+                  required
+                  {...p}
+                />
+              )}
+            </Field>
+            <Field label="Average buy price" required className="flex-1 min-w-[130px]">
+              {(p) => (
+                <Input
+                  type="number"
+                  step="0.05"
+                  min="0"
+                  value={buyPrice}
+                  onChange={e => setBuyPrice(e.target.value)}
+                  placeholder="0.00"
+                  required
+                  {...p}
+                />
+              )}
+            </Field>
+            <div className="flex gap-2">
+              <Button type="submit" variant="primary">Save</Button>
+              <Button type="button" variant="ghost" onClick={() => setShowAddForm(false)}>Cancel</Button>
+            </div>
+          </form>
+        </Card>
       )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
-          <div className="text-gray-400 text-sm mb-1 flex items-center">
-            <DollarSign size={16} className="mr-1"/> Current Value
+      {/* ── Summary ─────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <MetricTile
+          label="Current value"
+          value={formatCurrency(performance?.current_value ?? 0, { decimals: 0 })}
+          size="lg"
+        />
+        <MetricTile
+          label="Total invested"
+          value={formatCurrency(performance?.total_invested ?? 0, { decimals: 0 })}
+          size="lg"
+          tone="muted"
+        />
+        <MetricTile
+          label="Overall P&L"
+          value={formatCurrency(totalPnl, { decimals: 0 })}
+          tone={pnlDirection === 'up' ? 'up' : pnlDirection === 'down' ? 'down' : 'default'}
+          size="lg"
+        >
+          <div className="mt-2">
+            <DeltaBadge value={totalPnlPct} />
           </div>
-          <div className="text-3xl font-bold font-mono text-white">₹{(performance?.current_value ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-        </div>
-        
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
-          <div className="text-gray-400 text-sm mb-1">Total Invested</div>
-          <div className="text-3xl font-bold font-mono text-gray-300">₹{(performance?.total_invested ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-        </div>
-        
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
-          <div className="text-gray-400 text-sm mb-1">Overall P&L</div>
-          <div className={`text-3xl font-bold font-mono flex items-center ${(performance?.total_pnl ?? 0) >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
-            {(performance?.total_pnl ?? 0) >= 0 ? '+' : ''}₹{Math.abs(performance?.total_pnl ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-            <span className="text-sm ml-3 bg-[#0d1117] px-2 py-1 rounded-full border border-current">
-              {(performance?.total_pnl_percent ?? 0) >= 0 ? '+' : ''}{(performance?.total_pnl_percent ?? 0).toFixed(2)}%
-            </span>
-          </div>
-        </div>
+        </MetricTile>
       </div>
 
-      {/* AI Review Section */}
+      {/* ── AI review ───────────────────────────────────────────────────── */}
       {aiReview && (
-        <div className="bg-[#161b22] border border-[#10b981]/50 rounded-xl p-6 animate-fade-in relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#10b981] opacity-5 rounded-bl-full pointer-events-none" />
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-            <BrainCircuit className="mr-2 text-[#10b981]" /> Claude Portfolio Assessment
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="md:col-span-1 bg-[#0d1117] p-4 rounded-lg border border-[#30363d] text-center">
-              <div className="text-4xl font-bold text-white font-mono">{aiReview.health_score}</div>
-              <div className="text-sm text-gray-400 mt-1">Health Score</div>
-              <div className={`mt-4 inline-block px-3 py-1 rounded text-xs font-bold ${aiReview.concentration_risk === 'High' ? 'bg-[#ff1744]/20 text-[#ff1744]' : 'bg-[#00c853]/20 text-[#00c853]'}`}>
-                {aiReview.concentration_risk} Risk
-              </div>
+        <Card
+          title={
+            <span className="flex items-center gap-2">
+              <BrainCircuit size={12} className="text-brand-400" aria-hidden="true" />
+              Portfolio assessment
+            </span>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div className="flex flex-col items-center justify-center text-center
+                            rounded-xl border border-surface-800 bg-surface-950 p-5">
+              <div className="text-4xl font-semibold text-gray-100 tnum">{aiReview.health_score}</div>
+              <div className="text-2xs uppercase tracking-wider text-gray-500 mt-1">Health score</div>
+              <Badge
+                variant={aiReview.concentration_risk === 'High' ? 'down' : 'up'}
+                size="md"
+                className="mt-3"
+              >
+                {aiReview.concentration_risk} risk
+              </Badge>
             </div>
+
             <div className="md:col-span-3 space-y-4">
-              <p className="text-gray-300 leading-relaxed">{aiReview.summary}</p>
+              <p className="text-sm text-gray-300 leading-relaxed">{aiReview.summary}</p>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-[#00c853] font-bold text-sm mb-2">Strengths</h4>
-                  <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
-                    {aiReview.strengths?.map((s,i) => <li key={i}>{s}</li>)}
+                  <h3 className="text-2xs font-semibold uppercase tracking-wider text-up mb-2">Strengths</h3>
+                  <ul className="space-y-1.5">
+                    {aiReview.strengths?.map((s, i) => (
+                      <li key={i} className="text-xs text-gray-400 leading-relaxed pl-3 relative">
+                        <span className="absolute left-0 top-1.5 w-1 h-1 rounded-full bg-up" aria-hidden="true" />
+                        {s}
+                      </li>
+                    ))}
                   </ul>
                 </div>
                 <div>
-                  <h4 className="text-[#ff1744] font-bold text-sm mb-2">Weaknesses</h4>
-                  <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
-                    {aiReview.weaknesses?.map((w,i) => <li key={i}>{w}</li>)}
+                  <h3 className="text-2xs font-semibold uppercase tracking-wider text-down mb-2">Weaknesses</h3>
+                  <ul className="space-y-1.5">
+                    {aiReview.weaknesses?.map((w, i) => (
+                      <li key={i} className="text-xs text-gray-400 leading-relaxed pl-3 relative">
+                        <span className="absolute left-0 top-1.5 w-1 h-1 rounded-full bg-down" aria-hidden="true" />
+                        {w}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
-              <div className="bg-[#0d1117] p-4 rounded border border-[#10b981]/30 mt-4">
-                <h4 className="text-[#10b981] font-bold text-sm mb-2">Actionable Rebalancing Suggestions</h4>
-                <ul className="list-decimal list-inside text-sm text-gray-300 space-y-2">
-                  {aiReview.rebalancing_suggestions?.map((r,i) => <li key={i}>{r}</li>)}
-                </ul>
+
+              <div className="rounded-xl border border-brand-500/25 bg-brand-500/[0.07] p-4">
+                <h3 className="text-2xs font-semibold uppercase tracking-wider text-brand-400 mb-2">
+                  Rebalancing suggestions
+                </h3>
+                <ol className="space-y-1.5 list-decimal list-inside">
+                  {aiReview.rebalancing_suggestions?.map((r, i) => (
+                    <li key={i} className="text-xs text-gray-300 leading-relaxed">{r}</li>
+                  ))}
+                </ol>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Holdings Table */}
-        <div className="lg:col-span-2 bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-[#30363d]">
-            <h2 className="text-lg font-bold text-white">Current Holdings</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#0d1117] text-gray-400 text-xs uppercase tracking-wider border-b border-[#30363d]">
-                  <th className="p-4">Symbol</th>
-                  <th className="p-4 text-right">Qty</th>
-                  <th className="p-4 text-right">Avg Price</th>
-                  <th className="p-4 text-right">CMP</th>
-                  <th className="p-4 text-right">P&L</th>
-                  <th className="p-4 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#30363d]">
-                {portfolioHoldings.map(h => {
-                  const cp = h.current_price || h.avg_buy_price;
-                  const pnl = h.pnl || 0;
-                  const pnlPct = h.avg_buy_price > 0 ? ((cp - h.avg_buy_price) / h.avg_buy_price) * 100 : 0;
-                  const isProfit = pnl >= 0;
+      {/* ── Holdings + allocation ───────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+        <Card title="Current holdings" padding="none" className="lg:col-span-2" bodyClassName="px-1 pb-1">
+          {portfolioHoldings.length === 0 ? (
+            <EmptyState
+              icon={PieChartIcon}
+              title="No holdings yet"
+              description="Add your first position to start tracking live P&L and sector exposure."
+              action={<Button size="sm" variant="primary" icon={Plus} onClick={() => setShowAddForm(true)}>Add holding</Button>}
+            />
+          ) : (
+            <>
+              {/* Desktop: a real table. Columns here are fixed, unlike the
+                  screener's runtime-derived ones, so a card layout can
+                  faithfully represent every column on a narrow screen. */}
+              <div className="hidden sm:block">
+                <Table>
+                  <THead sticky={false}>
+                    <Tr>
+                      <Th>Symbol</Th>
+                      <Th align="right">Qty</Th>
+                      <Th align="right">Avg price</Th>
+                      <Th align="right">CMP</Th>
+                      <Th align="right">P&L</Th>
+                      <Th align="right">Action</Th>
+                    </Tr>
+                  </THead>
+                  <TBody>
+                    {portfolioHoldings.map(h => {
+                      const { cmp, pnl, pnlPct } = holdingFigures(h);
+                      return (
+                        <Tr key={h.id}>
+                          <Td>
+                            <div className="font-medium text-gray-100">{displaySymbol(h.symbol)}</div>
+                            {h.sector && <div className="text-2xs text-gray-500 mt-0.5">{h.sector}</div>}
+                          </Td>
+                          <Td numeric>{h.quantity}</Td>
+                          <Td numeric>{formatCurrency(h.avg_buy_price || 0)}</Td>
+                          <Td numeric>{formatCurrency(cmp)}</Td>
+                          <Td numeric className={pnl >= 0 ? 'text-up' : 'text-down'}>
+                            <div>{formatCurrency(pnl)}</div>
+                            <div className="text-2xs opacity-80">{formatPercent(pnlPct)}</div>
+                          </Td>
+                          <Td align="right">
+                            <div className="flex justify-end">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                iconOnly
+                                icon={Trash2}
+                                aria-label={`Remove ${displaySymbol(h.symbol)} from portfolio`}
+                                onClick={() => setPendingRemoval(h)}
+                                className="hover:text-down"
+                              />
+                            </div>
+                          </Td>
+                        </Tr>
+                      );
+                    })}
+                  </TBody>
+                </Table>
+              </div>
 
+              {/* Mobile: one card per holding. The old table simply overflowed. */}
+              <ul className="sm:hidden divide-y divide-surface-800 px-3">
+                {portfolioHoldings.map(h => {
+                  const { cmp, pnl, pnlPct } = holdingFigures(h);
                   return (
-                    <tr key={h.id} className="hover:bg-[#30363d]/30 transition-colors">
-                      <td className="p-4">
-                        <div className="font-bold text-white">{h.symbol.replace('.NS', '')}</div>
-                        <div className="text-xs text-gray-500">{h.sector}</div>
-                      </td>
-                      <td className="p-4 text-right font-mono text-gray-300">{h.quantity}</td>
-                      <td className="p-4 text-right font-mono text-gray-300">₹{(h.avg_buy_price || 0).toFixed(2)}</td>
-                      <td className="p-4 text-right font-mono text-white transition-all duration-500">₹{cp.toFixed(2)}</td>
-                      <td className="p-4 text-right transition-all duration-500">
-                        <div className={`font-mono font-bold ${isProfit ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
-                          {isProfit ? '+' : ''}₹{Math.abs(pnl).toFixed(2)}
+                    <li key={h.id} className="py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-medium text-gray-100">{displaySymbol(h.symbol)}</div>
+                          {h.sector && <div className="text-2xs text-gray-500 mt-0.5">{h.sector}</div>}
                         </div>
-                        <div className={`text-xs font-mono mt-1 ${isProfit ? 'text-[#00c853]/70' : 'text-[#ff1744]/70'}`}>
-                          {isProfit ? '+' : ''}{pnlPct.toFixed(2)}%
+                        <div className="flex items-center gap-2 shrink-0">
+                          <DeltaBadge value={pnlPct} />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            iconOnly
+                            icon={Trash2}
+                            aria-label={`Remove ${displaySymbol(h.symbol)} from portfolio`}
+                            onClick={() => setPendingRemoval(h)}
+                            className="hover:text-down"
+                          />
                         </div>
-                      </td>
-                      <td className="p-4 text-center">
-                        <button onClick={() => handleRemove(h.id)} className="text-gray-500 hover:text-red-400 text-xs uppercase font-bold tracking-wider">
-                          Sell
-                        </button>
-                      </td>
-                    </tr>
+                      </div>
+                      <dl className="grid grid-cols-3 gap-2 mt-3">
+                        {[
+                          ['Qty', h.quantity],
+                          ['Avg', formatCurrency(h.avg_buy_price || 0)],
+                          ['CMP', formatCurrency(cmp)],
+                        ].map(([label, value]) => (
+                          <div key={label}>
+                            <dt className="text-2xs uppercase tracking-wider text-gray-600">{label}</dt>
+                            <dd className="text-xs text-gray-200 font-mono tnum mt-0.5">{value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      <div className={cn('text-sm font-medium font-mono tnum mt-2', pnl >= 0 ? 'text-up' : 'text-down')}>
+                        {formatCurrency(pnl)}
+                      </div>
+                    </li>
                   );
                 })}
-                {portfolioHoldings.length === 0 && (
-                  <tr>
-                    <td colSpan="6" className="p-8 text-center text-gray-500">No holdings found. Add your first stock above.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </ul>
+            </>
+          )}
+        </Card>
 
-        {/* Sector Allocation */}
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-5">
-          <h2 className="text-lg font-bold text-white mb-4">Sector Allocation</h2>
-          <div className="space-y-4">
-            {Object.entries(performance?.sector_allocation || {}).sort((a,b) => b[1]-a[1]).map(([sector, val], idx) => {
-              const pct = (val / (performance?.current_value || 1)) * 100;
-              // Generate some consistent colors
-              const colors = ['bg-[#10b981]', 'bg-[#00c853]', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500'];
-              const colorClass = colors[idx % colors.length];
-              
-              return (
-                <div key={sector}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-300">{sector}</span>
-                    <span className="font-mono text-white">{pct.toFixed(1)}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-[#0d1117] rounded-full overflow-hidden">
-                    <div className={`h-full ${colorClass}`} style={{ width: `${pct}%` }}></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <Card title="Sector allocation">
+          {allocations.length === 0 ? (
+            <EmptyState size="sm" title="No allocation yet" description="Add holdings to see sector exposure." />
+          ) : (
+            <ul className="space-y-3.5">
+              {allocations.map(([sector, val], idx) => {
+                const pct = (val / (performance?.current_value || 1)) * 100;
+                // Was five unrelated colours (emerald, green, blue, purple, pink)
+                // that implied categories which do not exist. One brand tint,
+                // stepped down by rank, reads as "share of one portfolio".
+                const opacity = Math.max(0.25, 1 - idx * 0.16);
+                return (
+                  <li key={sector}>
+                    <div className="flex justify-between items-baseline gap-2 text-xs mb-1.5">
+                      <span className="text-gray-300 truncate">{sector}</span>
+                      <span className="text-gray-400 font-mono tnum shrink-0">{pct.toFixed(1)}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-surface-800 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-brand-400"
+                        style={{ width: `${pct}%`, opacity }}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
       </div>
+
+      {/* ── Remove confirmation ─────────────────────────────────────────── */}
+      <Modal
+        open={Boolean(pendingRemoval)}
+        onClose={() => setPendingRemoval(null)}
+        title="Remove holding"
+        description={
+          pendingRemoval
+            ? `${displaySymbol(pendingRemoval.symbol)} will be removed from your portfolio. This cannot be undone.`
+            : undefined
+        }
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setPendingRemoval(null)}>Cancel</Button>
+            <Button variant="danger" onClick={() => handleRemove(pendingRemoval.id)}>Remove</Button>
+          </>
+        }
+      >
+        <p className="text-sm text-gray-400">
+          Removing a holding only affects tracking in StockSense — it does not place a trade.
+        </p>
+      </Modal>
     </div>
   );
 };
