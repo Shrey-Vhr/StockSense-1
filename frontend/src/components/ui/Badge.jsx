@@ -17,7 +17,7 @@ const VARIANTS = {
   // `flat` exists because direction() returns 'up' | 'down' | 'flat' — without
   // it, an unchanged price rendered a completely unstyled badge.
   flat:    'bg-surface-800 text-flat border-surface-700',
-  warn:    'bg-amber-400/10 text-amber-300 border-amber-400/20',
+  warn:    'bg-warn/10 text-warn border-warn/20',
   outline: 'bg-transparent text-gray-400 border-surface-700',
 };
 

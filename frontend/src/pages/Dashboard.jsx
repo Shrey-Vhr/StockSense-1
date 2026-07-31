@@ -266,7 +266,7 @@ const Dashboard = () => {
                         <div className="flex justify-end">
                           {change !== undefined
                             ? <DeltaBadge value={change} />
-                            : <span className="text-xs text-gray-600">—</span>}
+                            : <span className="text-xs text-gray-500">—</span>}
                         </div>
                       </Td>
                     </Tr>
@@ -311,7 +311,7 @@ const Dashboard = () => {
                             {decodeEntities(news.title)}
                           </h3>
                         </div>
-                        <div className="text-2xs text-gray-600 mt-1.5">
+                        <div className="text-2xs text-gray-500 mt-1.5">
                           {news.source} · {news.published_display || formatDate(news.published_date)}
                         </div>
                       </a>

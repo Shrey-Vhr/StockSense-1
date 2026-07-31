@@ -253,7 +253,7 @@ const Header = ({ toggleSidebar, onOpenCommandPalette }) => {
               onFocus={() => setShowDropdown(true)}
               onKeyDown={handleSearchKeyDown}
               className="h-9 w-48 lg:w-72 rounded-lg bg-surface-850 border border-surface-800
-                         pl-9 pr-16 text-sm text-gray-100 placeholder:text-gray-600
+                         pl-9 pr-16 text-sm text-gray-100 placeholder:text-gray-500
                          transition-colors duration-fast hover:border-surface-700
                          focus:border-brand-500"
             />
@@ -305,7 +305,7 @@ const Header = ({ toggleSidebar, onOpenCommandPalette }) => {
                       </div>
                       <div className="text-xs text-gray-500 truncate mt-0.5">{result.name}</div>
                     </div>
-                    <span className="text-2xs text-gray-600 shrink-0">{result.sector}</span>
+                    <span className="text-2xs text-gray-500 shrink-0">{result.sector}</span>
                   </li>
                 ))}
               </motion.ul>
@@ -324,11 +324,14 @@ const Header = ({ toggleSidebar, onOpenCommandPalette }) => {
             onClick={() => setShowAlerts(!showAlerts)}
             className="relative"
           />
+          {/* White on the down token measured 2.77:1 — the unread count was the
+              worst contrast left in the app. Dark-on-red is 7.11:1 and keeps the
+              red pill the convention expects. */}
           {(unread > 0 || hasAlerts) && (
             <span
               aria-hidden="true"
               className="absolute top-1 right-1 min-w-[1rem] h-4 px-1 flex items-center justify-center
-                         rounded-full bg-down text-2xs font-semibold text-white
+                         rounded-full bg-down text-2xs font-semibold text-surface-950
                          ring-2 ring-surface-900 pointer-events-none"
             >
               {unread > 9 ? '9+' : unread || ''}
@@ -373,7 +376,7 @@ const Header = ({ toggleSidebar, onOpenCommandPalette }) => {
                       >
                         <div className="flex justify-between items-start gap-2">
                           <span className="text-sm font-medium text-brand-400 font-mono">{a.symbol}</span>
-                          <span className="text-2xs text-gray-600 shrink-0">Just now</span>
+                          <span className="text-2xs text-gray-500 shrink-0">Just now</span>
                         </div>
                         <p className="text-xs text-gray-400 mt-1 leading-relaxed">{a.message}</p>
                       </div>

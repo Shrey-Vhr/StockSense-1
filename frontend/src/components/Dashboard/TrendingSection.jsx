@@ -7,6 +7,16 @@ import { SkeletonBox } from '../Skeleton';
 import { Card, DeltaBadge, Table, TBody, Tr, Td } from '../ui';
 import { formatCurrency, displaySymbol } from '../../lib/format';
 
+/**
+ * The heading is identical in the loading and loaded branches, so it lives in
+ * one place rather than being kept in sync by hand.
+ */
+const TITLE = (
+  <span className="flex items-center gap-1.5">
+    <Flame size={12} className="text-warn" aria-hidden="true" /> Trending Now
+  </span>
+);
+
 const TrendingSection = () => {
   const [stocks, setStocks] = useState([]);
   const [sparklines, setSparklines] = useState({});
@@ -43,10 +53,7 @@ const TrendingSection = () => {
 
   if (loading) {
     return (
-      <Card
-        title={<span className="flex items-center gap-1.5"><Flame size={12} className="text-amber-400" aria-hidden="true" /> Trending Now</span>}
-        padding="sm"
-      >
+      <Card title={TITLE} padding="sm">
         <div className="space-y-1.5">
           {[...Array(6)].map((_, i) => <SkeletonBox key={i} className="h-11 rounded-lg" />)}
         </div>
@@ -58,7 +65,7 @@ const TrendingSection = () => {
 
   return (
     <Card
-      title={<span className="flex items-center gap-1.5"><Flame size={12} className="text-amber-400" aria-hidden="true" /> Trending Now</span>}
+      title={TITLE}
       subtitle="Most active in the market right now"
       padding="none"
       bodyClassName="px-1 pb-1"

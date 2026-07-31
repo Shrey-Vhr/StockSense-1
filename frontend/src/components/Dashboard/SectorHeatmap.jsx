@@ -80,7 +80,7 @@ const SectorHeatmap = ({ sectors, isLoading }) => {
               {sector.sector}
             </span>
             {sector.top_stock && (
-              <span className="text-2xs text-gray-600 truncate w-full">{sector.top_stock}</span>
+              <span className="text-2xs text-gray-500 truncate w-full">{sector.top_stock}</span>
             )}
           </button>
         );

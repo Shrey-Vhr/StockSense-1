@@ -1,6 +1,36 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import api from "../utils/api";
+import { Badge, Card, MetricTile } from "./ui";
+import { SkeletonBox } from "./Skeleton";
+import { stagger, listItem } from "../lib/motion";
+
+/**
+ * Pattern type and trade bias are both market signals, so they take the up/down
+ * tokens. "Neutral" takes `warn`.
+ *
+ * That last part is a fix, not a preference: a neutral bias rendered
+ * `text-emerald-400` and a bullish one `text-green-400` — two greens a pixel
+ * apart in hue. The one state that means "no directional edge" was drawn as the
+ * one that means "buy".
+ *
+ * Pattern types arrive lowercase ("bullish") and bias capitalised ("Bullish"),
+ * so the lookup normalises rather than keeping two maps in sync.
+ */
+const TONES = {
+  bullish: { text: 'text-up',   panel: 'bg-up/10 border-up/25',     badge: 'up',   arrow: '↑' },
+  bearish: { text: 'text-down', panel: 'bg-down/10 border-down/25', badge: 'down', arrow: '↓' },
+  neutral: { text: 'text-warn', panel: 'bg-warn/10 border-warn/25', badge: 'warn', arrow: '→' },
+};
+
+const toneOf = (value) => TONES[String(value ?? '').toLowerCase()] ?? TONES.neutral;
+
+/**
+ * Same problem as the bias: 70+ was green and 50–69 was *also* green, so the
+ * threshold the colour existed to communicate was invisible.
+ */
+const confidenceTone = (value) =>
+  value >= 70 ? 'text-up' : value >= 50 ? 'text-warn' : 'text-down';
 
 const PatternAnalysis = ({ symbol }) => {
   const [data, setData] = useState(null);
@@ -25,11 +55,11 @@ const PatternAnalysis = ({ symbol }) => {
   }, [symbol]);
 
   if (loading) return (
-    <div className="bg-gray-800 rounded-xl p-4 mt-4">
-      <p className="text-gray-400 text-sm animate-pulse">
-        Detecting chart patterns...
-      </p>
-    </div>
+    <Card title="Chart Patterns" className="mt-4">
+      <div className="space-y-2">
+        {[...Array(3)].map((_, i) => <SkeletonBox key={i} className="h-14 rounded-lg" />)}
+      </div>
+    </Card>
   );
 
   if (error || !data) return null;
@@ -37,210 +67,155 @@ const PatternAnalysis = ({ symbol }) => {
   const { patterns, trade_setup } = data;
 
   if (!patterns || patterns.length === 0) return (
-    <div className="bg-gray-800 rounded-xl p-4 mt-4">
-      <h3 className="text-white font-bold mb-2">
-        Chart Patterns
-      </h3>
-      <p className="text-gray-400 text-sm">
+    <Card title="Chart Patterns" className="mt-4">
+      <p className="text-sm text-gray-500">
         No significant patterns detected recently
       </p>
-    </div>
+    </Card>
   );
+
+  const bias = toneOf(trade_setup?.bias);
 
   return (
     <div className="space-y-4 mt-4">
-      
-      {/* Patterns List */}
-      <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4">
-        <h3 className="text-white font-bold mb-3">
-          Chart Patterns Detected
-        </h3>
-        
-        <div className="space-y-2">
-          {patterns.map((pattern, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -15 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ 
-                duration: 0.25, 
-                delay: i * 0.06 
-              }}
-              className={`p-3 rounded-lg border ${
-                pattern.type === 'bullish'
-                  ? 'bg-green-900/20 border-green-700/40'
-                  : pattern.type === 'bearish'
-                  ? 'bg-red-900/20 border-red-700/40'
-                  : 'bg-yellow-900/20 border-yellow-700/40'
-              }`}
-            >
-              <div className="flex justify-between 
-                              items-center">
-                <div>
-                  <span className="text-white 
-                                   font-medium text-sm">
-                    {pattern.emoji} {pattern.name}
-                  </span>
-                  <span className="text-gray-400 
-                                   text-xs ml-2">
-                    {pattern.date}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-0.5 
-                                   rounded font-medium ${
-                    pattern.type === 'bullish'
-                      ? 'bg-green-800 text-green-300'
-                      : pattern.type === 'bearish'
-                      ? 'bg-red-800 text-red-300'
-                      : 'bg-yellow-800 text-yellow-300'
-                  }`}>
-                    {pattern.type.toUpperCase()}
-                  </span>
-                  <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
-                    {pattern.confidence}%
-                  </span>
-                </div>
-              </div>
-              <p className="text-gray-400 text-xs mt-1">
-                {pattern.signal}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
 
-      {/* Trade Setup */}
+      {/* ── Detected patterns ─────────────────────────────────────────────── */}
+      <Card title="Chart Patterns Detected">
+        <motion.div
+          className="space-y-2"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
+        >
+          {patterns.map((pattern, i) => {
+            const tone = toneOf(pattern.type);
+            return (
+              <motion.div
+                key={i}
+                variants={listItem}
+                className={`p-3 rounded-lg border ${tone.panel}`}
+              >
+                <div className="flex justify-between items-center gap-3">
+                  <div className="min-w-0">
+                    <span className="text-sm font-medium text-gray-100">
+                      {pattern.emoji} {pattern.name}
+                    </span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      {pattern.date}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge variant={tone.badge}>
+                      {pattern.type.toUpperCase()}
+                    </Badge>
+                    <span className="text-xs font-medium text-gray-500 tnum">
+                      {pattern.confidence}%
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {pattern.signal}
+                </p>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </Card>
+
+      {/* ── Rule-based setup ──────────────────────────────────────────────── */}
       {trade_setup && trade_setup.bias && (
-        <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4">
-          <h3 className="text-base font-semibold text-gray-200 mb-4">
-            Rule-Based Trade Setup
-          </h3>
-          
-          {/* Bias */}
-          <div className="flex justify-between 
-                          items-center mb-3">
+        <Card title="Rule-Based Trade Setup">
+          <div className="flex justify-between items-start gap-4 mb-4">
             <div>
-              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+              <p className="text-2xs font-semibold uppercase tracking-wider text-gray-500">
                 Pattern Bias
               </p>
-              <p className={`text-lg font-bold ${
-                trade_setup.bias === 'Bullish'
-                  ? 'text-green-400'
-                  : trade_setup.bias === 'Bearish'
-                  ? 'text-red-400'
-                  : 'text-emerald-400'
-              }`}>
-                {trade_setup.bias === 'Bullish'
-                  ? '↑ ' : trade_setup.bias === 'Bearish'
-                  ? '↓ ' : '→ '}{trade_setup.bias}
+              <p className={`text-lg font-semibold mt-1 ${bias.text}`}>
+                {bias.arrow} {trade_setup.bias}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+              <p className="text-2xs font-semibold uppercase tracking-wider text-gray-500">
                 Confidence
               </p>
-              <p className={`text-lg font-bold ${
-                trade_setup.confidence >= 70
-                  ? 'text-green-400'
-                  : trade_setup.confidence >= 50
-                  ? 'text-emerald-400'
-                  : 'text-red-400'
-              }`}>
+              <p className={`text-lg font-semibold tnum mt-1 ${confidenceTone(trade_setup.confidence)}`}>
                 {trade_setup.confidence}%
               </p>
             </div>
           </div>
 
-          {/* Action */}
-          <div className={`w-full py-2.5 rounded-xl text-sm font-bold text-center mb-4 ${
-            trade_setup.bias === 'Bullish'
-              ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
-              : trade_setup.bias === 'Bearish'
-              ? 'bg-red-500/10 border border-red-500/30 text-red-400'
-              : 'bg-surface-800 border border-surface-700 text-gray-300'
-          }`}>
+          <div className={`w-full py-2.5 rounded-lg border text-sm font-semibold text-center mb-4
+                           ${bias.panel} ${bias.text}`}>
             {trade_setup.action}
           </div>
 
-          {/* Entry/SL/Target Grid */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
-              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
-                Entry
-              </p>
-              <p className="text-gray-100 font-mono font-bold text-base mt-1">
-                ₹{trade_setup.entry?.toLocaleString('en-IN')}
-              </p>
-            </div>
-            <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
-              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
-                Stop Loss
-              </p>
-              <p className="text-red-400 font-mono font-bold text-base mt-1">
-                ₹{trade_setup.stop_loss?.toLocaleString('en-IN')}
-              </p>
-            </div>
-            <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
-              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
-                Target 1
-              </p>
-              <p className="text-emerald-400 font-mono font-bold text-base mt-1">
-                ₹{trade_setup.target1?.toLocaleString('en-IN')}
-              </p>
-            </div>
-            <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
-              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
-                Target 2
-              </p>
-              <p className="text-emerald-400 font-mono font-bold text-base mt-1">
-                ₹{trade_setup.target2?.toLocaleString('en-IN')}
-              </p>
-            </div>
+            <MetricTile
+              label="Entry"
+              value={`₹${trade_setup.entry?.toLocaleString('en-IN')}`}
+              size="sm"
+              className="font-mono"
+            />
+            <MetricTile
+              label="Stop Loss"
+              value={`₹${trade_setup.stop_loss?.toLocaleString('en-IN')}`}
+              tone="down"
+              size="sm"
+              className="font-mono"
+            />
+            <MetricTile
+              label="Target 1"
+              value={`₹${trade_setup.target1?.toLocaleString('en-IN')}`}
+              tone="up"
+              size="sm"
+              className="font-mono"
+            />
+            <MetricTile
+              label="Target 2"
+              value={`₹${trade_setup.target2?.toLocaleString('en-IN')}`}
+              tone="up"
+              size="sm"
+              className="font-mono"
+            />
           </div>
 
-          {/* Risk Reward */}
           <div className="flex justify-between items-center mt-3 pt-3 border-t border-surface-800">
-            <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+            <p className="text-2xs font-semibold uppercase tracking-wider text-gray-500">
               Risk : Reward
             </p>
-            <p className="text-gray-200 font-semibold text-sm font-mono">
+            <p className="text-sm font-semibold font-mono tnum text-gray-200">
               1 : {trade_setup.risk_reward}
             </p>
           </div>
 
-          {/* Pattern count */}
           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-surface-800 text-xs">
-            <span className="text-emerald-400 font-medium">
+            <span className="font-medium text-up tnum">
               ↑ {trade_setup.bullish_count} Bullish
             </span>
-            <span className="text-red-400 font-medium">
+            <span className="font-medium text-down tnum">
               ↓ {trade_setup.bearish_count} Bearish
             </span>
-            <span className="text-gray-400 font-medium">
+            <span className="font-medium text-gray-400 tnum">
               — {trade_setup.neutral_count} Neutral
             </span>
           </div>
 
-          {/* Claude AI locked */}
-          <div className="mt-3 p-3 bg-emerald-900/20 
-                          border border-emerald-700/40 
-                          rounded-lg">
-            <p className="text-emerald-400 text-xs 
-                          font-medium text-center">
+          {/* A pointer to another tab is chrome, not a market signal. It was
+              emerald, which put a green panel directly under a bias that may
+              well be bearish. */}
+          <div className="mt-3 p-3 rounded-lg bg-brand-500/10 border border-brand-500/25">
+            <p className="text-xs font-medium text-center text-brand-400">
               Claude AI Deep Analysis
             </p>
-            <p className="text-gray-400 text-xs 
-                          text-center mt-1">
+            <p className="text-xs text-center text-gray-400 mt-1">
               Multi-factor analysis with entry reasoning,
-              risk assessment & market context
+              risk assessment &amp; market context
             </p>
-            <p className="text-gray-500 text-xs 
-                          text-center mt-1">
+            <p className="text-xs text-center text-gray-500 mt-1">
               Available in Claude AI Analysis tab
             </p>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

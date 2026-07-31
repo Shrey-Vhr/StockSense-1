@@ -66,7 +66,7 @@ const ETFDetail = () => {
   }, [cleanSymbol]);
 
   if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-brand-400 w-10 h-10" /></div>;
-  if (error) return <div className="p-10 text-red-500">{error}</div>;
+  if (error) return <div role="alert" className="p-10 text-down">{error}</div>;
   if (!data || data.current_price == null) {
     return (
       <div className="flex items-center justify-center h-96 text-brand-400">
@@ -121,20 +121,20 @@ const ETFDetail = () => {
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
               <p className="text-gray-400 text-xs">Expense Ratio</p>
-              <p className="text-white font-bold">
+              <p className="text-gray-100 font-bold">
                 {data.expense_ratio ? `${data.expense_ratio}%` : 'N/A'}
               </p>
               <p className="text-xs text-gray-500 mt-1">Annual cost</p>
             </div>
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
               <p className="text-gray-400 text-xs">Tracks</p>
-              <p className="text-white font-bold text-sm mt-1">
+              <p className="text-gray-100 font-bold text-sm mt-1">
                 {data.underlying_index || 'N/A'}
               </p>
             </div>
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
               <p className="text-gray-400 text-xs">Fund House</p>
-              <p className="text-white font-bold text-sm mt-1">
+              <p className="text-gray-100 font-bold text-sm mt-1">
                 {data.fund_house || 'N/A'}
               </p>
             </div>
@@ -177,7 +177,7 @@ const ETFDetail = () => {
 
           {/* 4. RETURNS TABLE */}
           <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4 overflow-x-auto">
-            <h3 className="text-lg font-bold text-white mb-4">Rolling Returns</h3>
+            <h3 className="text-lg font-bold text-gray-100 mb-4">Rolling Returns</h3>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
               {[
                 { key: '1_week', label: '1 Week' },
@@ -199,7 +199,7 @@ const ETFDetail = () => {
           {/* 8. ETF COMPARISON (TRACKING ERROR) */}
           {data.underlying_index && data.underlying_index_return_6m != null && (
             <div className="bg-surface-850 p-4 rounded-xl border border-surface-800 mt-6">
-              <h3 className="text-lg font-bold text-white mb-3 flex items-center">
+              <h3 className="text-lg font-bold text-gray-100 mb-3 flex items-center">
                 <Target className="mr-2" size={18} /> ETF Comparison
               </h3>
               <div className="space-y-3 font-mono text-sm">
@@ -256,7 +256,7 @@ const ETFDetail = () => {
           {/* 5. PREMIUM/DISCOUNT INDICATOR */}
           {data.premium_discount_pct != null && (
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
-              <h3 className="text-lg font-bold text-white mb-3 flex items-center"><Info className="mr-2" size={18} /> Premium / Discount</h3>
+              <h3 className="text-lg font-bold text-gray-100 mb-3 flex items-center"><Info className="mr-2" size={18} /> Premium / Discount</h3>
               <div className="bg-surface-900 p-3 rounded">
                 <span className="text-gray-400 text-sm">Status: </span>
                 {data.premium_discount_pct > 0 ? (
@@ -264,7 +264,7 @@ const ETFDetail = () => {
                 ) : data.premium_discount_pct < 0 ? (
                    <span className="text-up font-bold">Trading {Math.abs(data.premium_discount_pct)}% below NAV — Good entry</span>
                 ) : (
-                   <span className="text-white font-bold">Trading exactly at NAV</span>
+                   <span className="text-gray-100 font-bold">Trading exactly at NAV</span>
                 )}
               </div>
             </div>
@@ -272,10 +272,10 @@ const ETFDetail = () => {
 
           {/* 7. SIP GUIDANCE */}
           <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
-            <h3 className="text-lg font-bold text-white mb-2 flex items-center"><Target className="mr-2" size={18} /> SIP Guidance</h3>
+            <h3 className="text-lg font-bold text-gray-100 mb-2 flex items-center"><Target className="mr-2" size={18} /> SIP Guidance</h3>
             <p className="text-sm text-gray-400 mb-2">
               For long-term SIP investors: <br />
-              <span className="text-white font-mono">RSI &lt; 45 + Price &gt; EMA 200 = Excellent entry</span>
+              <span className="text-gray-100 font-mono">RSI &lt; 45 + Price &gt; EMA 200 = Excellent entry</span>
             </p>
             <div className="text-sm bg-surface-900 p-2 rounded">
               Current status: <br/> 
@@ -283,7 +283,7 @@ const ETFDetail = () => {
                 RSI = {data.rsi}, {data.above_ema200 ? 'Above' : 'Below'} EMA 200
               </span>
             </div>
-            <p className="mt-3 text-sm font-bold text-white">
+            <p className="mt-3 text-sm font-bold text-gray-100">
               → {data.rsi < 45 && data.above_ema200 ? "Excellent entry! Consider adding lump sum." : "Continue SIP. Not ideal for extra lump sum."}
             </p>
           </div>

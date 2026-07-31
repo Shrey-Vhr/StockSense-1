@@ -21,7 +21,7 @@ const SplashScreen = () => (
     <h1 className="mt-5 text-xl font-semibold tracking-tight text-gray-100">
       StockSense
     </h1>
-    <p className="mt-1 text-2xs font-medium uppercase tracking-[0.2em] text-gray-600">
+    <p className="mt-1 text-2xs font-medium uppercase tracking-[0.2em] text-gray-500">
       AI Terminal
     </p>
 

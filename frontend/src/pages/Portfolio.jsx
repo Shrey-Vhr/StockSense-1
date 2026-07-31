@@ -408,7 +408,7 @@ const Portfolio = () => {
                           ['CMP', formatCurrency(cmp)],
                         ].map(([label, value]) => (
                           <div key={label}>
-                            <dt className="text-2xs uppercase tracking-wider text-gray-600">{label}</dt>
+                            <dt className="text-2xs uppercase tracking-wider text-gray-500">{label}</dt>
                             <dd className="text-xs text-gray-200 font-mono tnum mt-0.5">{value}</dd>
                           </div>
                         ))}

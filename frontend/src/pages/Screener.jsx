@@ -426,7 +426,7 @@ const Screener = () => {
                     exit={{ opacity: 0, height: 0, transition: { duration: 0.12 } }}
                     className="flex flex-col md:flex-row md:items-center gap-3 px-4 py-3 overflow-hidden"
                   >
-                    <span className="text-2xs text-gray-600 font-mono w-5 shrink-0 pt-2 md:pt-0">
+                    <span className="text-2xs text-gray-500 font-mono w-5 shrink-0 pt-2 md:pt-0">
                       {idx + 1}
                     </span>
 
@@ -449,7 +449,7 @@ const Screener = () => {
 
                     {indInfo && (
                       <Tooltip text={indInfo.description}>
-                        <Info size={14} className="text-gray-600 hover:text-brand-400 transition-colors duration-fast" />
+                        <Info size={14} className="text-gray-500 hover:text-brand-400 transition-colors duration-fast" />
                       </Tooltip>
                     )}
 
@@ -634,7 +634,7 @@ const Screener = () => {
                   </Td>
                   <Td numeric>
                     <div>{formatCurrency(stock.live_price || stock.price)}</div>
-                    <div className="text-2xs text-gray-600 font-sans">
+                    <div className="text-2xs text-gray-500 font-sans">
                       {stock.price_source === 'angel_one' ? 'Live' : '15 min'}
                     </div>
                   </Td>

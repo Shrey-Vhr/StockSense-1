@@ -26,7 +26,7 @@ const Input = forwardRef(function Input(
       ref={ref}
       type={type}
       className={cn(
-        'w-full bg-surface-950 text-gray-100 placeholder:text-gray-600',
+        'w-full bg-surface-950 text-gray-100 placeholder:text-gray-500',
         'border transition-colors duration-fast',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         invalid

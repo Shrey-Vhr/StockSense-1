@@ -42,15 +42,28 @@
   --down-strong:  246  70  93;   /* candle bodies, filled bars           */
   --flat:         155 163 175;   /* unchanged / no data                  */
 
+  /* ── Caution ───────────────────────────────────────────────────────────────
+   * A third semantic the system was missing, which is why "medium" kept being
+   * drawn as a second green: elevated VIX, a middling confidence score, a
+   * neutral-but-noteworthy pattern. It reads as "look closer", not as
+   * direction, so it must not be borrowed for gains or losses.
+   */
+  --warn:         251 191  36;   /* caution text and fills        11.2:1 */
+
   /* ── Chart series ──────────────────────────────────────────────────────────
    * Overlay lines (EMAs) are data, but they are not *direction*, so they must
    * not borrow the up/down colours. The old EMA 200 was #ff5252 — a red line
    * that read as bearish no matter what the trend was actually doing. Amber
    * separates it from both the down colour and the other two series.
+   *
+   * The same four also carry non-chart categorical data — the shareholding
+   * split, where "FPI / FII" was drawn in emerald purely because it needed *a*
+   * colour, and so read as a gain.
    */
-  --series-1: 124 134 236;   /* EMA 20  */
-  --series-2:  96 165 250;   /* EMA 50  */
-  --series-3: 251 191  36;   /* EMA 200 */
+  --series-1: 124 134 236;   /* EMA 20  · indigo */
+  --series-2:  96 165 250;   /* EMA 50  · blue   */
+  --series-3: 251 191  36;   /* EMA 200 · amber  */
+  --series-4: 167 139 250;   /*         · violet */
 
   /* ── Surfaces ──────────────────────────────────────────────────────────────
    * Descending lightness as the number rises, matching Tailwind convention.

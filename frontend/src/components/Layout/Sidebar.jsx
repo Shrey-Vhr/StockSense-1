@@ -106,7 +106,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         >
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="space-y-0.5">
-              <p className="px-3 pb-1.5 text-2xs font-semibold uppercase tracking-wider text-gray-600">
+              <p className="px-3 pb-1.5 text-2xs font-semibold uppercase tracking-wider text-gray-500">
                 {group.label}
               </p>
               {group.items.map((item) => (

@@ -9,6 +9,7 @@ import {
   Badge, Button, Card, EmptyState, Input, MetricTile, PageHeader, Spinner,
 } from '../components/ui';
 import { cn } from '../lib/cn';
+import { verdictTone } from '../lib/format';
 
 const ANALYSIS_TYPES = [
   'Full Stock Analysis',
@@ -22,13 +23,6 @@ const TIMEFRAME_LABELS = {
   swing: 'Swing (days)',
   midterm: 'Midterm (months)',
   longterm: 'Long term (years)',
-};
-
-/** Verdict wording varies by model run, so match on intent rather than exact text. */
-const verdictTone = (verdict = '') => {
-  if (/take|accumulate|buy/i.test(verdict)) return 'up';
-  if (/avoid|exit|sell/i.test(verdict)) return 'down';
-  return 'neutral';
 };
 
 /** Radial confidence gauge. Was a hand-rolled SVG with a hardcoded stroke. */
@@ -312,7 +306,7 @@ const AIAnalysis = () => {
                           ['Target', data.target_1, 'text-up'],
                         ].map(([label, value, tone]) => (
                           <div key={label} className="rounded-lg bg-surface-950 border border-surface-800 px-2 py-1.5 text-center">
-                            <div className="text-2xs uppercase tracking-wider text-gray-600">{label}</div>
+                            <div className="text-2xs uppercase tracking-wider text-gray-500">{label}</div>
                             <div className={cn('text-xs font-mono tnum mt-0.5', tone)}>{value}</div>
                           </div>
                         ))}

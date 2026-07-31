@@ -101,6 +101,23 @@ export function direction(value) {
   return n > 0 ? 'up' : 'down';
 }
 
+/**
+ * Tone for an AI verdict string, for choosing a Badge variant.
+ *
+ * The model's wording varies between runs ("Take the trade", "Accumulate on
+ * dips", "Avoid for now"), so this matches on intent rather than exact text.
+ *
+ * Shared because the two pages that render verdicts disagreed: StockDetail
+ * tested only for "Take"/"Accumulate"/"Buy"/"Avoid" case-sensitively, so the
+ * same "Sell" verdict came back red on the AI Analysis page and grey on the
+ * stock page.
+ */
+export function verdictTone(verdict = '') {
+  if (/take|accumulate|buy/i.test(verdict)) return 'up';
+  if (/avoid|exit|sell/i.test(verdict)) return 'down';
+  return 'neutral';
+}
+
 /** Strips the exchange suffix for display. `RELIANCE.NS` → `RELIANCE` */
 export function displaySymbol(symbol) {
   return typeof symbol === 'string' ? symbol.replace(/\.(NS|BO)$/i, '') : '';

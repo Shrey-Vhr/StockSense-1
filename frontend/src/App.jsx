@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, MotionConfig } from 'framer-motion'
 import PageTransition from './components/PageTransition'
 import Dashboard from './pages/Dashboard'
 import StockDetail from './pages/StockDetail'
@@ -60,6 +60,13 @@ function App() {
   }, []);
 
   return (
+    // The prefers-reduced-motion block in index.css only reaches CSS animations
+    // and transitions. framer-motion drives its own values on requestAnimationFrame
+    // via inline styles, so all 36 motion elements ignored it entirely and users
+    // who ask for reduced motion still got every slide and scale in the app.
+    // `reducedMotion="user"` is framer's own switch for this: it drops transform
+    // and layout animations when the OS asks, and keeps opacity fades.
+    <MotionConfig reducedMotion="user">
     <BrowserRouter
       future={{
         v7_startTransition: true,
@@ -108,6 +115,7 @@ function App() {
       <NotificationManager />
       <AppContent />
     </BrowserRouter>
+    </MotionConfig>
   )
 }
 

@@ -137,7 +137,7 @@ const News = () => {
                         {(news.source || '?').charAt(0).toUpperCase()}
                       </span>
                       <span className="text-2xs text-gray-500 truncate">{news.source}</span>
-                      <span className="text-2xs text-gray-600 ml-auto shrink-0">
+                      <span className="text-2xs text-gray-500 ml-auto shrink-0">
                         {timeAgo(news.published_date, { fallback: news.published_display || 'Recent' })}
                       </span>
                     </div>
@@ -154,7 +154,7 @@ const News = () => {
                       <ExternalLink
                         size={12}
                         aria-hidden="true"
-                        className="text-gray-600 transition-colors duration-fast group-hover:text-brand-400"
+                        className="text-gray-500 transition-colors duration-fast group-hover:text-brand-400"
                       />
                     </div>
                   </a>

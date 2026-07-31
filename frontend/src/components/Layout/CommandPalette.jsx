@@ -120,7 +120,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
                 aria-controls="command-palette-results"
                 aria-autocomplete="list"
                 aria-label="Search stocks by symbol or name"
-                className="flex-1 bg-transparent text-base text-gray-100 placeholder:text-gray-600 outline-none"
+                className="flex-1 bg-transparent text-base text-gray-100 placeholder:text-gray-500 outline-none"
                 placeholder="Search stocks by symbol or name…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -165,7 +165,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
                       <div className="text-xs text-gray-500 truncate mt-0.5">{item.name}</div>
                     </div>
                     {item.sector && (
-                      <span className="text-2xs text-gray-600 shrink-0">{item.sector}</span>
+                      <span className="text-2xs text-gray-500 shrink-0">{item.sector}</span>
                     )}
                   </li>
                 ))}
@@ -191,13 +191,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
             )}
 
             <div className="flex items-center gap-4 px-4 h-10 border-t border-surface-800 bg-surface-950/50">
-              <span className="flex items-center gap-1.5 text-2xs text-gray-600">
+              <span className="flex items-center gap-1.5 text-2xs text-gray-500">
                 <ArrowUpDown size={11} aria-hidden="true" /> Navigate
               </span>
-              <span className="flex items-center gap-1.5 text-2xs text-gray-600">
+              <span className="flex items-center gap-1.5 text-2xs text-gray-500">
                 <CornerDownLeft size={11} aria-hidden="true" /> Select
               </span>
-              <span className="flex items-center gap-1.5 text-2xs text-gray-600">
+              <span className="flex items-center gap-1.5 text-2xs text-gray-500">
                 <kbd className="px-1 rounded border border-surface-700 bg-surface-800">Esc</kbd> Close
               </span>
             </div>

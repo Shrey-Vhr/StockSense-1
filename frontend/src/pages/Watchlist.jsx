@@ -353,7 +353,7 @@ const Watchlist = () => {
                           </div>
                         </Td>
                         <Td muted className="max-w-[200px] truncate whitespace-normal">
-                          {stock.notes || <span className="text-gray-600">—</span>}
+                          {stock.notes || <span className="text-gray-500">—</span>}
                         </Td>
                         <Td align="right">
                           <div className="flex justify-end">

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
-import { Activity, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, AlertTriangle, BellPlus, X, BarChart2, Building2, Brain } from 'lucide-react';
+import { Activity, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, AlertTriangle, BellPlus, X, BarChart2, Building2, Brain, Download, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import useStore from '../store/useStore';
@@ -14,7 +14,8 @@ import {
   buildTechnicalsReportHtml,
   buildFundamentalsReportHtml,
 } from '../lib/pdfTemplates';
-import { Button, Field, Input, Modal, Select, Spinner } from '../components/ui';
+import { Badge, Button, Field, Input, Modal, Select, Spinner } from '../components/ui';
+import { verdictTone } from '../lib/format';
 import MetricCard from '../components/stock/MetricCard';
 import QuickLevelsCard from '../components/stock/QuickLevelsCard';
 import InstitutionalTab from '../components/stock/InstitutionalTab';
@@ -37,9 +38,9 @@ const TABS = [
 
 /** Swatches match the series tokens the chart draws with. */
 const EMA_LEGEND = [
-  { period: 20, key: 'ema20', swatch: 'bg-[rgb(var(--series-1))]' },
-  { period: 50, key: 'ema50', swatch: 'bg-[rgb(var(--series-2))]' },
-  { period: 200, key: 'ema200', swatch: 'bg-[rgb(var(--series-3))]' },
+  { period: 20, key: 'ema20', swatch: 'bg-series-1' },
+  { period: 50, key: 'ema50', swatch: 'bg-series-2' },
+  { period: 200, key: 'ema200', swatch: 'bg-series-3' },
 ];
 
 const StockDetail = () => {
@@ -596,7 +597,12 @@ const StockDetail = () => {
           </div>
 
           <div className="flex items-center gap-4 sm:gap-5 shrink-0">
-            <div className="text-left sm:text-right">
+            {/* Deliberately not an aria-live region. The quote re-polls every
+                10s, so announcing it would talk over the user continuously for
+                as long as the market is open. Instead the pair is one labelled
+                group, so it can be found and read on demand, and the direction
+                is stated in words rather than carried only by red/green. */}
+            <div className="text-left sm:text-right" role="group" aria-label="Current quote">
               <div className={cn(
                 'text-3xl font-semibold text-gray-100 font-mono tnum tracking-tight rounded px-1 transition-colors duration-slow',
                 quoteFlash,
@@ -608,6 +614,7 @@ const StockDetail = () => {
                 isUp ? 'text-up' : 'text-down',
               )}>
                 {isUp ? <TrendingUp size={14} aria-hidden="true" /> : <TrendingDown size={14} aria-hidden="true" />}
+                <span className="sr-only">{isUp ? 'Up' : 'Down'}</span>
                 {isUp ? '+' : ''}{quote.change_amount?.toFixed(2)} ({Math.abs(quote.change_percent).toFixed(2)}%)
               </div>
             </div>
@@ -743,23 +750,14 @@ const StockDetail = () => {
                 <div className="px-3 py-1.5 rounded-xl text-sm font-bold bg-surface-900 border border-surface-700 text-gray-300">
                   <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Tech Score:</span> <span className="text-brand-400 font-bold text-lg">{techData.overall_technical_score}/100</span>
                 </div>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={Download}
                   onClick={handleExportTechnicalsPDF}
-                  className="flex items-center gap-1.5 px-3 py-1.5 
-                             bg-surface-900 border border-surface-800 
-                             text-gray-400 rounded-lg hover:text-white 
-                             hover:bg-surface-800 transition-colors 
-                             text-xs font-medium"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" 
-                       width="13" height="13" viewBox="0 0 24 24" 
-                       fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
                   Export PDF
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -782,7 +780,7 @@ const StockDetail = () => {
               ].map((metric, i) => (
                 <motion.div
                   key={i}
-                  className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-emerald-500/20 transition-colors"
+                  className="bg-surface-900 border border-surface-800 rounded-xl p-4 hover:border-surface-700 transition-colors"
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ 
@@ -790,15 +788,15 @@ const StockDetail = () => {
                     delay: 0.1 + i * 0.07 
                   }}
                   whileHover={{ 
-                    borderColor: 'rgba(16,185,129,0.2)',
+                    borderColor: 'rgb(var(--surface-700))',
                     y: -1
                   }}
                 >
                   <div className="text-gray-500 text-xs font-medium uppercase tracking-wide">{metric.label}</div>
-                  <div className={`text-sm font-semibold mt-1.5 ${metric.isGood === true ? 'text-emerald-400' : metric.isGood === false ? 'text-red-400' : 'text-gray-100'}`}>
+                  <div className={`text-sm font-semibold mt-1.5 ${metric.isGood === true ? 'text-up' : metric.isGood === false ? 'text-down' : 'text-gray-100'}`}>
                     {metric.value} {metric.suffix && <span className="text-xs font-sans text-gray-500">{metric.suffix}</span>}
                   </div>
-                  {metric.subtext && <div className="text-[10px] text-gray-500 mt-1">{metric.subtext}</div>}
+                  {metric.subtext && <div className="text-2xs text-gray-500 mt-1">{metric.subtext}</div>}
                 </motion.div>
               ))}
             </div>
@@ -808,10 +806,10 @@ const StockDetail = () => {
                 <h3 className="text-base font-semibold text-gray-200 mb-3">Support & Resistance</h3>
                 <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4">
                   <div className="flex justify-between items-center py-3 border-b border-surface-800 last:border-b-0">
-                    <span className="text-gray-500 text-sm mt-0.5 font-mono">Resistance</span><span className="text-red-400 font-mono font-semibold text-sm">₹{techData.structure?.support_resistance?.resistance?.toFixed(2) || 'N/A'}</span>
+                    <span className="text-gray-500 text-sm mt-0.5 font-mono">Resistance</span><span className="text-down font-mono font-semibold text-sm">₹{techData.structure?.support_resistance?.resistance?.toFixed(2) || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-surface-800 last:border-b-0">
-                    <span className="text-gray-500 text-sm mt-0.5 font-mono">Support</span><span className="text-emerald-400 font-mono font-semibold text-sm">₹{techData.structure?.support_resistance?.support?.toFixed(2) || 'N/A'}</span>
+                    <span className="text-gray-500 text-sm mt-0.5 font-mono">Support</span><span className="text-up font-mono font-semibold text-sm">₹{techData.structure?.support_resistance?.support?.toFixed(2) || 'N/A'}</span>
                   </div>
                 </div>
               </div>
@@ -834,7 +832,7 @@ const StockDetail = () => {
             <div className="space-y-8">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-xl font-bold text-white flex items-center">
+                  <h2 className="text-xl font-bold text-gray-100 flex items-center">
                     Fundamental Analysis
                     <span className="ml-3 text-xs bg-surface-900 border border-surface-800 px-2 py-1 rounded-full text-gray-400">
                       Data: Screener.in
@@ -842,30 +840,18 @@ const StockDetail = () => {
                   </h2>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={Download}
                     onClick={handleExportFundamentalsPDF}
                     disabled={!fundData}
-                    className="flex items-center gap-1.5 px-3 py-2 
-                               bg-surface-900 border border-surface-800 
-                               text-gray-400 rounded-lg hover:text-white 
-                               hover:bg-surface-800 transition-colors 
-                               text-xs font-medium disabled:opacity-50"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" 
-                         width="13" height="13" viewBox="0 0 24 24" 
-                         fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
                     Export PDF
-                  </button>
-                  <button 
-                    onClick={handleRefreshFundamental}
-                    className="text-xs bg-surface-900 hover:bg-surface-700 border border-surface-800 px-3 py-2 rounded-lg text-gray-300 transition-colors"
-                  >
+                  </Button>
+                  <Button variant="secondary" size="sm" icon={RefreshCw} onClick={handleRefreshFundamental}>
                     Refresh Data
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -873,21 +859,21 @@ const StockDetail = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
                   <div className="text-gray-500 text-xs mb-1">Market Cap</div>
-                  <div className="text-white font-mono font-bold">{formatMetric('market_cap', fundData.market_cap)}</div>
+                  <div className="text-gray-100 font-mono font-bold">{formatMetric('market_cap', fundData.market_cap)}</div>
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Price to Earnings: How much you pay for ₹1 of company earnings">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">PE Ratio</div>
-                  <div className="text-white font-mono font-bold">{formatMetric('pe_ratio', fundData.pe_ratio)}</div>
+                  <div className="text-gray-100 font-mono font-bold">{formatMetric('pe_ratio', fundData.pe_ratio)}</div>
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Price to Book: How much you pay for ₹1 of company assets">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">PB Ratio</div>
-                  <div className="text-white font-mono font-bold">{formatMetric('pb_ratio', fundData.pb_ratio)}</div>
+                  <div className="text-gray-100 font-mono font-bold">{formatMetric('pb_ratio', fundData.pb_ratio)}</div>
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Price to Sales: How much you pay for ₹1 of company revenue">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">
                     P/S Ratio
                   </div>
-                  <div className="text-white font-mono font-bold">
+                  <div className="text-gray-100 font-mono font-bold">
                     {fundData.ps_ratio 
                       ? `${parseFloat(fundData.ps_ratio).toFixed(1)}x` 
                       : 'N/A'}
@@ -897,7 +883,7 @@ const StockDetail = () => {
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">
                     EV/EBITDA
                   </div>
-                  <div className="text-white font-mono font-bold">
+                  <div className="text-gray-100 font-mono font-bold">
                     {fundData.ev_ebitda 
                       ? `${parseFloat(fundData.ev_ebitda).toFixed(1)}x` 
                       : 'N/A'}
@@ -907,7 +893,7 @@ const StockDetail = () => {
                   <div className="text-gray-500 text-xs mb-1">
                     52W Avg Price
                   </div>
-                  <div className="text-white font-mono font-bold">
+                  <div className="text-gray-100 font-mono font-bold">
                     {fundData.avg_52w 
                       ? `₹${fundData.avg_52w}` 
                       : 'N/A'}
@@ -917,7 +903,7 @@ const StockDetail = () => {
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">
                     Free Float
                   </div>
-                  <div className="text-white font-mono font-bold">
+                  <div className="text-gray-100 font-mono font-bold">
                     {fundData.free_float 
                       ? `${parseFloat(fundData.free_float).toFixed(1)}%` 
                       : 'N/A'}
@@ -925,23 +911,23 @@ const StockDetail = () => {
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Return on Equity: Profit generated per ₹100 of shareholder money">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">ROE</div>
-                  <div className="text-white font-mono font-bold">{formatMetric('roe', fundData.roe)}</div>
+                  <div className="text-gray-100 font-mono font-bold">{formatMetric('roe', fundData.roe)}</div>
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center" title="Return on Capital Employed: Efficiency of capital utilization">
                   <div className="text-gray-500 text-xs mb-1 cursor-help border-b border-dashed border-gray-500 inline-block">ROCE</div>
-                  <div className="text-white font-mono font-bold">{formatMetric('roce', fundData.roce)}</div>
+                  <div className="text-gray-100 font-mono font-bold">{formatMetric('roce', fundData.roce)}</div>
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
                   <div className="text-gray-500 text-xs mb-1">Book Value</div>
-                  <div className="text-white font-mono font-bold">{formatMetric('book_value', fundData.book_value)}</div>
+                  <div className="text-gray-100 font-mono font-bold">{formatMetric('book_value', fundData.book_value)}</div>
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
                   <div className="text-gray-500 text-xs mb-1">EPS</div>
-                  <div className="text-white font-mono font-bold">{formatMetric('eps', fundData.eps)}</div>
+                  <div className="text-gray-100 font-mono font-bold">{formatMetric('eps', fundData.eps)}</div>
                 </div>
                 <div className="bg-surface-900 p-3 rounded border border-surface-800 text-center">
                   <div className="text-gray-500 text-xs mb-1">Dividend Yield</div>
-                  <div className="text-white font-mono font-bold">{formatMetric('dividend_yield', fundData.dividend_yield)}</div>
+                  <div className="text-gray-100 font-mono font-bold">{formatMetric('dividend_yield', fundData.dividend_yield)}</div>
                 </div>
               </div>
 
@@ -979,19 +965,19 @@ const StockDetail = () => {
                   <div className="space-y-3 font-mono text-sm">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 font-sans">Revenue Growth YoY</span>
-                      <span className={`font-bold ${fundData.revenue_growth_yoy > 10 ? 'text-up' : fundData.revenue_growth_yoy < 0 ? 'text-down' : 'text-white'}`}>
+                      <span className={`font-bold ${fundData.revenue_growth_yoy > 10 ? 'text-up' : fundData.revenue_growth_yoy < 0 ? 'text-down' : 'text-gray-100'}`}>
                         {fundData.revenue_growth_yoy ? `${fundData.revenue_growth_yoy}%` : 'N/A'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 font-sans">Profit Growth YoY</span>
-                      <span className={`font-bold ${fundData.profit_growth_yoy > 10 ? 'text-up' : fundData.profit_growth_yoy < 0 ? 'text-down' : 'text-white'}`}>
+                      <span className={`font-bold ${fundData.profit_growth_yoy > 10 ? 'text-up' : fundData.profit_growth_yoy < 0 ? 'text-down' : 'text-gray-100'}`}>
                         {fundData.profit_growth_yoy ? `${fundData.profit_growth_yoy}%` : 'N/A'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 font-sans">Profit Growth QoQ</span>
-                      <span className={`font-bold ${fundData.profit_growth_qoq > 0 ? 'text-up' : fundData.profit_growth_qoq < 0 ? 'text-down' : 'text-white'}`}>
+                      <span className={`font-bold ${fundData.profit_growth_qoq > 0 ? 'text-up' : fundData.profit_growth_qoq < 0 ? 'text-down' : 'text-gray-100'}`}>
                         {fundData.profit_growth_qoq ? `${fundData.profit_growth_qoq}%` : 'N/A'}
                       </span>
                     </div>
@@ -1001,15 +987,15 @@ const StockDetail = () => {
                 <div className="border border-surface-800 rounded-lg p-4 bg-surface-900">
                   <h3 className="text-md font-bold text-gray-300 mb-3 border-b border-surface-800 pb-2">Shareholding Pattern</h3>
                   <div className="space-y-2 font-mono text-sm">
-                    <div className="flex justify-between"><span className="text-gray-500 font-sans">Promoter</span><span className={fundData.promoter_holding > 50 ? "text-up font-bold" : "text-white"}>{fundData.promoter_holding ? `${fundData.promoter_holding}%` : 'N/A'}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-500 font-sans">FII</span><span className="text-white">{fundData.fii_holding ? `${fundData.fii_holding}%` : 'N/A'}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-500 font-sans">DII</span><span className="text-white">{fundData.dii_holding ? `${fundData.dii_holding}%` : 'N/A'}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-500 font-sans">Public</span><span className="text-white">{fundData.shareholding?.public_holding ? `${fundData.shareholding.public_holding}%` : 'N/A'}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500 font-sans">Promoter</span><span className={fundData.promoter_holding > 50 ? "text-up font-bold" : "text-gray-100"}>{fundData.promoter_holding ? `${fundData.promoter_holding}%` : 'N/A'}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500 font-sans">FII</span><span className="text-gray-100">{fundData.fii_holding ? `${fundData.fii_holding}%` : 'N/A'}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500 font-sans">DII</span><span className="text-gray-100">{fundData.dii_holding ? `${fundData.dii_holding}%` : 'N/A'}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500 font-sans">Public</span><span className="text-gray-100">{fundData.shareholding?.public_holding ? `${fundData.shareholding.public_holding}%` : 'N/A'}</span></div>
                     <div className="flex justify-between">
                       <span className="text-gray-500 font-sans">
                         FPI
                       </span>
-                      <span className="text-white">
+                      <span className="text-gray-100">
                         {fundData.fpi_holding 
                           ? `${fundData.fpi_holding}%` 
                           : 'N/A'}
@@ -1021,8 +1007,8 @@ const StockDetail = () => {
                       </span>
                       <span className={`${
                         fundData.free_float > 50 
-                          ? 'text-emerald-400' 
-                          : 'text-yellow-400'
+                          ? 'text-up' 
+                          : 'text-warn'
                       }`}>
                         {fundData.free_float 
                           ? `${fundData.free_float}%` 
@@ -1031,7 +1017,11 @@ const StockDetail = () => {
                     </div>
                     <div className="flex justify-between border-t border-surface-800 pt-2 mt-2">
                       <span className="text-gray-500 font-sans">Promoter Pledge</span>
-                      <span className={`${fundData.promoter_pledge > 25 ? "text-down font-bold" : fundData.promoter_pledge > 10 ? "text-up" : "text-white"}`}>
+                      {/* The middle band was `text-up`: a promoter pledge of
+                          10–25% rendered green, i.e. the same as "good", when it
+                          is the point at which it starts to matter. Thresholds
+                          are unchanged — only the tone. */}
+                      <span className={`${fundData.promoter_pledge > 25 ? "text-down font-bold" : fundData.promoter_pledge > 10 ? "text-warn" : "text-gray-100"}`}>
                         {fundData.promoter_pledge !== null && fundData.promoter_pledge !== undefined ? `${fundData.promoter_pledge}%` : '0%'}
                       </span>
                     </div>
@@ -1086,7 +1076,7 @@ const StockDetail = () => {
                             {quarterly.quarters.slice(0, 4).map((q, i) => (
                               <td key={q} className={`py-2 text-right ${
                                 row.colorCode && quarterly[row.key][i] > 0
-                                  ? 'text-up' : row.colorCode && quarterly[row.key][i] < 0 ? 'text-down' : 'text-white'
+                                  ? 'text-up' : row.colorCode && quarterly[row.key][i] < 0 ? 'text-down' : 'text-gray-100'
                               }`}>
                                 {row.format(quarterly[row.key][i])}
                               </td>
@@ -1116,7 +1106,7 @@ const StockDetail = () => {
                         return (
                           <div
                             key={i}
-                            className="flex-1 bg-[rgb(var(--series-2))]/60 rounded-t hover:bg-[rgb(var(--series-2))] transition-colors"
+                            className="flex-1 bg-series-2/60 rounded-t hover:bg-series-2 transition-colors"
                             style={{ height: `${Math.max(5, height)}%` }}
                             title={`₹${val} Cr`}
                           />
@@ -1143,7 +1133,7 @@ const StockDetail = () => {
                         return (
                           <div
                             key={i}
-                            className={`flex-1 rounded-t transition-colors ${val >= 0 ? 'bg-emerald-400/60 hover:bg-emerald-400' : 'bg-red-500/60 hover:bg-red-500'}`}
+                            className={`flex-1 rounded-t transition-colors ${val >= 0 ? 'bg-up/60 hover:bg-up' : 'bg-down/60 hover:bg-down'}`}
                             style={{ height: `${Math.max(5, height)}%` }}
                             title={`₹${val} Cr`}
                           />
@@ -1186,7 +1176,7 @@ const StockDetail = () => {
                       {fundData.weaknesses && fundData.weaknesses.length > 0 ? (
                         fundData.weaknesses.map((w, i) => (
                           <li key={i} className="flex items-start">
-                            <TrendingDown size={12} className="text-red-400 inline mr-1" />
+                            <TrendingDown size={12} className="text-down inline mr-1" />
                             <span className="text-gray-300 text-sm">{w}</span>
                           </li>
                         ))
@@ -1204,7 +1194,7 @@ const StockDetail = () => {
                 
                 return (
                   <div className="bg-surface-850 border border-surface-800 rounded-xl p-5 mt-4">
-                    <h3 className="text-white font-bold mb-4 border-b border-surface-800 pb-2">
+                    <h3 className="text-gray-100 font-bold mb-4 border-b border-surface-800 pb-2">
                       Peer Comparison
                     </h3>
                     
@@ -1241,7 +1231,7 @@ const StockDetail = () => {
                                              cursor-pointer transition-all">
                                 
                                 <td className="py-3 text-left whitespace-nowrap pr-2">
-                                  <span className="text-emerald-400 font-medium">
+                                  <span className="text-up font-medium">
                                     {peer.name || '-'}
                                   </span>
                                   {peer.symbol && (
@@ -1251,29 +1241,29 @@ const StockDetail = () => {
                                   )}
                                 </td>
                                 
-                                <td className="text-right text-white px-3 whitespace-nowrap">
+                                <td className="text-right text-gray-100 px-3 whitespace-nowrap">
                                   {formatPeerValue(peer.price, '₹')}
                                 </td>
                                 
-                                <td className="text-right text-white px-3 whitespace-nowrap">
+                                <td className="text-right text-gray-100 px-3 whitespace-nowrap">
                                   {formatPeerValue(peer.pe_ratio, '', 'x')}
                                 </td>
                                 
-                                <td className="text-right text-white text-xs px-3 whitespace-nowrap">
+                                <td className="text-right text-gray-100 text-xs px-3 whitespace-nowrap">
                                   {peer.market_cap 
                                     ? `₹${Math.round(peer.market_cap).toLocaleString('en-IN')} Cr`
                                     : '-'}
                                 </td>
                                 
                                 <td className={`text-right font-medium px-3 whitespace-nowrap ${
-                                  peer.roce > 15 ? 'text-green-400' 
-                                  : peer.roce < 8 ? 'text-red-400' 
-                                  : 'text-white'
+                                  peer.roce > 15 ? 'text-up' 
+                                  : peer.roce < 8 ? 'text-down' 
+                                  : 'text-gray-100'
                                 }`}>
                                   {formatPeerValue(peer.roce, '', '%')}
                                 </td>
                                 
-                                <td className="text-right text-white text-xs pl-3 whitespace-nowrap">
+                                <td className="text-right text-gray-100 text-xs pl-3 whitespace-nowrap">
                                   {peer.net_profit_qtr 
                                     ? `₹${Math.round(peer.net_profit_qtr).toLocaleString('en-IN')}`
                                     : '-'}
@@ -1296,7 +1286,7 @@ const StockDetail = () => {
                       href={`https://www.screener.in/company/${cleanSymbol.replace('.NS','')}/`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-emerald-400 hover:text-emerald-300 mt-2 block"
+                      className="text-xs text-brand-400 hover:text-brand-300 mt-2 block"
                     >
                       View full peer comparison on Screener.in →
                     </a>
@@ -1312,15 +1302,12 @@ const StockDetail = () => {
         {activeTab === 'news' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white flex items-center">
+              <h2 className="text-xl font-bold text-gray-100 flex items-center">
                 News & Sentiment
               </h2>
-              <button
-                onClick={() => fetchNews(true)}
-                className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded border border-gray-600 transition-colors"
-              >
+              <Button variant="secondary" size="sm" icon={RefreshCw} onClick={() => fetchNews(true)}>
                 Refresh
-              </button>
+              </Button>
             </div>
             {isNewsLoading ? (
               <div className="flex justify-center py-20 text-brand-400"><Activity className="animate-pulse" /></div>
@@ -1329,9 +1316,9 @@ const StockDetail = () => {
                 {sentiment && (
                 <div className={`p-4 rounded-xl mb-4 ${
                   sentiment.overall_sentiment === 'Positive' 
-                    ? 'bg-green-900/30 border border-green-500/30'
+                    ? 'bg-up/10 border border-up/25'
                   : sentiment.overall_sentiment === 'Negative'
-                    ? 'bg-red-900/30 border border-red-500/30'
+                    ? 'bg-down/10 border border-down/25'
                     : 'bg-surface-900 border border-surface-800'
                 }`}>
                   <div className="flex justify-between items-center">
@@ -1341,9 +1328,9 @@ const StockDetail = () => {
                       </p>
                       <p className={`text-2xl font-bold ${
                         sentiment.overall_sentiment === 'Positive'
-                          ? 'text-green-400'
+                          ? 'text-up'
                         : sentiment.overall_sentiment === 'Negative'
-                          ? 'text-red-400'
+                          ? 'text-down'
                           : 'text-gray-300'
                       }`}>
                         {sentiment.overall_sentiment}
@@ -1353,7 +1340,7 @@ const StockDetail = () => {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-4xl font-bold text-white">
+                      <p className="text-4xl font-bold text-gray-100">
                         {sentiment.score}
                       </p>
                       <p className="text-xs text-gray-400">/ 10</p>
@@ -1361,10 +1348,10 @@ const StockDetail = () => {
                   </div>
                   
                   <div className="flex gap-4 mt-3">
-                    <span className="text-green-400 text-sm">
+                    <span className="text-up text-sm">
                       {sentiment.positive_count} Positive
                     </span>
-                    <span className="text-red-400 text-sm">
+                    <span className="text-down text-sm">
                       {sentiment.negative_count} Negative
                     </span>
                     <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
@@ -1394,9 +1381,9 @@ const StockDetail = () => {
                         <span className={`text-xs px-2 py-0.5 rounded-full
                           font-medium ${
                           article.sentiment === 'Positive'
-                            ? 'bg-green-900/50 text-green-400'
+                            ? 'bg-up/15 text-up'
                           : article.sentiment === 'Negative'
-                            ? 'bg-red-900/50 text-red-400'
+                            ? 'bg-down/15 text-down'
                             : 'bg-gray-700 text-gray-400'
                         }`}>
                           {article.sentiment === 'Positive' ? '' 
@@ -1405,9 +1392,9 @@ const StockDetail = () => {
                         </span>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
                           article.impact === 'High'
-                            ? 'bg-emerald-900/50 text-emerald-400'
+                            ? 'bg-up/15 text-up'
                           : article.impact === 'Medium'
-                            ? 'bg-yellow-900/50 text-emerald-400'
+                            ? 'bg-warn/15 text-warn'
                             : 'bg-gray-700 text-gray-400'
                         }`}>
                           {article.impact} Impact
@@ -1415,7 +1402,7 @@ const StockDetail = () => {
                       </div>
                     </div>
                     
-                    <p className="text-white font-medium text-sm mb-1">
+                    <p className="text-gray-100 font-medium text-sm mb-1">
                       {article.title}
                     </p>
                     
@@ -1475,28 +1462,22 @@ const StockDetail = () => {
               </h2>
               <div className="flex items-center gap-3">
                 {aiAnalysis && (
-                  <button
-                    onClick={handleExportPDF}
-                    className="flex items-center gap-2 px-4 py-2 bg-surface-900 border border-surface-800 text-gray-300 rounded-xl hover:bg-surface-800 hover:text-white transition-colors text-sm font-medium"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
+                  <Button variant="secondary" icon={Download} onClick={handleExportPDF}>
                     Export PDF
-                  </button>
+                  </Button>
                 )}
-                <button
+                {/* Was a green button, on a page where green means "price up".
+                    Generating an analysis is an action, so it takes brand. */}
+                <Button
+                  variant="primary"
+                  icon={BrainCircuit}
                   onClick={handleGenerateAI}
-                  disabled={aiLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-500/20 transition-colors text-sm font-medium disabled:opacity-50"
+                  loading={aiLoading}
                 >
-                  {aiLoading 
-                    ? <><BrainCircuit size={15} className="animate-pulse" /> Analyzing...</>
-                    : <><BrainCircuit size={15} /> {aiAnalysis ? 'Refresh Analysis' : 'Generate Analysis'}</>
-                  }
-                </button>
+                  {aiLoading
+                    ? 'Analyzing…'
+                    : aiAnalysis ? 'Refresh Analysis' : 'Generate Analysis'}
+                </Button>
               </div>
             </div>
             
@@ -1513,7 +1494,7 @@ const StockDetail = () => {
                   <div className="bg-gradient-to-br from-surface-850 to-surface-900 border border-brand-500/40 p-6 rounded-xl flex-1 w-full relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500 opacity-5 rounded-bl-full pointer-events-none" />
                     <h2 className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">AI Verdict</h2>
-                    <div className="text-3xl font-bold text-white mb-4">{aiAnalysis.verdict}</div>
+                    <div className="text-3xl font-bold text-gray-100 mb-4">{aiAnalysis.verdict}</div>
                     <p className="text-gray-300 leading-relaxed">{aiAnalysis.summary}</p>
                   </div>
 
@@ -1524,7 +1505,7 @@ const StockDetail = () => {
                         <path className="text-brand-400" strokeDasharray={`${aiAnalysis.confidence}, 100`} strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-xl font-bold text-white font-mono">{aiAnalysis.confidence}%</span>
+                        <span className="text-xl font-bold text-gray-100 font-mono">{aiAnalysis.confidence}%</span>
                       </div>
                     </div>
                     <div className="text-sm text-gray-400">Confidence Score</div>
@@ -1538,11 +1519,11 @@ const StockDetail = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.2 }}
                 >
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center"><Target className="mr-2 text-brand-400" size={20} /> Proposed Swing Trade Setup</h3>
+                  <h3 className="text-lg font-bold text-gray-100 mb-4 flex items-center"><Target className="mr-2 text-brand-400" size={20} /> Proposed Swing Trade Setup</h3>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-surface-900 border border-surface-800 p-4 rounded-lg text-center">
                       <div className="text-gray-500 text-xs mb-1">Entry Range</div>
-                      <div className="text-white font-mono font-bold">{aiAnalysis.trade_setup.entry}</div>
+                      <div className="text-gray-100 font-mono font-bold">{aiAnalysis.trade_setup.entry}</div>
                     </div>
                     <div className="bg-surface-900 border border-down/30 p-4 rounded-lg text-center">
                       <div className="text-gray-500 text-xs mb-1">Stop Loss</div>
@@ -1566,38 +1547,28 @@ const StockDetail = () => {
 
                 {aiAnalysis.timeframes && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-lg font-bold text-gray-100">
                       Analysis by Timeframe
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {Object.entries(aiAnalysis.timeframes).map(([tf, data]) => (
                         <div key={tf} className="bg-surface-900 border border-surface-800 rounded-xl p-5">
                           <div className="flex justify-between items-center mb-3">
-                            <h4 className="text-white font-bold uppercase tracking-wider text-sm flex items-center gap-2">
+                            <h4 className="text-gray-100 font-bold uppercase tracking-wider text-sm flex items-center gap-2">
                               {tf === 'intraday' ? 'Intraday' :
                                tf === 'swing' ? 'Swing (Days)' :
                                tf === 'midterm' ? 'Midterm (Months)' :
                                'Long Term (Years)'}
                               {tf === 'swing' && data.setup_type && (
-                                <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30">
-                                  {data.setup_type}
-                                </span>
+                                <Badge variant="brand">{data.setup_type}</Badge>
                               )}
                             </h4>
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                              data.verdict?.includes('Take') || 
-                              data.verdict?.includes('Accumulate') ||
-                              data.verdict?.includes('Buy')
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                              : data.verdict?.includes('Avoid')
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                : 'bg-gray-700 text-gray-300 border border-gray-600'
-                            }`}>
+                            <Badge variant={verdictTone(data.verdict)} size="md">
                               {data.verdict}
-                            </span>
+                            </Badge>
                           </div>
                           <div className="text-xs text-gray-500 mb-2">
-                            Confidence: <span className="text-emerald-400 font-mono font-bold">
+                            Confidence: <span className="text-up font-mono font-bold">
                               {data.confidence}%
                             </span>
                             {data.holding_period && (
@@ -1610,15 +1581,15 @@ const StockDetail = () => {
                             <div className="grid grid-cols-3 gap-2 mt-3 text-xs font-mono">
                               <div className="bg-surface-850 rounded p-2 text-center">
                                 <div className="text-gray-500 mb-1">Entry</div>
-                                <div className="text-white">{data.entry}</div>
+                                <div className="text-gray-100">{data.entry}</div>
                               </div>
                               <div className="bg-surface-850 rounded p-2 text-center">
                                 <div className="text-gray-500 mb-1">SL</div>
-                                <div className="text-red-400">{data.stop_loss}</div>
+                                <div className="text-down">{data.stop_loss}</div>
                               </div>
                               <div className="bg-surface-850 rounded p-2 text-center">
                                 <div className="text-gray-500 mb-1">T1</div>
-                                <div className="text-emerald-400">{data.target_1}</div>
+                                <div className="text-up">{data.target_1}</div>
                               </div>
                             </div>
                           )}

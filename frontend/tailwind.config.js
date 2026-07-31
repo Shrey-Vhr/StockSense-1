@@ -49,6 +49,17 @@ export default {
         up:   { DEFAULT: token('up'),   strong: token('up-strong') },
         down: { DEFAULT: token('down'), strong: token('down-strong') },
         flat: token('flat'),
+        warn: token('warn'),
+
+        // ── Categorical ──────────────────────────────────────────────────────
+        // Chart overlays resolve these at runtime through chartTheme.js; the
+        // shareholding bars need them as classes, so they are exposed here too.
+        series: {
+          1: token('series-1'),
+          2: token('series-2'),
+          3: token('series-3'),
+          4: token('series-4'),
+        },
 
         // ── Surfaces ─────────────────────────────────────────────────────────
         // surface-700 and surface-600 were referenced 13 times but never
@@ -104,9 +115,9 @@ export default {
         overlay: 'var(--shadow-overlay)',
         // Retained because they are already referenced; retuned onto the scale.
         card:    'var(--shadow-sm)',
-        // Still emerald-tinted: it sits on green buttons that have not migrated
-        // to brand yet. Retuned when those components move, in their own phase.
-        glow:    '0 0 20px rgb(16 185 129 / 0.15)',
+        // `glow` lived here as an emerald halo for the green buttons. Those all
+        // moved to brand across Phases 3–12 and nothing references it any more,
+        // so it goes rather than sitting in the config as a trap.
       },
 
       transitionTimingFunction: {

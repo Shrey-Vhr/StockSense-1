@@ -139,14 +139,17 @@ const Login = () => {
               className="rounded-xl p-3 text-center bg-surface-850/80 backdrop-blur-sm border border-surface-800"
             >
               <div className="text-lg font-semibold text-gray-100 font-mono tnum">{s.value}</div>
-              <div className="text-2xs uppercase tracking-wider text-gray-600 mt-0.5">{s.label}</div>
+              <div className="text-2xs uppercase tracking-wider text-gray-500 mt-0.5">{s.label}</div>
             </motion.div>
           ))}
         </motion.div>
       </div>
 
       {/* ── Right panel — form ──────────────────────────────────────────── */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 relative">
+      {/* <main> because this route renders outside Layout, so it does not
+          inherit the app shell's landmark. The left panel is marketing copy;
+          the form is the page's actual content. */}
+      <main className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 relative">
         <div className="absolute w-96 h-96 bg-brand-500/[0.05] rounded-full blur-3xl pointer-events-none" />
 
         <motion.div
@@ -274,7 +277,7 @@ const Login = () => {
             </Link>
           </p>
         </motion.div>
-      </div>
+      </main>
     </div>
   );
 };

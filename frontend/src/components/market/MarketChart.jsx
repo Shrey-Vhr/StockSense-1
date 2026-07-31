@@ -19,9 +19,9 @@ import { cn } from '../../lib/cn';
 
 /** Swatches must match the series tokens the chart actually draws with. */
 const LEGEND = [
-  { period: 20, key: 'ema20', swatch: 'bg-[rgb(var(--series-1))]' },
-  { period: 50, key: 'ema50', swatch: 'bg-[rgb(var(--series-2))]' },
-  { period: 200, key: 'ema200', swatch: 'bg-[rgb(var(--series-3))]' },
+  { period: 20, key: 'ema20', swatch: 'bg-series-1' },
+  { period: 50, key: 'ema50', swatch: 'bg-series-2' },
+  { period: 200, key: 'ema200', swatch: 'bg-series-3' },
 ];
 
 function calculateEMA(data, period) {

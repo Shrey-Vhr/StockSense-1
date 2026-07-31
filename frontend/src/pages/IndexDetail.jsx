@@ -39,7 +39,7 @@ const IndexDetail = () => {
   }, [cleanSymbol]);
 
   if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-brand-400 w-10 h-10" /></div>;
-  if (error) return <div className="p-10 text-red-500">{error}</div>;
+  if (error) return <div role="alert" className="p-10 text-down">{error}</div>;
   if (!data) return null;
 
   const isUp = data.change >= 0;
@@ -111,7 +111,7 @@ const IndexDetail = () => {
             {/* NEW: INDIA VIX */}
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
               <div className="text-2xs font-medium uppercase tracking-wider text-gray-500 mb-1">India VIX</div>
-              <div className={`font-mono font-bold ${data.india_vix < 12 ? 'text-up' : data.india_vix < 16 ? 'text-gray-100' : data.india_vix < 20 ? 'text-amber-400' : 'text-down'}`}>
+              <div className={`font-mono font-bold ${data.india_vix < 12 ? 'text-up' : data.india_vix < 16 ? 'text-gray-100' : data.india_vix < 20 ? 'text-warn' : 'text-down'}`}>
                 {data.india_vix}
               </div>
               <div className="text-xs text-gray-500 truncate">
@@ -160,7 +160,7 @@ const IndexDetail = () => {
 
           {/* 4. RETURNS TABLE */}
           <div className="bg-surface-850 p-4 rounded-xl border border-surface-800 overflow-x-auto">
-            <h3 className="text-lg font-bold text-white mb-4">Rolling Returns</h3>
+            <h3 className="text-lg font-bold text-gray-100 mb-4">Rolling Returns</h3>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-3">
               {[
                 { key: '1_week', label: '1 Week' },
@@ -195,7 +195,7 @@ const IndexDetail = () => {
 
           {/* 5. EMA STATUS */}
           <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
-            <h3 className="text-lg font-bold text-white mb-3">EMA Status</h3>
+            <h3 className="text-lg font-bold text-gray-100 mb-3">EMA Status</h3>
             <div className="space-y-2 font-mono">
               <div className="flex justify-between items-center bg-surface-900 p-2 rounded">
                 <span className="text-gray-400">Price vs EMA 20</span>
@@ -214,10 +214,10 @@ const IndexDetail = () => {
           
           {/* 7. WHEN TO INVEST */}
           <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
-            <h3 className="text-lg font-bold text-white mb-2 flex items-center"><Target className="mr-2" size={18} /> Investment Guidance</h3>
+            <h3 className="text-lg font-bold text-gray-100 mb-2 flex items-center"><Target className="mr-2" size={18} /> Investment Guidance</h3>
             <p className="text-sm text-gray-400 mb-2">
               Best time to add lump sum to Index ETFs: <br />
-              <span className="text-white font-mono">RSI &lt; 50 AND price &gt; EMA 200</span>
+              <span className="text-gray-100 font-mono">RSI &lt; 50 AND price &gt; EMA 200</span>
             </p>
             <div className="text-sm bg-surface-900 p-2 rounded">
               Current status: <br/> 
@@ -225,7 +225,7 @@ const IndexDetail = () => {
                 RSI = {data.rsi}, Price {data.above_ema200 ? 'above' : 'below'} EMA 200
               </span>
             </div>
-            <p className="mt-3 text-sm font-bold text-white">
+            <p className="mt-3 text-sm font-bold text-gray-100">
               → {data.rsi < 50 && data.above_ema200 ? "Good entry point for lump sum." : "Neutral. Regular SIP recommended."}
             </p>
           </div>
