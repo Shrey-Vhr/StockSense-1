@@ -1,11 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LineChart, Eye, EyeOff, 
-         TrendingUp, Shield, Zap 
-       } from 'lucide-react';
+import {
+  CandlestickChart, Eye, EyeOff, TrendingUp, Shield, Zap, AlertTriangle,
+} from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { Button, Field, Input } from '../components/ui';
+import { fadeInUp, stagger, listItem } from '../lib/motion';
 
+const FEATURES = [
+  { icon: TrendingUp, text: '2,100+ NSE stocks screened in real time' },
+  { icon: Shield, text: '16 chart patterns detected automatically' },
+  { icon: Zap, text: 'AI news sentiment via Groq' },
+];
+
+const STATS = [
+  { value: '2,100+', label: 'Stocks' },
+  { value: '35+', label: 'Indicators' },
+  { value: '16', label: 'Patterns' },
+];
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -25,7 +38,7 @@ const Login = () => {
       navigate('/');
     } catch (err) {
       setError(
-        err.response?.data?.detail || 
+        err.response?.data?.detail ||
         'Invalid credentials'
       );
     } finally {
@@ -33,438 +46,230 @@ const Login = () => {
     }
   };
 
-
-
   return (
-    <div className="min-h-screen bg-surface-950 
-                    flex overflow-hidden">
+    <div className="min-h-screen bg-surface-950 flex overflow-hidden">
 
-      {/* LEFT PANEL */}
-      <div className="hidden lg:flex lg:w-1/2 
-                      flex-col justify-between 
-                      p-12 relative overflow-hidden
-                      bg-surface-900 border-r 
-                      border-surface-800">
+      {/* ── Left panel ──────────────────────────────────────────────────── */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden
+                      bg-surface-900 border-r border-surface-800">
 
-        {/* Animated background orbs */}
+        {/* Ambient orbs. Retuned from emerald to brand: on the one page where
+            no market data exists, a green wash still set the wrong expectation
+            for what green means everywhere else in the app. */}
         <motion.div
-          className="absolute w-[500px] h-[500px] 
-                     rounded-full blur-3xl 
-                     bg-emerald-500/8 
-                     -top-32 -left-32 
-                     pointer-events-none"
-          animate={{ 
-            scale: [1, 1.15, 1],
-            opacity: [0.5, 0.8, 0.5]
-          }}
-          transition={{ 
-            duration: 6, 
-            repeat: Infinity,
-            ease: 'easeInOut'
-          }}
+          className="absolute w-[500px] h-[500px] rounded-full blur-3xl
+                     bg-brand-500/[0.10] -top-32 -left-32 pointer-events-none"
+          animate={{ scale: [1, 1.12, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute w-[400px] h-[400px] 
-                     rounded-full blur-3xl 
-                     bg-emerald-500/5 
-                     bottom-0 right-0 
-                     pointer-events-none"
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3]
-          }}
-          transition={{ 
-            duration: 8, 
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 1
+          className="absolute w-[400px] h-[400px] rounded-full blur-3xl
+                     bg-brand-500/[0.07] bottom-0 right-0 pointer-events-none"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        />
+
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `linear-gradient(rgb(var(--brand-500) / 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgb(var(--brand-500) / 0.05) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px',
           }}
         />
 
-        {/* Grid background */}
-        <div className="absolute inset-0 
-                        pointer-events-none"
-             style={{
-               backgroundImage: `
-                 linear-gradient(
-                   rgba(16,185,129,0.03) 1px, 
-                   transparent 1px
-                 ),
-                 linear-gradient(
-                   90deg, 
-                   rgba(16,185,129,0.03) 1px, 
-                   transparent 1px
-                 )`,
-               backgroundSize: '40px 40px'
-             }}
-        />
-
-
-
-        {/* Logo */}
+        {/* Brand */}
         <motion.div
-          className="flex items-center gap-3 
-                     relative z-10"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
+          className="flex items-center gap-2.5 relative z-10"
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
         >
-          <div className="w-10 h-10 rounded-xl 
-                          bg-gradient-to-br 
-                          from-emerald-400 
-                          to-emerald-600 
-                          flex items-center 
-                          justify-center 
-                          shadow-glow">
-            <LineChart className="text-white 
-                                  w-5 h-5" />
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-500">
+            <CandlestickChart size={19} className="text-white" strokeWidth={2.25} aria-hidden="true" />
           </div>
-          <span className="text-xl font-bold 
-                           text-gray-100 
-                           tracking-tight">
-            StockSense
-          </span>
+          <span className="text-base font-semibold text-gray-100 tracking-tight">StockSense</span>
         </motion.div>
 
-        {/* Main copy */}
+        {/* Copy */}
         <motion.div
           className="relative z-10"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
         >
-          <h1 className="text-5xl font-bold 
-                         text-gray-50 
-                         leading-tight mb-4">
-            Intelligent
+          <motion.h1
+            variants={listItem}
+            className="text-4xl font-semibold text-gray-50 leading-[1.15] tracking-tight mb-4"
+          >
+            Intelligent stock
             <br />
-            <span className="bg-clip-text 
-                             text-transparent 
-                             bg-gradient-to-r 
-                             from-emerald-300 
-                             via-emerald-400
-                             to-emerald-600">
-              Stock Analysis
-            </span>
-            <br />
-            for India
-          </h1>
-          <p className="text-gray-400 text-base 
-                        leading-relaxed mb-8 
-                        max-w-sm">
-            AI-powered insights, real-time data, 
-            and institutional-grade analysis 
-            for the Indian stock market.
-          </p>
+            analysis for India
+          </motion.h1>
 
+          <motion.p variants={listItem} className="text-sm text-gray-400 leading-relaxed mb-8 max-w-sm">
+            Screening, live market data and AI-backed trade setups for the
+            Indian market — in one terminal.
+          </motion.p>
 
-
-          {/* Feature pills */}
-          <div className="space-y-3">
-            {[
-              { icon: TrendingUp, 
-                text: '469 NSE stocks screened in real-time' },
-              { icon: Shield, 
-                text: '16 chart patterns detected automatically' },
-              { icon: Zap, 
-                text: 'AI news sentiment via Groq LLM' },
-            ].map((f, i) => (
-              <motion.div
-                key={i}
-                className="flex items-center gap-3"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ 
-                  duration: 0.4, 
-                  delay: 0.5 + i * 0.1 
-                }}
-              >
-                <div className="w-7 h-7 rounded-lg 
-                                bg-emerald-500/10 
-                                border 
-                                border-emerald-500/20 
-                                flex items-center 
-                                justify-center 
-                                flex-shrink-0">
-                  <f.icon size={14} 
-                          className="text-emerald-400"/>
-                </div>
-                <span className="text-gray-400 
-                                 text-sm">
-                  {f.text}
+          <div className="space-y-2.5">
+            {FEATURES.map((f) => (
+              <motion.div key={f.text} variants={listItem} className="flex items-center gap-3">
+                <span className="flex items-center justify-center w-7 h-7 shrink-0 rounded-lg
+                                 bg-brand-500/12 border border-brand-500/20">
+                  <f.icon size={13} className="text-brand-400" aria-hidden="true" />
                 </span>
+                <span className="text-sm text-gray-400">{f.text}</span>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Bottom stats */}
-        <div className="grid grid-cols-3 gap-3 
-                        relative z-10">
-          {[
-            { value: '469+', label: 'Stocks' },
-            { value: '35+', label: 'Indicators' },
-            { value: '16', label: 'Patterns' },
-          ].map((s, i) => (
+        {/* Stats */}
+        <motion.div
+          className="grid grid-cols-3 gap-3 relative z-10"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
+        >
+          {STATS.map((s) => (
             <motion.div
-              key={i}
-              className="bg-surface-850/80 
-                         backdrop-blur-sm border 
-                         border-surface-800 
-                         rounded-xl p-3 text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ 
-                duration: 0.4, 
-                delay: 0.7 + i * 0.1 
-              }}
-              whileHover={{ 
-                borderColor: 'rgba(16,185,129,0.3)',
-                y: -2
-              }}
+              key={s.label}
+              variants={listItem}
+              className="rounded-xl p-3 text-center bg-surface-850/80 backdrop-blur-sm border border-surface-800"
             >
-              <div className="text-xl font-bold 
-                              text-emerald-400 
-                              font-mono">
-                {s.value}
-              </div>
-              <div className="text-gray-600 
-                              text-xs mt-0.5">
-                {s.label}
-              </div>
+              <div className="text-lg font-semibold text-gray-100 font-mono tnum">{s.value}</div>
+              <div className="text-2xs uppercase tracking-wider text-gray-600 mt-0.5">{s.label}</div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
-      {/* RIGHT PANEL — Form */}
-      <div className="w-full lg:w-1/2 flex 
-                      items-center justify-center 
-                      p-8 relative">
-
-        {/* Subtle glow behind form */}
-        <div className="absolute w-96 h-96 
-                        bg-emerald-500/5 
-                        rounded-full blur-3xl 
-                        pointer-events-none" />
+      {/* ── Right panel — form ──────────────────────────────────────────── */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 relative">
+        <div className="absolute w-96 h-96 bg-brand-500/[0.05] rounded-full blur-3xl pointer-events-none" />
 
         <motion.div
-          className="w-full max-w-md relative z-10"
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          className="w-full max-w-sm relative z-10"
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
         >
-          {/* Mobile logo */}
-          <div className="flex items-center 
-                          gap-3 mb-8 lg:hidden">
-            <div className="w-9 h-9 rounded-xl 
-                            bg-gradient-to-br 
-                            from-emerald-400 
-                            to-emerald-600 
-                            flex items-center 
-                            justify-center">
-              <LineChart className="text-white 
-                                   w-5 h-5" />
+          {/* Mobile brand */}
+          <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-500">
+              <CandlestickChart size={19} className="text-white" strokeWidth={2.25} aria-hidden="true" />
             </div>
-            <span className="text-lg font-bold 
-                             text-gray-100">
-              StockSense
-            </span>
+            <span className="text-base font-semibold text-gray-100">StockSense</span>
           </div>
 
-          {/* Form header */}
-          <motion.div
-            className="mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-          >
-            <h2 className="text-3xl font-bold 
-                           text-gray-50">
-              Welcome back
-            </h2>
-            <p className="text-gray-500 text-sm mt-2">
-              Sign in to your StockSense account
-            </p>
-          </motion.div>
+          <div className="mb-7">
+            <h2 className="text-2xl font-semibold text-gray-50 tracking-tight">Welcome back</h2>
+            <p className="text-sm text-gray-500 mt-1.5">Sign in to your StockSense account</p>
+          </div>
 
-          {/* Error */}
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                className="bg-red-500/10 border 
-                           border-red-500/30 
-                           rounded-xl p-3 mb-5"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <p className="text-red-400 text-sm">
-                  {error}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Form */}
-          <motion.form
-            onSubmit={handleSubmit}
-            className="space-y-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <div>
-              <label className="text-gray-400 
-                                text-sm font-medium 
-                                mb-1.5 block">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                required
-                className="w-full bg-surface-850 
-                           border border-surface-800 
-                           rounded-xl px-4 py-3.5 
-                           text-gray-100 text-sm 
-                           focus:border-emerald-500/60 
-                           focus:ring-2 
-                           focus:ring-emerald-500/10 
-                           focus:outline-none 
-                           transition-all 
-                           placeholder-gray-600"
-              />
-            </div>
-
-            <div>
-              <label className="text-gray-400 
-                                text-sm font-medium 
-                                mb-1.5 block">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(
-                    e.target.value
-                  )}
-                  placeholder="Enter your password"
-                  required
-                  className="w-full bg-surface-850 
-                             border border-surface-800 
-                             rounded-xl px-4 py-3.5 
-                             text-gray-100 text-sm 
-                             focus:border-emerald-500/60 
-                             focus:ring-2 
-                             focus:ring-emerald-500/10 
-                             focus:outline-none 
-                             transition-all 
-                             placeholder-gray-600 pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(
-                    !showPassword
-                  )}
-                  className="absolute right-3 
-                             top-1/2 -translate-y-1/2 
-                             text-gray-500 
-                             hover:text-gray-300 
-                             transition-colors p-1"
+          {/* aria-live so the failure is announced, not just shown. */}
+          <div aria-live="polite">
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  role="alert"
+                  className="flex items-start gap-2 rounded-xl border border-down/30 bg-down/10 px-3 py-2.5 mb-5"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
                 >
-                  {showPassword 
-                    ? <EyeOff size={16}/> 
-                    : <Eye size={16}/>}
-                </button>
-              </div>
-            </div>
+                  <AlertTriangle size={14} className="mt-0.5 shrink-0 text-down" aria-hidden="true" />
+                  <p className="text-sm text-down">{error}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-            <div className="flex items-center 
-                            justify-between">
-              <label className="flex items-center 
-                                gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="accent-emerald-500 
-                             w-4 h-4"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Field label="Email address" required>
+              {(p) => (
+                <Input
+                  size="lg"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  required
+                  {...p}
                 />
-                <span className="text-gray-400 text-sm">
-                  Remember me
-                </span>
+              )}
+            </Field>
+
+            <Field label="Password" required>
+              {(p) => (
+                <div className="relative">
+                  <Input
+                    size="lg"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                    className="pr-11"
+                    {...p}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    aria-pressed={showPassword}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 rounded-md
+                               text-gray-500 transition-colors duration-fast hover:text-gray-300"
+                  >
+                    {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+                  </button>
+                </div>
+              )}
+            </Field>
+
+            {/* Both of these are inert in the current build: the checkbox has
+                no state or handler, and the link points at "#". Kept and
+                restyled rather than removed — wiring them up would be new
+                behaviour, and removing them is a product call, not mine.
+                Flagged for you to decide. */}
+            <div className="flex items-center justify-between pt-0.5">
+              <label htmlFor="login-remember" className="flex items-center gap-2 cursor-pointer">
+                <input
+                  id="login-remember"
+                  type="checkbox"
+                  className="w-4 h-4 rounded accent-brand-500"
+                />
+                <span className="text-sm text-gray-400">Remember me</span>
               </label>
-              <a href="#"
-                 className="text-emerald-400 
-                            hover:text-emerald-300 
-                            text-sm transition-colors">
+              <a
+                href="#"
+                className="text-sm text-brand-400 transition-colors duration-fast hover:text-brand-300"
+              >
                 Forgot password?
               </a>
             </div>
 
-            <motion.button
+            <Button
               type="submit"
+              variant="primary"
+              size="lg"
+              loading={loading}
               disabled={loading}
-              className="w-full bg-emerald-500 
-                         hover:bg-emerald-600 
-                         disabled:opacity-50 
-                         disabled:cursor-not-allowed 
-                         text-white font-semibold 
-                         py-3.5 rounded-xl 
-                         transition-colors text-sm 
-                         shadow-glow mt-2 
-                         relative overflow-hidden"
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
+              className="w-full mt-1"
             >
-              {/* Shimmer effect on button */}
-              <motion.div
-                className="absolute inset-0 
-                           bg-gradient-to-r 
-                           from-transparent 
-                           via-white/10 
-                           to-transparent 
-                           -skew-x-12"
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ 
-                  duration: 2.5, 
-                  repeat: Infinity,
-                  repeatDelay: 1.5
-                }}
-              />
-              <span className="relative z-10">
-                {loading ? (
-                  <span className="flex items-center 
-                                   justify-center gap-2">
-                    <motion.div
-                      className="w-4 h-4 border-2 
-                                 border-white/30 
-                                 border-t-white 
-                                 rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ 
-                        duration: 0.8, 
-                        repeat: Infinity,
-                        ease: 'linear'
-                      }}
-                    />
-                    Signing in...
-                  </span>
-                ) : 'Sign In'}
-              </span>
-            </motion.button>
-          </motion.form>
+              {loading ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </form>
 
-          <p className="text-center text-gray-500 
-                        text-sm mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6">
             Don't have an account?{' '}
-            <Link to="/register"
-                  className="text-emerald-400 
-                             hover:text-emerald-300 
-                             font-medium 
-                             transition-colors">
+            <Link
+              to="/register"
+              className="font-medium text-brand-400 transition-colors duration-fast hover:text-brand-300"
+            >
               Sign up for free
             </Link>
           </p>
