@@ -257,16 +257,20 @@ const Header = ({ toggleSidebar, onOpenCommandPalette }) => {
                          transition-colors duration-fast hover:border-surface-700
                          focus:border-brand-500"
             />
-            <kbd
+            {/* Was a <kbd> carrying an onClick: clickable with a mouse, but not
+                focusable, so the one control that opens the palette by pointer
+                could not be reached by keyboard. Also 4.21:1 on surface-800. */}
+            <button
+              type="button"
               onClick={onOpenCommandPalette}
+              aria-label="Open command palette"
               className="absolute right-2 top-1/2 -translate-y-1/2 hidden lg:flex items-center
                          h-5 px-1.5 rounded border border-surface-700 bg-surface-800
-                         text-2xs font-medium text-gray-500 cursor-pointer
-                         transition-colors duration-fast hover:text-gray-300"
-              title="Open command palette"
+                         text-2xs font-medium text-gray-400
+                         transition-colors duration-fast hover:text-gray-100"
             >
-              ⌘K
-            </kbd>
+              <kbd className="font-mono">⌘K</kbd>
+            </button>
           </form>
 
           <AnimatePresence>

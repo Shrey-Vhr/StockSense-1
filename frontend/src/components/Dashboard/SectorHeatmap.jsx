@@ -79,8 +79,11 @@ const SectorHeatmap = ({ sectors, isLoading }) => {
             <span className="text-2xs font-medium uppercase tracking-wider text-gray-400 truncate w-full">
               {sector.sector}
             </span>
+            {/* gray-500 measured 3.15:1 against the most saturated tile tint —
+                a tint lightens the backdrop, so the tertiary tone that clears
+                4.5:1 on a plain card does not clear it here. */}
             {sector.top_stock && (
-              <span className="text-2xs text-gray-500 truncate w-full">{sector.top_stock}</span>
+              <span className="text-2xs text-gray-400 truncate w-full">{sector.top_stock}</span>
             )}
           </button>
         );

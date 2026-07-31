@@ -15,7 +15,7 @@ import {
   buildFundamentalsReportHtml,
 } from '../lib/pdfTemplates';
 import { Badge, Button, Field, Input, Modal, Select, Spinner } from '../components/ui';
-import { verdictTone } from '../lib/format';
+import { verdictTone, formatChange } from '../lib/format';
 import MetricCard from '../components/stock/MetricCard';
 import QuickLevelsCard from '../components/stock/QuickLevelsCard';
 import InstitutionalTab from '../components/stock/InstitutionalTab';
@@ -615,7 +615,11 @@ const StockDetail = () => {
               )}>
                 {isUp ? <TrendingUp size={14} aria-hidden="true" /> : <TrendingDown size={14} aria-hidden="true" />}
                 <span className="sr-only">{isUp ? 'Up' : 'Down'}</span>
-                {isUp ? '+' : ''}{quote.change_amount?.toFixed(2)} ({Math.abs(quote.change_percent).toFixed(2)}%)
+                {/* Was `quote.change_amount`, which the quote endpoint has never
+                    returned — both code paths in market_data.py emit `change`.
+                    The absolute move rendered blank here, so the header read
+                    "+ (1.15%)". Index and ETF detail already use `change`. */}
+                {formatChange(quote.change)} ({Math.abs(quote.change_percent).toFixed(2)}%)
               </div>
             </div>
 

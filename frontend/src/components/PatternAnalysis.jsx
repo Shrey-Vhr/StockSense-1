@@ -100,7 +100,10 @@ const PatternAnalysis = ({ symbol }) => {
                     <span className="text-sm font-medium text-gray-100">
                       {pattern.emoji} {pattern.name}
                     </span>
-                    <span className="text-xs text-gray-500 ml-2">
+                    {/* gray-500 measures 4.08:1 against the tinted panel — a
+                        tint lightens the backdrop, so the tone that clears AA
+                        on a plain card does not clear it here. */}
+                    <span className="text-xs text-gray-400 ml-2">
                       {pattern.date}
                     </span>
                   </div>
@@ -108,7 +111,7 @@ const PatternAnalysis = ({ symbol }) => {
                     <Badge variant={tone.badge}>
                       {pattern.type.toUpperCase()}
                     </Badge>
-                    <span className="text-xs font-medium text-gray-500 tnum">
+                    <span className="text-xs font-medium text-gray-400 tnum">
                       {pattern.confidence}%
                     </span>
                   </div>
