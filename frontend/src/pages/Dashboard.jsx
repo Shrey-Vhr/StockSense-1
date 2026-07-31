@@ -12,7 +12,7 @@ import {
   Table, TBody, Tr, Td,
 } from '../components/ui';
 import { cn } from '../lib/cn';
-import { formatNumber, formatCurrency, formatChange, direction, displaySymbol } from '../lib/format';
+import { formatNumber, formatCurrency, formatChange, direction, displaySymbol, decodeEntities } from '../lib/format';
 
 const AnimatedPrice = ({ value }) => {
   const animated = useCountUp(value, 800, 2);
@@ -308,7 +308,7 @@ const Dashboard = () => {
                         <div className="flex items-start gap-2">
                           {variant && <Badge variant={variant} className="mt-0.5 shrink-0">{short}</Badge>}
                           <h3 className="text-sm text-gray-300 leading-snug transition-colors duration-fast group-hover:text-brand-400">
-                            {news.title}
+                            {decodeEntities(news.title)}
                           </h3>
                         </div>
                         <div className="text-2xs text-gray-600 mt-1.5">

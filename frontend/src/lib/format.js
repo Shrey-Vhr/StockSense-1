@@ -105,3 +105,48 @@ export function direction(value) {
 export function displaySymbol(symbol) {
   return typeof symbol === 'string' ? symbol.replace(/\.(NS|BO)$/i, '') : '';
 }
+
+const ENTITIES = {
+  '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"',
+  '&apos;': "'", '&#39;': "'", '&nbsp;': ' ', '&#x27;': "'", '&#x2F;': '/',
+};
+
+/**
+ * Decodes the HTML entities that RSS feeds emit.
+ *
+ * Headlines arrive escaped — "Top Gainers &amp; Losers", "L&amp;T's order
+ * book" — and React renders text verbatim, so the raw entity was visible on
+ * both the news page and the dashboard rail.
+ *
+ * An explicit map rather than the usual textarea-innerHTML trick: this content
+ * comes from third-party feeds, and a lookup table cannot be coaxed into
+ * parsing markup no matter what arrives.
+ */
+export function decodeEntities(text) {
+  if (typeof text !== 'string') return text;
+  return text
+    .replace(/&(?:amp|lt|gt|quot|apos|nbsp|#39|#x27|#x2F);/g, (m) => ENTITIES[m] ?? m)
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)));
+}
+
+/**
+ * Relative time for recent items, falling back to an absolute date past a week.
+ * "3h ago" tells you more about a headline than "Jul 31, 2026".
+ */
+export function timeAgo(value, { fallback = 'Recent' } = {}) {
+  if (!value) return fallback;
+  const then = new Date(value);
+  if (Number.isNaN(then.getTime())) return fallback;
+
+  const seconds = Math.floor((Date.now() - then.getTime()) / 1000);
+  if (seconds < 0) return 'Just now';
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+
+  return then.toLocaleDateString(LOCALE, { day: '2-digit', month: 'short', year: 'numeric' });
+}
