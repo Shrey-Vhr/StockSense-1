@@ -177,7 +177,7 @@ const ETFDetail = () => {
 
           {/* 4. RETURNS TABLE */}
           <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4 overflow-x-auto">
-            <h3 className="text-lg font-bold text-gray-100 mb-4">Rolling Returns</h3>
+            <h2 className="text-lg font-bold text-gray-100 mb-4">Rolling Returns</h2>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
               {[
                 { key: '1_week', label: '1 Week' },
@@ -199,9 +199,9 @@ const ETFDetail = () => {
           {/* 8. ETF COMPARISON (TRACKING ERROR) */}
           {data.underlying_index && data.underlying_index_return_6m != null && (
             <div className="bg-surface-850 p-4 rounded-xl border border-surface-800 mt-6">
-              <h3 className="text-lg font-bold text-gray-100 mb-3 flex items-center">
+              <h2 className="text-lg font-bold text-gray-100 mb-3 flex items-center">
                 <Target className="mr-2" size={18} /> ETF Comparison
-              </h3>
+              </h2>
               <div className="space-y-3 font-mono text-sm">
                 <div className="flex justify-between items-center bg-surface-900 p-3 rounded border border-surface-800">
                   <span className="text-gray-400">{data.underlying_index} (6M):</span>
@@ -239,7 +239,7 @@ const ETFDetail = () => {
               : data.verdict_color === 'red' ? 'border-down/40'
               : 'border-surface-700',
           )}>
-            <h3 className="text-2xs font-semibold uppercase tracking-wider text-gray-500">ETF verdict</h3>
+            <h2 className="text-2xs font-semibold uppercase tracking-wider text-gray-500">ETF verdict</h2>
             <p className={cn(
               'text-lg font-semibold mt-1.5',
               data.verdict_color === 'green' ? 'text-up'
@@ -256,7 +256,7 @@ const ETFDetail = () => {
           {/* 5. PREMIUM/DISCOUNT INDICATOR */}
           {data.premium_discount_pct != null && (
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
-              <h3 className="text-lg font-bold text-gray-100 mb-3 flex items-center"><Info className="mr-2" size={18} /> Premium / Discount</h3>
+              <h2 className="text-lg font-bold text-gray-100 mb-3 flex items-center"><Info className="mr-2" size={18} /> Premium / Discount</h2>
               <div className="bg-surface-900 p-3 rounded">
                 <span className="text-gray-400 text-sm">Status: </span>
                 {data.premium_discount_pct > 0 ? (
@@ -272,7 +272,7 @@ const ETFDetail = () => {
 
           {/* 7. SIP GUIDANCE */}
           <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
-            <h3 className="text-lg font-bold text-gray-100 mb-2 flex items-center"><Target className="mr-2" size={18} /> SIP Guidance</h3>
+            <h2 className="text-lg font-bold text-gray-100 mb-2 flex items-center"><Target className="mr-2" size={18} /> SIP Guidance</h2>
             <p className="text-sm text-gray-400 mb-2">
               For long-term SIP investors: <br />
               <span className="text-gray-100 font-mono">RSI &lt; 45 + Price &gt; EMA 200 = Excellent entry</span>

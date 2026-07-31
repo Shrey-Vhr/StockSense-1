@@ -160,7 +160,7 @@ const IndexDetail = () => {
 
           {/* 4. RETURNS TABLE */}
           <div className="bg-surface-850 p-4 rounded-xl border border-surface-800 overflow-x-auto">
-            <h3 className="text-lg font-bold text-gray-100 mb-4">Rolling Returns</h3>
+            <h2 className="text-lg font-bold text-gray-100 mb-4">Rolling Returns</h2>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-3">
               {[
                 { key: '1_week', label: '1 Week' },
@@ -184,7 +184,7 @@ const IndexDetail = () => {
         <div className="space-y-6">
           {/* 6. INDEX VERDICT BOX */}
           <div className="bg-surface-850 border border-surface-700 rounded-2xl p-5">
-            <h3 className="text-base font-bold text-gray-100 mb-2">Market Verdict</h3>
+            <h2 className="text-base font-bold text-gray-100 mb-2">Market Verdict</h2>
             <p className={`text-lg ${data.verdict_color === 'green' ? 'text-up' : data.verdict_color === 'red' ? 'text-down' : 'text-gray-100'}`}>
               {data.verdict}
             </p>
@@ -195,7 +195,7 @@ const IndexDetail = () => {
 
           {/* 5. EMA STATUS */}
           <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
-            <h3 className="text-lg font-bold text-gray-100 mb-3">EMA Status</h3>
+            <h2 className="text-lg font-bold text-gray-100 mb-3">EMA Status</h2>
             <div className="space-y-2 font-mono">
               <div className="flex justify-between items-center bg-surface-900 p-2 rounded">
                 <span className="text-gray-400">Price vs EMA 20</span>
@@ -214,7 +214,7 @@ const IndexDetail = () => {
           
           {/* 7. WHEN TO INVEST */}
           <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
-            <h3 className="text-lg font-bold text-gray-100 mb-2 flex items-center"><Target className="mr-2" size={18} /> Investment Guidance</h3>
+            <h2 className="text-lg font-bold text-gray-100 mb-2 flex items-center"><Target className="mr-2" size={18} /> Investment Guidance</h2>
             <p className="text-sm text-gray-400 mb-2">
               Best time to add lump sum to Index ETFs: <br />
               <span className="text-gray-100 font-mono">RSI &lt; 50 AND price &gt; EMA 200</span>
