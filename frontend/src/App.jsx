@@ -8,6 +8,7 @@ import Portfolio from './pages/Portfolio'
 import News from './pages/News'
 import Watchlist from './pages/Watchlist'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import IndexDetail from './pages/IndexDetail'
 import ETFDetail from './pages/ETFDetail'
 import AIAnalysis from './pages/AIAnalysis'
@@ -29,7 +30,11 @@ const AppContent = () => {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-        
+        {/* Login has always linked here; without a route it fell through the
+            catch-all back to /login. useAuth.register() and POST /auth/register
+            already existed — only the route and page were missing. */}
+        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
             <Route index element={<PageTransition><Dashboard /></PageTransition>} />

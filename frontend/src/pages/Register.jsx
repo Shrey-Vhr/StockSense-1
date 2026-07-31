@@ -8,38 +8,59 @@ import { useAuth } from '../hooks/useAuth';
 import { Button, Field, Input } from '../components/ui';
 import { fadeInUp, stagger, listItem } from '../lib/motion';
 
+/**
+ * Sign-up.
+ *
+ * `useAuth.register()` and POST /auth/register already existed and worked —
+ * Login's "Sign up for free" link pointed at /register, which had no route, so
+ * it fell through the catch-all straight back to Login. This is the missing
+ * page, not new backend behaviour: it calls the existing hook, which registers
+ * and then logs in exactly as it always did.
+ *
+ * Deliberately mirrors Login's layout so the two read as one flow.
+ */
+
 const FEATURES = [
   { icon: TrendingUp, text: '2,100+ NSE stocks screened in real time' },
   { icon: Shield, text: '16 chart patterns detected automatically' },
   { icon: Zap, text: 'AI news sentiment via Groq' },
 ];
 
-const STATS = [
-  { value: '2,100+', label: 'Stocks' },
-  { value: '35+', label: 'Indicators' },
-  { value: '16', label: 'Patterns' },
-];
-
-const Login = () => {
+const Register = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
+
+  // Checked here rather than server-side because the API takes a single
+  // password field — there is nothing to compare against on the backend.
+  const mismatch = confirm.length > 0 && password !== confirm;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password !== confirm) {
+      setError('Passwords do not match');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      await login(email, password);
-      navigate('/');
+      const ok = await register(name, email, password);
+      if (ok) {
+        navigate('/');
+      } else {
+        // register() resolves false and stores the reason on the auth store.
+        setError(useAuth.getState().error || 'Registration failed');
+      }
     } catch (err) {
       setError(
         err.response?.data?.detail ||
-        'Invalid credentials'
+        'Registration failed'
       );
     } finally {
       setLoading(false);
@@ -53,9 +74,6 @@ const Login = () => {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden
                       bg-surface-900 border-r border-surface-800">
 
-        {/* Ambient orbs. Retuned from emerald to brand: on the one page where
-            no market data exists, a green wash still set the wrong expectation
-            for what green means everywhere else in the app. */}
         <motion.div
           className="absolute w-[500px] h-[500px] rounded-full blur-3xl
                      bg-brand-500/[0.10] -top-32 -left-32 pointer-events-none"
@@ -78,7 +96,6 @@ const Login = () => {
           }}
         />
 
-        {/* Brand */}
         <motion.div
           className="flex items-center gap-2.5 relative z-10"
           variants={fadeInUp}
@@ -91,7 +108,6 @@ const Login = () => {
           <span className="text-base font-semibold text-gray-100 tracking-tight">StockSense</span>
         </motion.div>
 
-        {/* Copy */}
         <motion.div
           className="relative z-10"
           variants={stagger}
@@ -102,14 +118,14 @@ const Login = () => {
             variants={listItem}
             className="text-4xl font-semibold text-gray-50 leading-[1.15] tracking-tight mb-4"
           >
-            Intelligent stock
+            Start trading
             <br />
-            analysis for India
+            with an edge
           </motion.h1>
 
           <motion.p variants={listItem} className="text-sm text-gray-400 leading-relaxed mb-8 max-w-sm">
-            Screening, live market data and AI-backed trade setups for the
-            Indian market — in one terminal.
+            Create an account to save watchlists, track a portfolio and run
+            the screener across the Indian market.
           </motion.p>
 
           <div className="space-y-2.5">
@@ -125,30 +141,12 @@ const Login = () => {
           </div>
         </motion.div>
 
-        {/* Stats */}
-        <motion.div
-          className="grid grid-cols-3 gap-3 relative z-10"
-          variants={stagger}
-          initial="hidden"
-          animate="visible"
-        >
-          {STATS.map((s) => (
-            <motion.div
-              key={s.label}
-              variants={listItem}
-              className="rounded-xl p-3 text-center bg-surface-850/80 backdrop-blur-sm border border-surface-800"
-            >
-              <div className="text-lg font-semibold text-gray-100 font-mono tnum">{s.value}</div>
-              <div className="text-2xs uppercase tracking-wider text-gray-500 mt-0.5">{s.label}</div>
-            </motion.div>
-          ))}
-        </motion.div>
+        <div className="relative z-10 text-2xs text-gray-500">
+          Free while StockSense is in development.
+        </div>
       </div>
 
       {/* ── Right panel — form ──────────────────────────────────────────── */}
-      {/* <main> because this route renders outside Layout, so it does not
-          inherit the app shell's landmark. The left panel is marketing copy;
-          the form is the page's actual content. */}
       <main className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 relative">
         <div className="absolute w-96 h-96 bg-brand-500/[0.05] rounded-full blur-3xl pointer-events-none" />
 
@@ -158,7 +156,6 @@ const Login = () => {
           initial="hidden"
           animate="visible"
         >
-          {/* Mobile brand */}
           <div className="flex items-center gap-2.5 mb-8 lg:hidden">
             <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-500">
               <CandlestickChart size={19} className="text-white" strokeWidth={2.25} aria-hidden="true" />
@@ -167,11 +164,10 @@ const Login = () => {
           </div>
 
           <div className="mb-7">
-            <h2 className="text-2xl font-semibold text-gray-50 tracking-tight">Welcome back</h2>
-            <p className="text-sm text-gray-500 mt-1.5">Sign in to your StockSense account</p>
+            <h2 className="text-2xl font-semibold text-gray-50 tracking-tight">Create your account</h2>
+            <p className="text-sm text-gray-500 mt-1.5">Takes less than a minute</p>
           </div>
 
-          {/* aria-live so the failure is announced, not just shown. */}
           <div aria-live="polite">
             <AnimatePresence>
               {error && (
@@ -190,6 +186,21 @@ const Login = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <Field label="Full name" required>
+              {(p) => (
+                <Input
+                  size="lg"
+                  type="text"
+                  autoComplete="name"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="Your name"
+                  required
+                  {...p}
+                />
+              )}
+            </Field>
+
             <Field label="Email address" required>
               {(p) => (
                 <Input
@@ -211,10 +222,10 @@ const Login = () => {
                   <Input
                     size="lg"
                     type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    placeholder="Enter your password"
+                    placeholder="Choose a password"
                     required
                     className="pr-11"
                     {...p}
@@ -233,32 +244,44 @@ const Login = () => {
               )}
             </Field>
 
-            {/* "Remember me" and "Forgot password?" used to sit here. Both were
-                inert, and neither could be made honest:
-                  - the token is issued for 7 days and stored in localStorage
-                    unconditionally, so sessions already persist — the checkbox
-                    could only ever misdescribe what happens;
-                  - there is no password-reset endpoint on the backend at all.
-                Removed rather than left as dead ends. */}
+            <Field
+              label="Confirm password"
+              required
+              error={mismatch ? 'Passwords do not match' : undefined}
+            >
+              {(p) => (
+                <Input
+                  size="lg"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  value={confirm}
+                  onChange={e => setConfirm(e.target.value)}
+                  placeholder="Re-enter your password"
+                  required
+                  {...p}
+                />
+              )}
+            </Field>
+
             <Button
               type="submit"
               variant="primary"
               size="lg"
               loading={loading}
-              disabled={loading}
+              disabled={loading || mismatch}
               className="w-full mt-1"
             >
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? 'Creating account…' : 'Create account'}
             </Button>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            Don't have an account?{' '}
+            Already have an account?{' '}
             <Link
-              to="/register"
+              to="/login"
               className="font-medium text-brand-400 transition-colors duration-fast hover:text-brand-300"
             >
-              Sign up for free
+              Sign in
             </Link>
           </p>
         </motion.div>
@@ -267,4 +290,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
