@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
@@ -140,7 +140,7 @@ const StockDetail = () => {
     return timeInMins >= 555 && timeInMins <= 930;
   };
 
-  const fetchStockQuote = async () => {
+  const fetchStockQuote = useCallback(async () => {
     try {
       const res = await api.get(`/stocks/quote/${cleanSymbol}`);
       const data = res.data;
@@ -159,46 +159,9 @@ const StockDetail = () => {
     } catch (error) {
       console.log('Quote fetch error:', error);
     }
-  };
-
-  useEffect(() => {
-    // Reset state on symbol change
-    setQuote(null); setStockPrice(null); setTechData(null); setFundData(null); setNews([]); setSentiment(null); setAiAnalysis(null); setErrorMsg(null);
-    setHistoricalData(null); setChartLoading(true);
-    setActiveTab('technical');
-    fetchInitialData();
-    
-    fetchStockQuote();
-    const priceInterval = setInterval(() => {
-      if (isMarketOpen()) {
-        fetchStockQuote();
-      }
-    }, 10000);
-    
-    return () => clearInterval(priceInterval);
   }, [cleanSymbol]);
 
-  const fetchNews = async (forceRefresh = false) => {
-    setIsNewsLoading(true);
-    try {
-      const url = `/news/stock/${cleanSymbol}?company_name=${cleanSymbol.replace('.NS', '')}${forceRefresh ? '&refresh=true' : ''}`;
-      const res = await api.get(url);
-      setNews(res.data.articles || []);
-      if (res.data.overall_sentiment) setSentiment(res.data.overall_sentiment);
-    } catch (e) {
-      console.error('Failed to fetch news', e);
-    } finally {
-      setIsNewsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'news' && cleanSymbol) {
-      fetchNews();
-    }
-  }, [activeTab, cleanSymbol]);
-
-  const fetchInitialData = async () => {
+  const fetchInitialData = useCallback(async () => {
     try {
       const [tRes, hRes, qRes] = await Promise.all([
         api.get(`/analysis/technical/${cleanSymbol}`),
@@ -240,7 +203,47 @@ const StockDetail = () => {
     }
 
     // News is now fetched on demand via useEffect when activeTab === 'news'
-  };
+  }, [cleanSymbol]);
+
+  useEffect(() => {
+    // Reset state on symbol change
+    setQuote(null); setStockPrice(null); setTechData(null); setFundData(null); setNews([]); setSentiment(null); setAiAnalysis(null); setErrorMsg(null);
+    setHistoricalData(null); setChartLoading(true);
+    setActiveTab('technical');
+    fetchInitialData();
+    
+    fetchStockQuote();
+    const priceInterval = setInterval(() => {
+      if (isMarketOpen()) {
+        fetchStockQuote();
+      }
+    }, 10000);
+    
+    return () => clearInterval(priceInterval);
+    // fetchInitialData and fetchStockQuote are both keyed on cleanSymbol, so
+    // their identity changes exactly when the symbol does — the effect still
+    // resets and re-polls once per symbol change, as before.
+  }, [cleanSymbol, fetchInitialData, fetchStockQuote]);
+
+  const fetchNews = useCallback(async (forceRefresh = false) => {
+    setIsNewsLoading(true);
+    try {
+      const url = `/news/stock/${cleanSymbol}?company_name=${cleanSymbol.replace('.NS', '')}${forceRefresh ? '&refresh=true' : ''}`;
+      const res = await api.get(url);
+      setNews(res.data.articles || []);
+      if (res.data.overall_sentiment) setSentiment(res.data.overall_sentiment);
+    } catch (e) {
+      console.error('Failed to fetch news', e);
+    } finally {
+      setIsNewsLoading(false);
+    }
+  }, [cleanSymbol]);
+
+  useEffect(() => {
+    if (activeTab === 'news' && cleanSymbol) {
+      fetchNews();
+    }
+  }, [activeTab, cleanSymbol, fetchNews]);
 
   const handleTabChange = async (tab) => {
     setActiveTab(tab);
@@ -466,7 +469,9 @@ const StockDetail = () => {
       chartRef.current = null;
       candleSeriesRef.current = null;
     };
-  }, [historicalData]);
+    // cleanSymbol feeds the TradingView watermark. historicalData already
+    // changes on every symbol change, so this rebuilds no more often than before.
+  }, [historicalData, cleanSymbol]);
 
   // ─── AI Levels drawing effect ────────────────────────────────────────────────
   useEffect(() => {

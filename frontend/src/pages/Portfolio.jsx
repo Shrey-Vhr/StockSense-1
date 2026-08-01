@@ -42,7 +42,8 @@ const Portfolio = () => {
       }
     }
     fetchHoldings()
-  }, [])
+    // Stable zustand action; still a single fetch on mount.
+  }, [setPortfolioHoldings])
 
   // Refresh holdings every 60s
   useEffect(() => {
@@ -51,7 +52,7 @@ const Portfolio = () => {
       setPortfolioHoldings(res.data)
     }, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [setPortfolioHoldings])
 
   // Fetch performance metrics
   useEffect(() => {
@@ -59,7 +60,10 @@ const Portfolio = () => {
       try {
         const res = await api.get('/portfolio/performance')
         setPerformance(res.data)
-      } catch(e) {}
+      } catch(e) {
+        // Deliberately silent: performance metrics are supplementary, and the
+        // holdings table below is unaffected if this endpoint is unavailable.
+      }
     }
     fetchPerf()
   }, [portfolioHoldings])

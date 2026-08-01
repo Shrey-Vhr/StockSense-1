@@ -58,7 +58,10 @@ const Header = ({ toggleSidebar, onOpenCommandPalette }) => {
           setAlerts(prev => [...res.data, ...prev].slice(0, 20));
           setTimeout(() => setHasAlerts(false), 10000);
         }
-      } catch (e) {}
+      } catch (e) {
+        // Deliberately silent: this polls every 60s, and surfacing a transient
+        // failure would put a banner in the header on every network blip.
+      }
     };
     checkPending();
     const interval = setInterval(checkPending, 60000);

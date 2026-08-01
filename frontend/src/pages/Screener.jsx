@@ -140,6 +140,18 @@ const Screener = () => {
   const [hasRunOnce, setHasRunOnce] = useState(false);
   const [progress, setProgress] = useState(null);
 
+  // ─── Fetch saved screeners ───────────────────────────────────────────────
+  // Hoisted above the mount effect that calls it. It was declared below, so the
+  // effect closed over a binding that did not exist yet.
+  const fetchSavedScreeners = useCallback(async () => {
+    try {
+      const res = await api.get('/screener/saved');
+      setSavedScreeners(res.data);
+    } catch (err) {
+      console.error('Failed to fetch saved screeners:', err);
+    }
+  }, [setSavedScreeners]);
+
   // ─── Fetch indicator catalogue on mount ──────────────────────────────────
   useEffect(() => {
     const fetchCatalogue = async () => {
@@ -160,17 +172,7 @@ const Screener = () => {
     };
     fetchCatalogue();
     fetchSavedScreeners();
-  }, []);
-
-  // ─── Fetch saved screeners ───────────────────────────────────────────────
-  const fetchSavedScreeners = async () => {
-    try {
-      const res = await api.get('/screener/saved');
-      setSavedScreeners(res.data);
-    } catch (err) {
-      console.error('Failed to fetch saved screeners:', err);
-    }
-  };
+  }, [fetchSavedScreeners]);
 
   // ─── Run screener ────────────────────────────────────────────────────────
   const runScreener = useCallback(() => {

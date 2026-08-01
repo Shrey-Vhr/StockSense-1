@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Eye, Plus, Trash2, X, AlertTriangle } from "lucide-react";
 import api from "../utils/api";
@@ -29,34 +29,27 @@ const Watchlist = () => {
   // anything but its own buttons, and named neither the list nor its contents.
   const [pendingDelete, setPendingDelete] = useState(null);
 
-  // Fetch all watchlists on load
-  useEffect(() => {
-    fetchWatchlists();
-  }, []);
-
-  // Fetch stocks when active watchlist changes
-  useEffect(() => {
-    if (activeWatchlist) {
-      fetchWatchlistStocks(activeWatchlist.id);
-    }
-  }, [activeWatchlist]);
-
-  const fetchWatchlists = async () => {
+  const fetchWatchlists = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get("/watchlists/");
       setWatchlists(res.data);
-      if (res.data.length > 0 && !activeWatchlist) {
-        setActiveWatchlist(res.data[0]);
+      // Was `if (... && !activeWatchlist) setActiveWatchlist(res.data[0])`.
+      // Reading activeWatchlist here meant memoising on it, which would have
+      // refetched every watchlist each time you switched list. The updater form
+      // asks React for the current value instead, so this depends on nothing
+      // and the "only select a default if none is chosen" rule is unchanged.
+      if (res.data.length > 0) {
+        setActiveWatchlist((prev) => prev ?? res.data[0]);
       }
     } catch (e) {
       setError("Failed to load watchlists");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchWatchlistStocks = async (id) => {
+  const fetchWatchlistStocks = useCallback(async (id) => {
     try {
       setStocksLoading(true);
       const res = await api.get(`/watchlists/${id}/stocks`);
@@ -66,7 +59,19 @@ const Watchlist = () => {
     } finally {
       setStocksLoading(false);
     }
-  };
+  }, []);
+
+  // Fetch all watchlists on load
+  useEffect(() => {
+    fetchWatchlists();
+  }, [fetchWatchlists]);
+
+  // Fetch stocks when active watchlist changes
+  useEffect(() => {
+    if (activeWatchlist) {
+      fetchWatchlistStocks(activeWatchlist.id);
+    }
+  }, [activeWatchlist, fetchWatchlistStocks]);
 
   const createWatchlist = async () => {
     if (!newWatchlistName.trim()) return;

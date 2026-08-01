@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Activity, TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
 import api from '../../utils/api';
 import { Button } from '../ui';
@@ -7,7 +7,7 @@ const InstitutionalTab = ({ symbol, fundData }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  const fetchData = async (refresh = false) => {
+  const fetchData = useCallback(async (refresh = false) => {
     setLoading(true);
     try {
       const result = await api.get(`/analysis/institutional/${symbol}${refresh ? '?refresh=true' : ''}`);
@@ -17,11 +17,11 @@ const InstitutionalTab = ({ symbol, fundData }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [symbol]);
 
   useEffect(() => {
     fetchData();
-  }, [symbol]);
+  }, [fetchData]);
   
   if (loading && !data) return <div className="flex justify-center py-20 text-brand-400"><Activity className="animate-pulse" /></div>;
   if (!data) return <p className="text-gray-400 text-center py-10">No institutional data available.</p>;

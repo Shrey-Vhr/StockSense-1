@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, CornerDownLeft, ArrowUpDown } from 'lucide-react';
@@ -50,6 +50,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
     return () => clearTimeout(debounce);
   }, [query]);
 
+  // Hoisted above the keydown effect that calls it — it was declared below, so
+  // the listener closed over a binding that did not exist when it was attached.
+  const handleSelect = useCallback((item) => {
+    navigate(`/stock/${item.symbol}`);
+    onClose();
+  }, [navigate, onClose]);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isOpen) return;
@@ -72,7 +79,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, results, selectedIndex]);
+  }, [isOpen, results, selectedIndex, handleSelect, onClose]);
 
   // Keyboard selection could run off the bottom of the scroll container.
   useEffect(() => {
@@ -80,11 +87,6 @@ const CommandPalette = ({ isOpen, onClose }) => {
       ?.querySelector(`[data-index="${selectedIndex}"]`)
       ?.scrollIntoView({ block: 'nearest' });
   }, [selectedIndex]);
-
-  const handleSelect = (item) => {
-    navigate(`/stock/${item.symbol}`);
-    onClose();
-  };
 
   return (
     <AnimatePresence>

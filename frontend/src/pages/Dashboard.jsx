@@ -106,7 +106,11 @@ const Dashboard = () => {
     if (!marketOverview) {
       fetchDashboardData();
     }
-  }, []);
+    // The setters are zustand actions defined once in the store creator, so
+    // they are stable and listing them costs nothing. `marketOverview` re-runs
+    // this once after the first fetch, where the guard above stops it.
+  }, [marketOverview, setLoading, setMarketNews, setMarketOverview,
+      setSectorPerformance, setTopGainers, setTopLosers]);
 
   useEffect(() => {
     const fetchSectorData = async () => {
@@ -160,7 +164,8 @@ const Dashboard = () => {
       clearInterval(overviewInterval);
       clearInterval(moversInterval);
     };
-  }, []);
+    // Stable zustand actions — the 60s/5min intervals are set up once, as before.
+  }, [setMarketOverview, setSectorPerformance, setTopGainers, setTopLosers]);
 
   const formatDate = (dateStr) => {
     try {

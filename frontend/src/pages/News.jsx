@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Newspaper, RefreshCw, AlertTriangle, ExternalLink } from 'lucide-react';
 import api from '../utils/api';
 import useStore from '../store/useStore';
@@ -18,13 +18,10 @@ const News = () => {
   const { marketNews, setMarketNews, isLoading, setLoading } = useStore();
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (marketNews.length === 0) {
-      fetchNews();
-    }
-  }, []);
-
-  const fetchNews = async () => {
+  // Declared above the effect that calls it, and memoised on the store setters
+  // (which zustand keeps stable), so the dependency list can be honest without
+  // the fetch identity churning every render.
+  const fetchNews = useCallback(async () => {
     setLoading('news', true);
     setError('');
     try {
@@ -40,7 +37,15 @@ const News = () => {
     } finally {
       setLoading('news', false);
     }
-  };
+  }, [setMarketNews, setLoading]);
+
+  // Still "fetch once if the store is empty" — the guard is what prevents a
+  // refetch, so re-running after the store fills is a no-op.
+  useEffect(() => {
+    if (marketNews.length === 0) {
+      fetchNews();
+    }
+  }, [marketNews.length, fetchNews]);
 
   // The news API is inconsistent about sentiment casing: the same endpoint
   // returns "POSITIVE" on some responses and "Positive" on others. Compare

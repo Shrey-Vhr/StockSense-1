@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Activity, TrendingUp, TrendingDown, Target } from 'lucide-react';
 import api from '../utils/api';
@@ -17,7 +17,10 @@ const IndexDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchIndexData = async () => {
+  // useCallback keyed on cleanSymbol, so the effect below can list it honestly:
+  // the identity changes only when the symbol does, which is exactly when the
+  // effect used to re-run. Same fetches, same triggers.
+  const fetchIndexData = useCallback(async () => {
     try {
       setLoading(true);
       const [analysisRes, historyRes] = await Promise.all([
@@ -32,11 +35,11 @@ const IndexDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [cleanSymbol]);
 
   useEffect(() => {
     fetchIndexData();
-  }, [cleanSymbol]);
+  }, [fetchIndexData]);
 
   if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-brand-400 w-10 h-10" /></div>;
   if (error) return <div role="alert" className="p-10 text-down">{error}</div>;

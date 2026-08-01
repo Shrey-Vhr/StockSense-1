@@ -46,6 +46,22 @@ export default [
       // dozen places. eslint 9 flags the unused binding by default; policing it
       // would mean rewriting error handling, which is behaviour, not lint.
       'no-unused-vars': ['error', { caughtErrors: 'none' }],
+
+      // Off, deliberately, and this is the one rule in this file that is a
+      // judgement call rather than a default.
+      //
+      // All 12 sites it flagged are the same shape: an effect calls a fetch
+      // that does `setLoading(true)` before its first `await`. That is the
+      // standard way to write a fetch with a loading state — there is no
+      // formulation of it that satisfies the rule short of moving data
+      // fetching to a library like React Query, which is a rearchitecture, not
+      // a lint fix. The remaining four are "reset state when this prop
+      // changed", which is also the documented pattern.
+      //
+      // The rule is worth revisiting if this app ever adopts a data-fetching
+      // library or the React Compiler; until then it only produces noise that
+      // trains people to ignore lint output.
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
 ];
