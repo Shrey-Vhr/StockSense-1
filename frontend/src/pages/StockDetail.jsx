@@ -15,6 +15,7 @@ import {
 } from '../lib/pdfTemplates';
 import { Badge, Button, Field, Input, Modal, Select, Spinner } from '../components/ui';
 import { verdictTone, formatChange } from '../lib/format';
+import { requestNotificationPermission } from '../hooks/useNotifications';
 import MetricCard from '../components/stock/MetricCard';
 import QuickLevelsCard from '../components/stock/QuickLevelsCard';
 import InstitutionalTab from '../components/stock/InstitutionalTab';
@@ -550,6 +551,9 @@ const StockDetail = () => {
 
   const handleCreateAlert = async (e) => {
     e.preventDefault();
+    // Asked for here rather than on sign-in: this is a real user gesture, and
+    // it is the point where a browser notification is obviously the payoff.
+    requestNotificationPermission();
     try {
       await api.post('/alerts', {
         symbol: cleanSymbol,

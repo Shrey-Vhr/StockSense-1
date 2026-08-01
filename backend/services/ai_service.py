@@ -14,27 +14,47 @@ class AIService:
         if not settings.ANTHROPIC_API_KEY:
             return {"error": "Anthropic API key is not configured in environment variables."}
             
+        text = ""
         try:
             client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
             response = client.messages.create(
                 model=model,
-                max_tokens=4000,
+                # The full-analysis schema (verdict, trade setup, four
+                # timeframes, bull/bear cases, risks) does not fit in 4000
+                # output tokens. When it overran, the response was cut off
+                # mid-string and surfaced as "Unterminated string" — a JSON
+                # parse error that gave no hint the real cause was the limit.
+                max_tokens=8000,
                 temperature=0.2,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_prompt}]
             )
-            
+
+            # Say so plainly instead of letting it fail as malformed JSON.
+            if response.stop_reason == "max_tokens":
+                logger.error(
+                    f"Claude hit the {8000} token output limit for this request; "
+                    f"the JSON is incomplete."
+                )
+                return {
+                    "error": "The analysis was too long to return in full. "
+                             "Try a narrower analysis type."
+                }
+
             text = response.content[0].text
             # Clean JSON blocks if Claude wraps it in markdown
             if "```json" in text:
                 text = text.split("```json")[1].split("```")[0].strip()
             elif "```" in text:
                 text = text.split("```")[1].split("```")[0].strip()
-                
+
             return json.loads(text)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse Claude JSON. Error: {e}")
-            logger.error(f"Raw text received: {text[:500]}")
+            # Both ends: truncation shows up at the tail, not the head, so
+            # logging only the first 500 chars hid the actual problem.
+            logger.error(f"Raw text head: {text[:500]}")
+            logger.error(f"Raw text tail: {text[-500:]}")
             return {"error": f"AI returned malformed JSON: {str(e)}"}
         except Exception as e:
             logger.error(f"Claude API error: {e}")

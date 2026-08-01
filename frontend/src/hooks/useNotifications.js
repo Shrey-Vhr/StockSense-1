@@ -3,6 +3,25 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { useAuth } from "./useAuth";
 
+/**
+ * Ask for notification permission.
+ *
+ * Call this from a user gesture. It used to run on mount, which meant a
+ * permission prompt appeared the instant you signed in, with no explanation of
+ * what it was for — and Chrome increasingly ignores permission requests that
+ * are not tied to a gesture, so it often achieved nothing anyway. It now runs
+ * when you create a price alert, which is both a real gesture and the moment
+ * the permission is obviously relevant.
+ */
+export function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    return Notification.requestPermission();
+  }
+  return Promise.resolve(
+    "Notification" in window ? Notification.permission : "denied"
+  );
+}
+
 export function useNotifications() {
   const navigate = useNavigate();
   const intervalRef = useRef(null);
@@ -16,14 +35,6 @@ export function useNotifications() {
         intervalRef.current = null;
       }
       return;
-    }
-
-    // Request permission on mount
-    if (
-      "Notification" in window &&
-      Notification.permission === "default"
-    ) {
-      Notification.requestPermission();
     }
 
     const checkAlerts = async () => {
