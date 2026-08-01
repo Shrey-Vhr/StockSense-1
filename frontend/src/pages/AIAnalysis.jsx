@@ -6,7 +6,7 @@ import {
 import api from '../utils/api';
 import { openPrintWindow, buildAiReportHtml } from '../lib/pdfTemplates';
 import {
-  Badge, Button, Card, EmptyState, Input, MetricTile, PageHeader, Spinner,
+  Badge, Button, Card, Disclaimer, EmptyState, Input, MetricTile, PageHeader, Spinner,
 } from '../components/ui';
 import { cn } from '../lib/cn';
 import { verdictTone } from '../lib/format';
@@ -378,6 +378,8 @@ const AIAnalysis = () => {
               )}
             </Card>
           </div>
+
+          <Disclaimer />
         </div>
       )}
     </div>

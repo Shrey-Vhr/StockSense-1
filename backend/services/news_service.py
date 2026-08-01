@@ -56,7 +56,10 @@ def _initialize_groq():
     print("❌ GROQ_API_KEY not found")
     return
   
-  print(f"🔑 Groq key: {api_key[:12]}...")
+  # Was printing the first 12 characters of the key on every startup. That is
+  # enough to leak in a terminal screenshot, and knowing the prefix tells you
+  # nothing you cannot get from "a key is configured".
+  print("🔑 Groq key: configured")
   
   try:
     from groq import Groq

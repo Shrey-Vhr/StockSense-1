@@ -13,7 +13,7 @@ import {
   buildTechnicalsReportHtml,
   buildFundamentalsReportHtml,
 } from '../lib/pdfTemplates';
-import { Badge, Button, Field, Input, Modal, Select, Spinner } from '../components/ui';
+import { Badge, Button, Disclaimer, Field, Input, Modal, Select, Spinner } from '../components/ui';
 import { verdictTone, formatChange } from '../lib/format';
 import { requestNotificationPermission } from '../hooks/useNotifications';
 import MetricCard from '../components/stock/MetricCard';
@@ -1664,6 +1664,7 @@ const StockDetail = () => {
                 <p>Click &quot;Claude AI Analysis&quot; above to generate a deep-dive report.</p>
               </div>
             )}
+            {aiAnalysis && <Disclaimer className="mt-5" />}
           </div>
         )}
           </motion.div>

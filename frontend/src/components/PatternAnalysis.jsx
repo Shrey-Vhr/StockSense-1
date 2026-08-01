@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import api from "../utils/api";
-import { Badge, Card, MetricTile } from "./ui";
+import { Badge, Card, Disclaimer, MetricTile } from "./ui";
 import { SkeletonBox } from "./Skeleton";
 import { stagger, listItem } from "../lib/motion";
 
@@ -218,6 +218,10 @@ const PatternAnalysis = ({ symbol }) => {
               Available in Claude AI Analysis tab
             </p>
           </div>
+
+          {/* This card puts an entry, a stop loss and two targets on screen, so
+              it carries the same note as the AI pages. */}
+          <Disclaimer className="mt-3" />
         </Card>
       )}
     </div>
