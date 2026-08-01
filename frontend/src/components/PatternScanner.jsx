@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, AlertTriangle } from "lucide-react";
 import api from "../utils/api";
 import { Badge, Button, Card } from "./ui";
@@ -65,6 +66,7 @@ const PatternScanner = () => {
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState("");
   const pollRef = useRef(null);
+  const navigate = useNavigate();
 
   const togglePattern = (patternName) => {
     setSelectedPatterns(prev =>
@@ -292,12 +294,28 @@ const PatternScanner = () => {
             </p>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {results.map((stock, i) => (
+              {results.map((stock, i) => {
+                // Was `window.location.href`, which tears down the SPA and
+                // reloads the whole app just to change route — losing the scan
+                // results the user is clicking through. Router navigation keeps
+                // them. The row was also a plain div with onClick, so it could
+                // not be reached by keyboard at all; same treatment as Tr.
+                const open = () => navigate(`/stock/${stock.symbol}`);
+                return (
                 <div
                   key={i}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${stock.name}, open analysis`}
                   className="rounded-lg p-3 bg-surface-950 border border-surface-800
                              cursor-pointer transition-colors duration-fast hover:border-surface-700"
-                  onClick={() => window.location.href = `/stock/${stock.symbol}`}
+                  onClick={open}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      open();
+                    }
+                  }}
                 >
                   <div className="flex justify-between items-start gap-3">
                     <div className="min-w-0">
@@ -335,7 +353,8 @@ const PatternScanner = () => {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
