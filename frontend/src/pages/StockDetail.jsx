@@ -2,10 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
-import { Activity, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, AlertTriangle, BellPlus, X, BarChart2, Building2, Brain, Download, RefreshCw } from 'lucide-react';
+import { Activity, BrainCircuit, Newspaper, TrendingUp, TrendingDown, Target, AlertTriangle, BellPlus, BarChart2, Building2, Brain, Download, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
-import useStore from '../store/useStore';
 import PatternAnalysis from '../components/PatternAnalysis';
 import { StockDetailSkeleton } from '../components/Skeleton';
 import {
@@ -47,7 +46,6 @@ const StockDetail = () => {
   const { symbol } = useParams();
   const navigate = useNavigate();
   const cleanSymbol = symbol ? symbol.toUpperCase() : 'RELIANCE.NS';
-  const { setLoading } = useStore();
 
   const [watchlistAdded, setWatchlistAdded] = useState(false);
 
@@ -85,7 +83,10 @@ const StockDetail = () => {
   const [activeTab, setActiveTab] = useState('technical');
   const [quote, setQuote] = useState(null);
   const [stockPrice, setStockPrice] = useState(null);
-  const [priceSource, setPriceSource] = useState(null);
+  // Written on every quote poll but never read — the source badge it fed was
+  // removed at some point. Left writing rather than deleted, since removing the
+  // setter would touch the polling logic.
+  const [, setPriceSource] = useState(null);
   const [quoteFlash, setQuoteFlash] = useState('');
   const [techData, setTechData] = useState(null);
   const [fundData, setFundData] = useState(null);
@@ -1651,7 +1652,7 @@ const StockDetail = () => {
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                 <BrainCircuit size={48} className="mb-4 opacity-20" />
-                <p>Click "Claude AI Analysis" above to generate a deep-dive report.</p>
+                <p>Click &quot;Claude AI Analysis&quot; above to generate a deep-dive report.</p>
               </div>
             )}
           </div>

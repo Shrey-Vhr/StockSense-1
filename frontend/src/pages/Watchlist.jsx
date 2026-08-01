@@ -5,7 +5,7 @@ import api from "../utils/api";
 import { WatchlistSkeleton } from '../components/Skeleton';
 import Sparkline from '../components/Sparkline';
 import {
-  Badge, Button, Card, DeltaBadge, EmptyState, Field, Input,
+  Button, Card, DeltaBadge, EmptyState, Field, Input,
   Modal, PageHeader,
   Table, THead, TBody, Th, Tr, Td,
 } from '../components/ui';

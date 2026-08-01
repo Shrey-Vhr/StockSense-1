@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Activity, TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
 import api from '../../utils/api';
-import { cn } from '../../lib/cn';
 import { Button } from '../ui';
 
 const InstitutionalTab = ({ symbol, fundData }) => {

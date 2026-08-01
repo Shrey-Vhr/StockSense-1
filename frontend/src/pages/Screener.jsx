@@ -13,7 +13,6 @@ import {
   Field, Input, Modal, PageHeader, Select, Spinner, Tooltip,
   Table, THead, TBody, Th, Tr, Td,
 } from '../components/ui';
-import { cn } from '../lib/cn';
 import { formatCurrency, formatNumber, displaySymbol } from '../lib/format';
 import { listItem } from '../lib/motion';
 
