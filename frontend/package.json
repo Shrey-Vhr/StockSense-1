@@ -1,7 +1,14 @@
 {
   "name": "stocksense-frontend",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
+  "description": "Swing trading terminal for the Indian stock market — screener, technical and fundamental analysis, and AI-generated trade setups.",
+  "author": "Shrey Vohra",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shrey-Vhr/StockSense.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -159,7 +159,8 @@ entry, stop and target.
 
 ### Prerequisites
 
-- Python 3.10+
+- **Python 3.10–3.13.** Not 3.14 — `pandas-ta` depends on `numba`, which has no wheel for
+  3.14 yet and fails to build from source.
 - Node.js 18+
 - An Anthropic or Gemini API key (for AI analysis features)
 
