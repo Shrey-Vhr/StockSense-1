@@ -193,6 +193,17 @@ Copy the example env file and fill in your keys:
 cp .env.example .env
 ```
 
+**`SECRET_KEY` is required** — the backend refuses to start without it, and rejects
+placeholders and anything shorter than 32 characters. Generate one:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+You also need at least one AI provider key (`ANTHROPIC_API_KEY` or `GEMINI_API_KEY`) for
+the analysis features. Everything else is optional — the app falls back to yfinance for
+market data and RSS for news.
+
 See [Environment Variables](#environment-variables) below for what each key does.
 
 ### 4. Frontend setup
