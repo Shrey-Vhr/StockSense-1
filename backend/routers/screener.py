@@ -7,8 +7,15 @@ import json
 from database import get_db
 from models.screener import SavedScreener
 from services.screener_service import ScreenerEngine, INDICATOR_CATALOGUE
+from routers.auth import get_current_user
 
 router = APIRouter()
+
+# Applied per-route rather than on the router so it is obvious that /stream is
+# included too. The frontend reads that endpoint with fetch rather than
+# EventSource precisely so it can send an Authorization header — EventSource
+# cannot, and the alternative was putting a token in the query string.
+_authed = [Depends(get_current_user)]
 
 
 # ---------------------------------------------------------------------------
@@ -41,7 +48,7 @@ from fastapi.responses import StreamingResponse
 # ---------------------------------------------------------------------------
 # GET /stream — Run screener with SSE
 # ---------------------------------------------------------------------------
-@router.get("/stream")
+@router.get("/stream", dependencies=_authed)
 async def run_screener_stream(conditions: str):
     try:
         conds = json.loads(conditions)
@@ -55,7 +62,7 @@ async def run_screener_stream(conditions: str):
 # ---------------------------------------------------------------------------
 # POST /run — Run screener with custom conditions
 # ---------------------------------------------------------------------------
-@router.post("/run")
+@router.post("/run", dependencies=_authed)
 async def run_screener(body: RunScreenerRequest):
     try:
         # Convert Pydantic models to dicts for the engine
@@ -78,7 +85,7 @@ async def run_screener(body: RunScreenerRequest):
 # ---------------------------------------------------------------------------
 # GET /indicators — Full catalogue for the frontend condition builder
 # ---------------------------------------------------------------------------
-@router.get("/indicators")
+@router.get("/indicators", dependencies=_authed)
 async def get_indicators():
     return INDICATOR_CATALOGUE
 
@@ -86,7 +93,7 @@ async def get_indicators():
 # ---------------------------------------------------------------------------
 # GET /saved — List all saved screener configurations
 # ---------------------------------------------------------------------------
-@router.get("/saved")
+@router.get("/saved", dependencies=_authed)
 def get_saved_screeners(db: Session = Depends(get_db)):
     rows = db.query(SavedScreener).order_by(SavedScreener.updated_at.desc()).all()
     return [
@@ -107,7 +114,7 @@ def get_saved_screeners(db: Session = Depends(get_db)):
 # ---------------------------------------------------------------------------
 # POST /save — Save a named screener configuration
 # ---------------------------------------------------------------------------
-@router.post("/save")
+@router.post("/save", dependencies=_authed)
 def save_screener(body: SaveScreenerRequest, db: Session = Depends(get_db)):
     conditions_json = json.dumps([c.model_dump() for c in body.conditions])
     row = SavedScreener(
@@ -130,7 +137,7 @@ def save_screener(body: SaveScreenerRequest, db: Session = Depends(get_db)):
 # ---------------------------------------------------------------------------
 # DELETE /saved/{id} — Delete a saved screener
 # ---------------------------------------------------------------------------
-@router.delete("/saved/{screener_id}")
+@router.delete("/saved/{screener_id}", dependencies=_authed)
 def delete_saved_screener(screener_id: int, db: Session = Depends(get_db)):
     row = db.query(SavedScreener).filter(SavedScreener.id == screener_id).first()
     if not row:

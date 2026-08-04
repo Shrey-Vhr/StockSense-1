@@ -62,17 +62,30 @@ app.add_middleware(
 )
 
 # Only THEN import and include routers
+from fastapi import Depends
 from routers import auth, stocks, analysis, screener, news, portfolio, alerts, ai, watchlist
+from routers.auth import get_current_user
+
+# Every router below except auth is behind a token.
+#
+# These used to answer anonymously. That was harmless while this ran only on
+# localhost, but /api/ai spends real Anthropic credit per call and
+# /api/screener scans 2,100 stocks over roughly three minutes of CPU — both
+# are things a stranger should not be able to trigger.
+#
+# The frontend already sends the token: utils/api.js attaches a Bearer header
+# to every axios request, so nothing on the client needed to change.
+_authed = [Depends(get_current_user)]
 
 # Include all module routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
-app.include_router(stocks.router, prefix="/api/stocks", tags=["Stocks"])
-app.include_router(analysis.router, prefix="/api/analysis", tags=["Analysis"])
+app.include_router(stocks.router, prefix="/api/stocks", tags=["Stocks"], dependencies=_authed)
+app.include_router(analysis.router, prefix="/api/analysis", tags=["Analysis"], dependencies=_authed)
 app.include_router(screener.router, prefix="/api/screener", tags=["Screener"])
-app.include_router(news.router, prefix="/api/news", tags=["News"])
+app.include_router(news.router, prefix="/api/news", tags=["News"], dependencies=_authed)
 app.include_router(portfolio.router, prefix="/api/portfolio", tags=["Portfolio"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts"])
-app.include_router(ai.router, prefix="/api/ai", tags=["AI Insights"])
+app.include_router(ai.router, prefix="/api/ai", tags=["AI Insights"], dependencies=_authed)
 app.include_router(
     watchlist.router,
     prefix="/api/watchlists",

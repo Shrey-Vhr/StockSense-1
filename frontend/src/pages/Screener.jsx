@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -140,6 +140,12 @@ const Screener = () => {
   const [hasRunOnce, setHasRunOnce] = useState(false);
   const [progress, setProgress] = useState(null);
 
+  // Aborts the in-flight scan stream. Held in a ref so unmounting can cancel a
+  // run that would otherwise keep reading after the page is gone.
+  const streamRef = useRef(null);
+
+  useEffect(() => () => streamRef.current?.abort(), []);
+
   // ─── Fetch saved screeners ───────────────────────────────────────────────
   // Hoisted above the mount effect that calls it. It was declared below, so the
   // effect closed over a binding that did not exist yet.
@@ -183,49 +189,95 @@ const Screener = () => {
     setProgress({ processed: 0, total: 100 });
 
     const query = encodeURIComponent(JSON.stringify(conditions));
-    const es = new EventSource(`${import.meta.env.VITE_API_URL}/screener/stream?conditions=${query}`);
 
-    es.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.error) {
-          console.error(data.error);
-          es.close();
-          setLoading('screener', false);
-          setProgress(null);
-        } else if (data.progress !== undefined) {
-          setProgress({ processed: data.progress, total: data.total });
-        } else if (data.summary) {
-          const current = useStore.getState();
-          setScreenerData({ results: current.screenerResults, summary: data });
-          es.close();
-          setLoading('screener', false);
-          setProgress(null);
-        } else {
-          const current = useStore.getState();
-          const newResults = [...current.screenerResults, data];
-          newResults.sort((a, b) => {
-            const valA = a[sortBy] ?? (sortBy === 'score' ? 0 : 0);
-            const valB = b[sortBy] ?? (sortBy === 'score' ? 0 : 0);
-            return sortOrder === 'desc' ? valB - valA : valA - valB;
-          });
-          newResults.forEach((r, i) => r.rank = i + 1);
-          setScreenerData({
-            results: newResults.slice(0, limit),
-            summary: current.screenerSummary
-          });
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
+    // Read over fetch rather than EventSource. EventSource cannot set headers,
+    // so the only way to authenticate it is a token in the query string —
+    // which lands in server logs and browser history. fetch carries the same
+    // Bearer header as every other request, and the scan endpoint is now
+    // behind auth like the rest of the API.
+    const controller = new AbortController();
+    streamRef.current = controller;
 
-    es.onerror = (error) => {
-      console.error("SSE error", error);
-      es.close();
+    const stop = () => {
+      controller.abort();
       setLoading('screener', false);
       setProgress(null);
     };
+
+    // Unchanged from the EventSource version — only the transport moved.
+    const handle = (data) => {
+      if (data.error) {
+        console.error(data.error);
+        stop();
+      } else if (data.progress !== undefined) {
+        setProgress({ processed: data.progress, total: data.total });
+      } else if (data.summary) {
+        const current = useStore.getState();
+        setScreenerData({ results: current.screenerResults, summary: data });
+        stop();
+      } else {
+        const current = useStore.getState();
+        const newResults = [...current.screenerResults, data];
+        newResults.sort((a, b) => {
+          const valA = a[sortBy] ?? (sortBy === 'score' ? 0 : 0);
+          const valB = b[sortBy] ?? (sortBy === 'score' ? 0 : 0);
+          return sortOrder === 'desc' ? valB - valA : valA - valB;
+        });
+        newResults.forEach((r, i) => r.rank = i + 1);
+        setScreenerData({
+          results: newResults.slice(0, limit),
+          summary: current.screenerSummary
+        });
+      }
+    };
+
+    (async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/screener/stream?conditions=${query}`,
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            signal: controller.signal,
+          }
+        );
+        if (!res.ok) throw new Error(`Screener stream failed: ${res.status}`);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          // SSE frames are separated by a blank line. A chunk can split one in
+          // half, so anything after the last separator stays in the buffer.
+          let split;
+          while ((split = buffer.indexOf('\n\n')) !== -1) {
+            const frame = buffer.slice(0, split);
+            buffer = buffer.slice(split + 2);
+            for (const line of frame.split('\n')) {
+              if (!line.startsWith('data:')) continue;
+              try {
+                handle(JSON.parse(line.slice(5).trim()));
+              } catch (e) {
+                console.error('Bad SSE frame', e);
+              }
+            }
+          }
+        }
+        setLoading('screener', false);
+        setProgress(null);
+      } catch (e) {
+        // abort() is how a finished or cancelled scan unwinds, not a failure.
+        if (e.name !== 'AbortError') {
+          console.error('Screener stream error', e);
+          setLoading('screener', false);
+          setProgress(null);
+        }
+      }
+    })();
   }, [conditions, sortBy, sortOrder, limit, setScreenerData, setLoading]);
 
   // ─── Save screener ──────────────────────────────────────────────────────
