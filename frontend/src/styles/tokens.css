@@ -1,0 +1,108 @@
+/**
+ * StockSense design tokens
+ * ─────────────────────────────────────────────────────────────────────────────
+ * The single source of truth for colour, elevation and motion.
+ *
+ * Values are stored as space-separated RGB channels rather than hex so that
+ * Tailwind's alpha modifiers keep working — `bg-surface-900/50` compiles to
+ * `rgb(var(--surface-900) / 0.5)`. There are 153 such modifiers in the
+ * codebase, so this is load-bearing, not stylistic.
+ *
+ * In raw CSS, use `rgb(var(--token))` or `rgb(var(--token) / 0.5)`.
+ *
+ * Token names deliberately mirror the Tailwind class names one-to-one, so
+ * `--surface-800` is exactly what `bg-surface-800` renders.
+ *
+ * Contrast ratios are measured against --surface-900 (the card background),
+ * the most common text backdrop in the app, and verified in the browser.
+ */
+
+:root {
+  /* ── Brand ─────────────────────────────────────────────────────────────────
+   * UI only: buttons, active navigation, focus rings, links, selection.
+   * Never used to signal market direction — that is what up/down are for.
+   */
+  --brand-300: 165 174 255;
+  --brand-400: 124 134 236;   /* text / icons on dark            5.7:1 */
+  --brand-500:  90  99 212;   /* solid fills, white label        5.1:1 */
+  --brand-600:  74  82 184;   /* hover / pressed                       */
+  --brand-700:  58  65 150;   /* deep accent, borders                  */
+
+  /* ── Market semantics ──────────────────────────────────────────────────────
+   * Reserved exclusively for price direction, P&L, candles, heatmap and
+   * sentiment. If it is not market data, it does not get these colours.
+   *
+   * up / down deliberately match Tailwind's emerald-400 / red-400, which the
+   * app already uses for gains and losses. That makes adopting them a rename
+   * rather than a re-colour, so no existing price display shifts hue.
+   */
+  --up:            52 211 153;   /* gains, positive P&L            9.7:1 */
+  --up-strong:     46 189 133;   /* candle bodies, filled bars           */
+  --down:         248 113 113;   /* losses, negative P&L           6.7:1 */
+  --down-strong:  246  70  93;   /* candle bodies, filled bars           */
+  --flat:         155 163 175;   /* unchanged / no data                  */
+
+  /* ── Caution ───────────────────────────────────────────────────────────────
+   * A third semantic the system was missing, which is why "medium" kept being
+   * drawn as a second green: elevated VIX, a middling confidence score, a
+   * neutral-but-noteworthy pattern. It reads as "look closer", not as
+   * direction, so it must not be borrowed for gains or losses.
+   */
+  --warn:         251 191  36;   /* caution text and fills        11.2:1 */
+
+  /* ── Chart series ──────────────────────────────────────────────────────────
+   * Overlay lines (EMAs) are data, but they are not *direction*, so they must
+   * not borrow the up/down colours. The old EMA 200 was #ff5252 — a red line
+   * that read as bearish no matter what the trend was actually doing. Amber
+   * separates it from both the down colour and the other two series.
+   *
+   * The same four also carry non-chart categorical data — the shareholding
+   * split, where "FPI / FII" was drawn in emerald purely because it needed *a*
+   * colour, and so read as a gain.
+   */
+  --series-1: 124 134 236;   /* EMA 20  · indigo */
+  --series-2:  96 165 250;   /* EMA 50  · blue   */
+  --series-3: 251 191  36;   /* EMA 200 · amber  */
+  --series-4: 167 139 250;   /*         · violet */
+
+  /* ── Surfaces ──────────────────────────────────────────────────────────────
+   * Descending lightness as the number rises, matching Tailwind convention.
+   * Mapped onto the class names already in use so this phase is a re-colour,
+   * not a rename — no page markup has to change.
+   */
+  --surface-600:  58  65  78;   /* strongest border                     */
+  --surface-700:  42  47  58;   /* strong border                        */
+  --surface-800:  30  34  43;   /* hover, inputs, default border        */
+  --surface-850:  23  26  33;   /* panels, raised                       */
+  --surface-900:  17  19  24;   /* cards                                */
+  --surface-950:  10  11  15;   /* app background                       */
+
+  /* ── Text ──────────────────────────────────────────────────────────────────
+   * --text-tertiary replaces the old #6b7280, which measured ~2:1 against the
+   * page background and was being used for real content, not just decoration.
+   */
+  --text-primary:   232 234 237;   /* headings, values             15.4:1 */
+  --text-secondary: 155 163 175;   /* body, labels                  7.3:1 */
+  --text-tertiary:  124 132 143;   /* meta, hints                   4.9:1 */
+  --text-disabled:   86  93 104;   /* disabled only, never content         */
+
+  /* ── Elevation ─────────────────────────────────────────────────────────────
+   * Restrained on a dark UI — borders carry most of the separation, shadows
+   * only lift things that genuinely float (menus, modals, popovers).
+   */
+  --shadow-xs:      0 1px 2px rgb(0 0 0 / 0.40);
+  --shadow-sm:      0 2px 4px rgb(0 0 0 / 0.40), 0 1px 2px rgb(0 0 0 / 0.30);
+  --shadow-md:      0 4px 12px rgb(0 0 0 / 0.45);
+  --shadow-lg:      0 12px 32px -8px rgb(0 0 0 / 0.60);
+  --shadow-overlay: 0 24px 64px -12px rgb(0 0 0 / 0.70);
+
+  /* ── Motion ────────────────────────────────────────────────────────────────
+   * One easing curve for entrances, one for state changes. Three durations.
+   * Anything outside this set is a bug, not a decision.
+   */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:   120ms;
+  --dur-base:   180ms;
+  --dur-slow:   260ms;
+}

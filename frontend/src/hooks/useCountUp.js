@@ -9,11 +9,21 @@ const useCountUp = (
   const [count, setCount] = useState(start);
   const frameRef = useRef(null);
   const startTimeRef = useRef(null);
+  // Tracks what is currently on screen so an update animates from there.
+  // Written by the animation frame rather than during render: a render-phase
+  // ref write is not safe under concurrent rendering, and `animate` is the only
+  // thing that ever changes `count`, so it already knows the value.
+  const currentRef = useRef(start);
 
   useEffect(() => {
     if (!end && end !== 0) return;
-    
-    const startVal = start;
+
+    // Was `start` (0) on every run, so each new price counted up from zero —
+    // on a dashboard that repolls every 15 seconds, the index appeared to
+    // collapse to 0.00 and climb back each time. Animating from the value
+    // already displayed keeps the first mount identical (count starts at 0)
+    // while making subsequent updates a short tick rather than a full reset.
+    const startVal = currentRef.current;
     const endVal = parseFloat(end);
     
     if (isNaN(endVal)) return;
@@ -32,12 +42,13 @@ const useCountUp = (
       const eased = 1 - Math.pow(1 - progress, 3);
       const current = startVal + (endVal - startVal) * eased;
       
-      setCount(
-        decimals > 0 
-          ? parseFloat(current.toFixed(decimals))
-          : Math.floor(current)
-      );
-      
+      const value = decimals > 0
+        ? parseFloat(current.toFixed(decimals))
+        : Math.floor(current);
+
+      currentRef.current = value;
+      setCount(value);
+
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(animate);
       }

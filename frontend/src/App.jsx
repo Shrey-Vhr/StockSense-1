@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, MotionConfig } from 'framer-motion'
 import PageTransition from './components/PageTransition'
 import Dashboard from './pages/Dashboard'
 import StockDetail from './pages/StockDetail'
@@ -8,6 +8,7 @@ import Portfolio from './pages/Portfolio'
 import News from './pages/News'
 import Watchlist from './pages/Watchlist'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import IndexDetail from './pages/IndexDetail'
 import ETFDetail from './pages/ETFDetail'
 import AIAnalysis from './pages/AIAnalysis'
@@ -29,7 +30,11 @@ const AppContent = () => {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-        
+        {/* Login has always linked here; without a route it fell through the
+            catch-all back to /login. useAuth.register() and POST /auth/register
+            already existed — only the route and page were missing. */}
+        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
             <Route index element={<PageTransition><Dashboard /></PageTransition>} />
@@ -60,32 +65,54 @@ function App() {
   }, []);
 
   return (
+    // The prefers-reduced-motion block in index.css only reaches CSS animations
+    // and transitions. framer-motion drives its own values on requestAnimationFrame
+    // via inline styles, so all 36 motion elements ignored it entirely and users
+    // who ask for reduced motion still got every slide and scale in the app.
+    // `reducedMotion="user"` is framer's own switch for this: it drops transform
+    // and layout animations when the OS asks, and keeps opacity fades.
+    <MotionConfig reducedMotion="user">
     <BrowserRouter
       future={{
         v7_startTransition: true,
         v7_relativeSplatPath: true
       }}
     >
-      <div className="fixed top-0 left-0 right-0 h-0.5 z-[9999] pointer-events-none"
-           style={{
-             background: 'linear-gradient(90deg, transparent 0%, #10b981 30%, #34d399 50%, #10b981 70%, transparent 100%)'
-           }}
+      <div
+        className="fixed top-0 left-0 right-0 h-px z-[9999] pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent 0%, rgb(var(--brand-500)) 30%, rgb(var(--brand-400)) 50%, rgb(var(--brand-500)) 70%, transparent 100%)',
+        }}
       />
       <div className="dot-grid" />
       {showSplash && <SplashScreen />}
-      <Toaster 
+      {/* Styled from the tokens rather than hardcoded hex. The previous values
+          were also wrong: the comments claimed surface-850 and surface-800 but
+          #1A1D24 / #2B303B matched neither, so toasts never quite lined up with
+          any other panel in the app. */}
+      <Toaster
         position="bottom-right"
         toastOptions={{
-          className: '!bg-surface-850 !text-gray-100 !border !border-surface-800 font-sans',
+          className: 'font-sans',
           style: {
-            background: '#1A1D24', // surface-850 fallback
-            color: '#F3F4F6', // text-gray-100
-            border: '1px solid #2B303B' // border-surface-800
+            background: 'rgb(var(--surface-850))',
+            color: 'rgb(var(--text-primary))',
+            border: '1px solid rgb(var(--surface-700))',
+            borderRadius: '12px',
+            fontSize: '13px',
+            boxShadow: 'var(--shadow-lg)',
           },
           success: {
             iconTheme: {
-              primary: '#34d399', // emerald-400
-              secondary: '#1A1D24', // surface-850
+              primary: 'rgb(var(--up))',
+              secondary: 'rgb(var(--surface-850))',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: 'rgb(var(--down))',
+              secondary: 'rgb(var(--surface-850))',
             },
           },
         }}
@@ -93,6 +120,7 @@ function App() {
       <NotificationManager />
       <AppContent />
     </BrowserRouter>
+    </MotionConfig>
   )
 }
 

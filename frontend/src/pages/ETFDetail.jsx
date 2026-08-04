@@ -1,8 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { createChart } from 'lightweight-charts';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { Activity, TrendingUp, TrendingDown, Target, Info } from 'lucide-react';
 import api from '../utils/api';
+import MarketChart from '../components/market/MarketChart';
+import { Button, PageHeader } from '../components/ui';
+import { cn } from '../lib/cn';
+import { formatCurrency, formatPercent, formatChange } from '../lib/format';
 
 const ETFDetail = () => {
   const { symbol } = useParams();
@@ -12,13 +15,12 @@ const ETFDetail = () => {
   const [historicalData, setHistoricalData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [legendData, setLegendData] = useState({ ema20: null, ema50: null, ema200: null });
   const [watchlistAdded, setWatchlistAdded] = useState(false);
 
-  const chartContainerRef = useRef(null);
-  const chartRef = useRef(null);
-
-  const fetchETFData = async () => {
+  // useCallback keyed on cleanSymbol, so the effect below can list it
+  // honestly: identity changes only when the symbol does, which is exactly
+  // when the effect used to re-run. Same fetches, same triggers.
+  const fetchETFData = useCallback(async () => {
     try {
       setLoading(true);
       const [analysisRes, historyRes] = await Promise.all([
@@ -33,7 +35,7 @@ const ETFDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [cleanSymbol]);
 
   const addToWatchlist = async () => {
     try {
@@ -64,122 +66,13 @@ const ETFDetail = () => {
 
   useEffect(() => {
     fetchETFData();
-  }, [cleanSymbol]);
+  }, [fetchETFData]);
 
-  const calculateEMA = (data, period) => {
-    if (!data || data.length === 0) return [];
-    const k = 2 / (period + 1);
-    let emaArray = [];
-    let ema = data[0].close;
-    
-    data.forEach((candle, index) => {
-      if (index === 0) {
-        ema = candle.close;
-      } else {
-        ema = candle.close * k + ema * (1 - k);
-      }
-      if (index >= period - 1) {
-        emaArray.push({ time: candle.time, value: parseFloat(ema.toFixed(2)) });
-      }
-    });
-    return emaArray;
-  };
-
-  useEffect(() => {
-    if (!chartContainerRef.current || !historicalData || historicalData.length === 0) return;
-
-    if (chartRef.current) {
-      chartRef.current.remove();
-      chartRef.current = null;
-    }
-
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: 400,
-      layout: { background: { color: '#0d1117' }, textColor: '#e6edf3' },
-      grid: { vertLines: { color: '#21262d' }, horzLines: { color: '#21262d' } },
-      crosshair: { mode: 1 },
-      rightPriceScale: { borderColor: '#21262d' },
-      timeScale: { borderColor: '#21262d' },
-    });
-
-    const candleSeries = chart.addCandlestickSeries({
-      upColor: '#00c853', downColor: '#ff1744',
-      borderUpColor: '#00c853', borderDownColor: '#ff1744',
-      wickUpColor: '#00c853', wickDownColor: '#ff1744',
-    });
-
-    const cleanDate = (dateStr) => {
-      if (!dateStr) return null;
-      return String(dateStr).split(' ')[0].split('T')[0];
-    };
-
-    const candleData = historicalData
-      .map(d => ({
-        time: cleanDate(d.date),
-        open: parseFloat(d.open), high: parseFloat(d.high),
-        low: parseFloat(d.low), close: parseFloat(d.close),
-      }))
-      .filter(d => d.time !== null);
-    candleSeries.setData(candleData);
-
-    const ema20Data = calculateEMA(candleData, 20);
-    const ema50Data = calculateEMA(candleData, 50);
-    const ema200Data = calculateEMA(candleData, 200);
-
-    const ema20Series = chart.addLineSeries({ color: '#10b981', lineWidth: 1, title: 'EMA 20' });
-    ema20Series.setData(ema20Data);
-    const ema50Series = chart.addLineSeries({ color: '#2196f3', lineWidth: 1, title: 'EMA 50' });
-    ema50Series.setData(ema50Data);
-    const ema200Series = chart.addLineSeries({ color: '#ff5252', lineWidth: 1, title: 'EMA 200' });
-    ema200Series.setData(ema200Data);
-    
-    setLegendData({
-      ema20: ema20Data.length > 0 ? ema20Data[ema20Data.length - 1].value : null,
-      ema50: ema50Data.length > 0 ? ema50Data[ema50Data.length - 1].value : null,
-      ema200: ema200Data.length > 0 ? ema200Data[ema200Data.length - 1].value : null,
-    });
-
-    chart.timeScale().fitContent();
-    chartRef.current = chart;
-
-    setTimeout(() => {
-      if (chartContainerRef.current) {
-        const tvLink = chartContainerRef.current.querySelector('a[href*="tradingview.com"]');
-        if (tvLink) {
-          const baseSymbol = symbol.replace('.NS', '');
-          const tvSymbol = `NSE:${baseSymbol}`;
-          const finalUrl = `https://in.tradingview.com/chart/?symbol=${tvSymbol}`;
-          
-          tvLink.href = finalUrl;
-          tvLink.target = '_blank';
-          
-          tvLink.addEventListener('click', (e) => {
-            e.stopPropagation();
-          });
-        }
-      }
-    }, 100);
-
-    const handleResize = () => {
-      if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-      }
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      chart.remove();
-      chartRef.current = null;
-    };
-  }, [historicalData]);
-
-  if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-emerald-400 w-10 h-10" /></div>;
-  if (error) return <div className="p-10 text-red-500">{error}</div>;
+  if (loading) return <div className="p-10 flex justify-center"><Activity className="animate-pulse text-brand-400 w-10 h-10" /></div>;
+  if (error) return <div role="alert" className="p-10 text-down">{error}</div>;
   if (!data || data.current_price == null) {
     return (
-      <div className="flex items-center justify-center h-96 text-emerald-400">
+      <div className="flex items-center justify-center h-96 text-brand-400">
         <Activity className="animate-pulse w-8 h-8" />
       </div>
     );
@@ -188,112 +81,106 @@ const ETFDetail = () => {
   const isUp = (data.change_percent ?? 0) >= 0;
 
   return (
-    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-[1400px] mx-auto space-y-5">
       {/* 1. HEADER */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-white">{data.symbol}</h1>
-            <button
+      <PageHeader
+        title={data.symbol}
+        subtitle="ETF analysis"
+        icon={TrendingUp}
+        actions={
+          <>
+            <Button
+              variant={watchlistAdded ? 'secondary' : 'outline'}
+              size="sm"
               onClick={addToWatchlist}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                watchlistAdded
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
+              aria-pressed={watchlistAdded}
             >
-              {watchlistAdded ? '✓ Watchlisted' : '+ Watchlist'}
-            </button>
-          </div>
-          <p className="text-gray-400">ETF Analysis</p>
-        </div>
-        <div className="mt-4 md:mt-0 text-right">
-          <div className="text-3xl font-mono font-bold text-white">₹{data.current_price != null ? data.current_price.toFixed(2) : '—'}</div>
-          <div className={`flex justify-end items-center text-lg font-mono font-medium ${isUp ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
-            {isUp ? <TrendingUp className="mr-1" size={20} /> : <TrendingDown className="mr-1" size={20} />}
-            {isUp ? '+' : ''}{data.change != null ? data.change.toFixed(2) : '0.00'} ({data.change_percent != null ? data.change_percent.toFixed(2) : '0.00'}%)
-          </div>
-        </div>
-      </div>
+              {watchlistAdded ? 'Watchlisted' : '+ Watchlist'}
+            </Button>
+            <div className="text-left sm:text-right">
+              <div className="text-2xl font-semibold text-gray-100 font-mono tnum tracking-tight">
+                {data.current_price != null ? formatCurrency(data.current_price) : '—'}
+              </div>
+              <div className={cn(
+                'flex sm:justify-end items-center gap-1 text-sm font-medium mt-0.5 tnum',
+                isUp ? 'text-up' : 'text-down',
+              )}>
+                {isUp ? <TrendingUp size={14} aria-hidden="true" /> : <TrendingDown size={14} aria-hidden="true" />}
+                {formatChange(data.change ?? 0)} ({formatPercent(data.change_percent ?? 0, { signed: false })})
+              </div>
+            </div>
+          </>
+        }
+      />
 
       {/* 2. CHART */}
-      <div className="bg-surface-850 border border-surface-800 rounded-xl p-4">
-        <div className="relative w-full">
-          <div className="absolute top-2 left-2 z-10 text-xs font-mono bg-surface-850/80 p-3 rounded-lg border border-surface-800 shadow-lg backdrop-blur-sm pointer-events-none">
-            <div className="text-white mb-2 font-bold uppercase tracking-wider text-[10px]">EMAs</div>
-            <div className="space-y-1">
-              {legendData.ema20 && <div className="flex items-center text-emerald-400"><span className="w-2 h-2 rounded-full bg-[#10b981] mr-2"></span>EMA 20: {legendData.ema20}</div>}
-              {legendData.ema50 && <div className="flex items-center text-[#2196f3]"><span className="w-2 h-2 rounded-full bg-[#2196f3] mr-2"></span>EMA 50: {legendData.ema50}</div>}
-              {legendData.ema200 && <div className="flex items-center text-[#ff5252]"><span className="w-2 h-2 rounded-full bg-[#ff5252] mr-2"></span>EMA 200: {legendData.ema200}</div>}
-            </div>
-          </div>
-          <div ref={chartContainerRef} className="w-full h-[400px]" />
-        </div>
+      <div className="bg-surface-900 border border-surface-800 rounded-xl p-3">
+        <MarketChart data={historicalData} tvSymbol={symbol.replace('.NS','')} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* 3. ETF METRICS */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
               <p className="text-gray-400 text-xs">Expense Ratio</p>
-              <p className="text-white font-bold">
+              <p className="text-gray-100 font-bold">
                 {data.expense_ratio ? `${data.expense_ratio}%` : 'N/A'}
               </p>
               <p className="text-xs text-gray-500 mt-1">Annual cost</p>
             </div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
               <p className="text-gray-400 text-xs">Tracks</p>
-              <p className="text-white font-bold text-sm mt-1">
+              <p className="text-gray-100 font-bold text-sm mt-1">
                 {data.underlying_index || 'N/A'}
               </p>
             </div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
               <p className="text-gray-400 text-xs">Fund House</p>
-              <p className="text-white font-bold text-sm mt-1">
+              <p className="text-gray-100 font-bold text-sm mt-1">
                 {data.fund_house || 'N/A'}
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">NAV</div>
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+              <div className="text-2xs font-medium uppercase tracking-wider text-gray-500 mb-1">NAV</div>
               <div className="text-gray-100 font-bold text-lg mt-1 font-mono">{data.nav ? `₹${data.nav}` : 'N/A'}</div>
             </div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">Prem/Discount to NAV</div>
-              <div className={`font-mono font-bold ${data.premium_discount_pct > 0 ? 'text-[#ff1744]' : 'text-[#00c853]'}`}>
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+              <div className="text-2xs font-medium uppercase tracking-wider text-gray-500 mb-1">Prem/Discount to NAV</div>
+              <div className={`font-mono font-bold ${data.premium_discount_pct > 0 ? 'text-down' : 'text-up'}`}>
                 {data.premium_discount_pct != null ? `${data.premium_discount_pct}%` : 'N/A'}
               </div>
             </div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">AUM</div>
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+              <div className="text-2xs font-medium uppercase tracking-wider text-gray-500 mb-1">AUM</div>
               <div className="text-gray-100 font-bold text-lg mt-1 font-mono">
                 {data.aum ? `₹${(data.aum / 10000000).toFixed(2)} Cr` : 'N/A'}
               </div>
             </div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">Volume Ratio</div>
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+              <div className="text-2xs font-medium uppercase tracking-wider text-gray-500 mb-1">Volume Ratio</div>
               <div className="text-gray-100 font-bold text-lg mt-1 font-mono">{data.volume_ratio ? `${data.volume_ratio}x` : 'N/A'}</div>
             </div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">RSI (14)</div>
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+              <div className="text-2xs font-medium uppercase tracking-wider text-gray-500 mb-1">RSI (14)</div>
               <div className="text-gray-100 font-bold text-lg mt-1 font-mono">{data.rsi}</div>
             </div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">52W High</div>
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+              <div className="text-2xs font-medium uppercase tracking-wider text-gray-500 mb-1">52W High</div>
               <div className="text-gray-100 font-bold text-lg mt-1 font-mono">₹{data.high_52w}</div>
             </div>
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">52W Low</div>
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+              <div className="text-2xs font-medium uppercase tracking-wider text-gray-500 mb-1">52W Low</div>
               <div className="text-gray-100 font-bold text-lg mt-1 font-mono">₹{data.low_52w}</div>
             </div>
           </div>
 
           {/* 4. RETURNS TABLE */}
           <div className="bg-surface-850 border border-surface-800 rounded-2xl p-5 mt-4 overflow-x-auto">
-            <h3 className="text-lg font-bold text-white mb-4">Rolling Returns</h3>
+            <h2 className="text-lg font-bold text-gray-100 mb-4">Rolling Returns</h2>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
               {[
                 { key: '1_week', label: '1 Week' },
@@ -304,7 +191,7 @@ const ETFDetail = () => {
               ].map((period) => (
                 <div key={period.key} className="bg-surface-900 border border-surface-800 rounded-xl p-2.5 text-center">
                   <div className="text-gray-500 text-xs">{period.label}</div>
-                  <div className={`font-semibold text-sm mt-1 font-mono ${data.returns[period.key] >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+                  <div className={`font-semibold text-sm mt-1 font-mono ${data.returns[period.key] >= 0 ? 'text-up' : 'text-down'}`}>
                     {data.returns[period.key] != null ? `${data.returns[period.key]}%` : '-'}
                   </div>
                 </div>
@@ -315,25 +202,25 @@ const ETFDetail = () => {
           {/* 8. ETF COMPARISON (TRACKING ERROR) */}
           {data.underlying_index && data.underlying_index_return_6m != null && (
             <div className="bg-surface-850 p-4 rounded-xl border border-surface-800 mt-6">
-              <h3 className="text-lg font-bold text-white mb-3 flex items-center">
+              <h2 className="text-lg font-bold text-gray-100 mb-3 flex items-center">
                 <Target className="mr-2" size={18} /> ETF Comparison
-              </h3>
+              </h2>
               <div className="space-y-3 font-mono text-sm">
                 <div className="flex justify-between items-center bg-surface-900 p-3 rounded border border-surface-800">
                   <span className="text-gray-400">{data.underlying_index} (6M):</span>
-                  <span className={`font-bold ${data.underlying_index_return_6m >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+                  <span className={`font-bold ${data.underlying_index_return_6m >= 0 ? 'text-up' : 'text-down'}`}>
                     {data.underlying_index_return_6m}%
                   </span>
                 </div>
                 <div className="flex justify-between items-center bg-surface-900 p-3 rounded border border-surface-800">
                   <span className="text-gray-400">{data.symbol.replace('.NS', '')} (6M):</span>
-                  <span className={`font-bold ${data.returns['6_month'] >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+                  <span className={`font-bold ${data.returns['6_month'] >= 0 ? 'text-up' : 'text-down'}`}>
                     {data.returns['6_month'] != null ? `${data.returns['6_month']}%` : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center bg-surface-900 p-3 rounded border border-surface-800">
                   <span className="text-gray-400">Tracking Difference:</span>
-                  <span className={`font-bold ${data.tracking_difference >= 0 ? 'text-[#00c853]' : 'text-[#ff1744]'}`}>
+                  <span className={`font-bold ${data.tracking_difference >= 0 ? 'text-up' : 'text-down'}`}>
                     {data.tracking_difference != null ? `${data.tracking_difference > 0 ? '+' : ''}${data.tracking_difference}%` : 'N/A'}
                   </span>
                 </div>
@@ -343,48 +230,63 @@ const ETFDetail = () => {
         </div>
 
         <div className="space-y-6">
-          {/* 6. ETF-SPECIFIC VERDICT */}
-          <div className={`p-6 rounded-xl border border-${data.verdict_color === 'green' ? '[#00c853]' : data.verdict_color === 'red' ? '[#ff1744]' : '[#10b981]'} bg-surface-850`}>
-            <h3 className="text-xl font-bold text-white mb-2">ETF Verdict</h3>
-            <p className={`text-lg ${data.verdict_color === 'green' ? 'text-[#00c853]' : data.verdict_color === 'red' ? 'text-[#ff1744]' : 'text-emerald-400'}`}>
+          {/* 6. ETF-SPECIFIC VERDICT
+              The border was built as `border-${...}` with the colour spliced in
+              at runtime. Tailwind's JIT scans source statically, so it never saw
+              the finished class name and never emitted the rule — this border
+              has never rendered in the intended colour since it was written.
+              Static class strings are the only ones Tailwind can compile. */}
+          <div className={cn(
+            'p-5 rounded-xl border bg-surface-900',
+            data.verdict_color === 'green' ? 'border-up/40'
+              : data.verdict_color === 'red' ? 'border-down/40'
+              : 'border-surface-700',
+          )}>
+            <h2 className="text-2xs font-semibold uppercase tracking-wider text-gray-500">ETF verdict</h2>
+            <p className={cn(
+              'text-lg font-semibold mt-1.5',
+              data.verdict_color === 'green' ? 'text-up'
+                : data.verdict_color === 'red' ? 'text-down'
+                : 'text-gray-100',
+            )}>
               {data.verdict}
             </p>
-            <p className="text-sm text-gray-300 mt-2">
+            <p className="text-sm text-gray-400 mt-2 leading-relaxed">
               {data.action}
             </p>
           </div>
 
           {/* 5. PREMIUM/DISCOUNT INDICATOR */}
           {data.premium_discount_pct != null && (
-            <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-              <h3 className="text-lg font-bold text-white mb-3 flex items-center"><Info className="mr-2" size={18} /> Premium / Discount</h3>
+            <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+              <h2 className="text-lg font-bold text-gray-100 mb-3 flex items-center"><Info className="mr-2" size={18} /> Premium / Discount</h2>
               <div className="bg-surface-900 p-3 rounded">
                 <span className="text-gray-400 text-sm">Status: </span>
                 {data.premium_discount_pct > 0 ? (
-                   <span className="text-[#ff1744] font-bold">Trading {data.premium_discount_pct}% above NAV</span>
+                   <span className="text-down font-bold">Trading {data.premium_discount_pct}% above NAV</span>
                 ) : data.premium_discount_pct < 0 ? (
-                   <span className="text-[#00c853] font-bold">Trading {Math.abs(data.premium_discount_pct)}% below NAV — Good entry</span>
+                   <span className="text-up font-bold">Trading {Math.abs(data.premium_discount_pct)}% below NAV — Good entry</span>
                 ) : (
-                   <span className="text-white font-bold">Trading exactly at NAV</span>
+                   <span className="text-gray-100 font-bold">Trading exactly at NAV</span>
                 )}
               </div>
             </div>
           )}
 
           {/* 7. SIP GUIDANCE */}
-          <div className="bg-surface-850 border border-surface-800 rounded-2xl p-4 hover:border-emerald-500/20 transition-colors">
-            <h3 className="text-lg font-bold text-white mb-2 flex items-center"><Target className="mr-2" size={18} /> SIP Guidance</h3>
+          <div className="bg-surface-900 border border-surface-800 rounded-lg p-4 transition-colors duration-fast hover:border-surface-700">
+            <h2 className="text-lg font-bold text-gray-100 mb-2 flex items-center"><Target className="mr-2" size={18} /> SIP Guidance</h2>
             <p className="text-sm text-gray-400 mb-2">
               For long-term SIP investors: <br />
-              <span className="text-white font-mono">RSI &lt; 45 + Price &gt; EMA 200 = Excellent entry</span>
+              <span className="text-gray-100 font-mono">RSI &lt; 45 + Price &gt; EMA 200 = Excellent entry</span>
             </p>
             <div className="text-sm bg-surface-900 p-2 rounded">
               Current status: <br/> 
-              <span className="font-mono text-emerald-400">
+              <span className="font-mono text-gray-200">
                 RSI = {data.rsi}, {data.above_ema200 ? 'Above' : 'Below'} EMA 200
               </span>
             </div>
-            <p className="mt-3 text-sm font-bold text-white">
+            <p className="mt-3 text-sm font-bold text-gray-100">
               → {data.rsi < 45 && data.above_ema200 ? "Excellent entry! Consider adding lump sum." : "Continue SIP. Not ideal for extra lump sum."}
             </p>
           </div>

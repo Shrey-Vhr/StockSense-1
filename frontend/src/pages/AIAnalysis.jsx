@@ -1,433 +1,89 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { BrainCircuit, Search, Target, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import {
+  BrainCircuit, Search, Target, TrendingUp, TrendingDown,
+  AlertTriangle, Download,
+} from 'lucide-react';
 import api from '../utils/api';
+import { openPrintWindow, buildAiReportHtml } from '../lib/pdfTemplates';
+import {
+  Badge, Button, Card, Disclaimer, EmptyState, Input, MetricTile, PageHeader, Spinner,
+} from '../components/ui';
+import { cn } from '../lib/cn';
+import { verdictTone } from '../lib/format';
+
+const ANALYSIS_TYPES = [
+  'Full Stock Analysis',
+  'Quick Trade Setup',
+  'Risk Assessment',
+  'Fundamental Deep Dive',
+];
+
+const TIMEFRAME_LABELS = {
+  intraday: 'Intraday',
+  swing: 'Swing (days)',
+  midterm: 'Midterm (months)',
+  longterm: 'Long term (years)',
+};
+
+/** Radial confidence gauge. Was a hand-rolled SVG with a hardcoded stroke. */
+const ConfidenceRing = ({ value = 0 }) => {
+  const pct = Math.max(0, Math.min(100, Number(value) || 0));
+  return (
+    <div
+      role="meter"
+      aria-valuenow={pct}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label="Model confidence"
+      className="relative w-24 h-24 shrink-0"
+    >
+      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90" aria-hidden="true">
+        <path
+          d="M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0-31.831"
+          fill="none"
+          strokeWidth="2.5"
+          className="stroke-surface-800"
+        />
+        <path
+          d="M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0-31.831"
+          fill="none"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray={`${pct}, 100`}
+          className="stroke-brand-400"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-lg font-semibold text-gray-100 font-mono tnum">{pct}%</span>
+      </div>
+    </div>
+  );
+};
 
 const AIAnalysis = () => {
   const [symbol, setSymbol] = useState('');
   const [cleanSymbol, setCleanSymbol] = useState('');
   const [analysisType, setAnalysisType] = useState('Full Stock Analysis');
-  
+
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
+  // The ~380-line report template used to live inline here — byte-identical to
+  // the copy inside StockDetail. Both now call the same builder.
   const handleExportPDF = () => {
     if (!aiAnalysis) return;
-    
-    const { jsPDF } = window.jspdf || {};
-    
-    // Build clean HTML for PDF
-    const content = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { 
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: #1a1a1a;
-            font-size: 12px;
-            line-height: 1.5;
-          }
-          .header {
-            background: #0f4c35;
-            color: white;
-            padding: 20px 24px;
-            margin-bottom: 20px;
-          }
-          .header h1 { font-size: 22px; font-weight: 700; }
-          .header p { font-size: 11px; opacity: 0.8; margin-top: 4px; }
-          .badge {
-            display: inline-block;
-            background: #10b981;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 8px;
-          }
-          .section {
-            margin: 0 24px 16px 24px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-          }
-          .section-title {
-            background: #f9fafb;
-            padding: 10px 16px;
-            font-weight: 700;
-            font-size: 12px;
-            color: #374151;
-            border-bottom: 1px solid #e5e7eb;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-          }
-          .section-body { padding: 14px 16px; }
-          .verdict-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-          }
-          .verdict-text {
-            font-size: 24px;
-            font-weight: 800;
-            color: #059669;
-          }
-          .confidence {
-            font-size: 32px;
-            font-weight: 800;
-            color: #10b981;
-          }
-          .confidence-label {
-            font-size: 10px;
-            color: #6b7280;
-            text-align: center;
-          }
-          .trade-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            margin-top: 8px;
-          }
-          .trade-cell {
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 8px;
-            text-align: center;
-          }
-          .trade-label {
-            font-size: 9px;
-            color: #6b7280;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-          }
-          .trade-value {
-            font-size: 12px;
-            font-weight: 700;
-            color: #1a1a1a;
-          }
-          .trade-value.sl { color: #dc2626; }
-          .trade-value.target { color: #059669; }
-          .trade-value.rr { color: #10b981; }
-          .timeframe-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-          }
-          .tf-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 10px;
-          }
-          .tf-title {
-            font-weight: 700;
-            font-size: 11px;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            color: #374151;
-          }
-          .tf-verdict {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 600;
-            margin-bottom: 6px;
-          }
-          .take { background: #d1fae5; color: #065f46; }
-          .avoid { background: #fee2e2; color: #991b1b; }
-          .wait { background: #fef3c7; color: #92400e; }
-          .accumulate { background: #dbeafe; color: #1e40af; }
-          .tf-conf { font-size: 10px; color: #6b7280; margin-bottom: 6px; }
-          .tf-levels {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 4px;
-            font-size: 10px;
-          }
-          .tf-level { text-align: center; }
-          .tf-level-label { color: #6b7280; font-size: 9px; }
-          .tf-level-val { font-weight: 600; }
-          .tf-level-val.sl { color: #dc2626; }
-          .tf-level-val.t { color: #059669; }
-          .reasoning { font-size: 11px; color: #374151; margin-top: 6px; }
-          .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-          }
-          .bull { color: #059669; font-weight: 700; margin-bottom: 6px; }
-          .bear { color: #dc2626; font-weight: 700; margin-bottom: 6px; }
-          .red-flags {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 6px;
-            padding: 12px;
-          }
-          .red-flags-title {
-            color: #dc2626;
-            font-weight: 700;
-            margin-bottom: 8px;
-          }
-          .red-flag-item {
-            font-size: 10px;
-            color: #7f1d1d;
-            margin-bottom: 4px;
-            padding-left: 12px;
-            position: relative;
-          }
-          .red-flag-item:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-          }
-          .key-levels {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
-          }
-          .level-tag {
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 10px;
-            font-family: monospace;
-          }
-          .summary-box {
-            background: #f0fdf4;
-            border: 1px solid #86efac;
-            border-radius: 6px;
-            padding: 12px;
-            font-size: 11px;
-            color: #14532d;
-            line-height: 1.6;
-          }
-          .disclaimer {
-            margin: 16px 24px;
-            font-size: 9px;
-            color: #9ca3af;
-            text-align: center;
-            border-top: 1px solid #f3f4f6;
-            padding-top: 12px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>StockSense AI Analysis — ${cleanSymbol.replace('.NS', '')}</h1>
-          <p>Generated on ${new Date().toLocaleDateString('en-IN', { 
-            day: '2-digit', month: 'long', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-          })}</p>
-          <div class="badge">Powered by Claude AI</div>
-        </div>
-
-        <!-- Verdict -->
-        <div class="section">
-          <div class="section-title">AI Verdict</div>
-          <div class="section-body">
-            <div class="verdict-row">
-              <div>
-                <div class="verdict-text">${aiAnalysis.verdict}</div>
-                <div style="color:#6b7280;font-size:11px;margin-top:4px;">
-                  Risk Level: ${aiAnalysis.risk_level || 'Medium'}
-                </div>
-              </div>
-              <div style="text-align:center">
-                <div class="confidence">${aiAnalysis.confidence}%</div>
-                <div class="confidence-label">Confidence Score</div>
-              </div>
-            </div>
-            <div class="summary-box">${aiAnalysis.summary}</div>
-          </div>
-        </div>
-
-        <!-- Trade Setup -->
-        <div class="section">
-          <div class="section-title">Proposed Swing Trade Setup</div>
-          <div class="section-body">
-            <div class="trade-grid">
-              <div class="trade-cell">
-                <div class="trade-label">Entry Range</div>
-                <div class="trade-value">${aiAnalysis.trade_setup?.entry || 'N/A'}</div>
-              </div>
-              <div class="trade-cell">
-                <div class="trade-label">Stop Loss</div>
-                <div class="trade-value sl">${aiAnalysis.trade_setup?.stop_loss || 'N/A'}</div>
-              </div>
-              <div class="trade-cell">
-                <div class="trade-label">Target 1</div>
-                <div class="trade-value target">${aiAnalysis.trade_setup?.target_1 || 'N/A'}</div>
-              </div>
-              <div class="trade-cell">
-                <div class="trade-label">Target 2</div>
-                <div class="trade-value target">${aiAnalysis.trade_setup?.target_2 || 'N/A'}</div>
-              </div>
-              <div class="trade-cell">
-                <div class="trade-label">Risk / Reward</div>
-                <div class="trade-value rr">${aiAnalysis.trade_setup?.risk_reward || 'N/A'}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Timeframes -->
-        ${aiAnalysis.timeframes ? `
-        <div class="section">
-          <div class="section-title">Analysis by Timeframe</div>
-          <div class="section-body">
-            <div class="timeframe-grid">
-              ${Object.entries(aiAnalysis.timeframes).map(([tf, data]) => `
-              <div class="tf-card">
-                <div class="tf-title">${
-                  tf === 'intraday' ? 'Intraday' :
-                  tf === 'swing' ? 'Swing (Days)' :
-                  tf === 'midterm' ? 'Midterm (Months)' :
-                  'Long Term (Years)'
-                }</div>
-                <span class="tf-verdict ${
-                  data.verdict?.toLowerCase().includes('take') || 
-                  data.verdict?.toLowerCase().includes('buy') ? 'take' :
-                  data.verdict?.toLowerCase().includes('avoid') ? 'avoid' :
-                  data.verdict?.toLowerCase().includes('accum') ? 'accumulate' : 'wait'
-                }">${data.verdict}</span>
-                <div class="tf-conf">Confidence: ${data.confidence}%${
-                  data.holding_period ? ` | Hold: ${data.holding_period}` : ''
-                }</div>
-                ${data.entry ? `
-                <div class="tf-levels">
-                  <div class="tf-level">
-                    <div class="tf-level-label">Entry</div>
-                    <div class="tf-level-val">${data.entry}</div>
-                  </div>
-                  <div class="tf-level">
-                    <div class="tf-level-label">SL</div>
-                    <div class="tf-level-val sl">${data.stop_loss}</div>
-                  </div>
-                  <div class="tf-level">
-                    <div class="tf-level-label">T1</div>
-                    <div class="tf-level-val t">${data.target_1}</div>
-                  </div>
-                </div>` : ''}
-                <div class="reasoning">${data.reasoning || ''}</div>
-              </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>` : ''}
-
-        <!-- Bull & Bear -->
-        <div class="section">
-          <div class="section-title">Bull Case vs Bear Case</div>
-          <div class="section-body">
-            <div class="two-col">
-              <div>
-                <div class="bull">↑ The Bull Case</div>
-                <div style="font-size:11px;color:#374151">
-                  ${aiAnalysis.bull_case}
-                </div>
-              </div>
-              <div>
-                <div class="bear">↓ The Bear Case</div>
-                <div style="font-size:11px;color:#374151">
-                  ${aiAnalysis.bear_case}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Technical & Fundamental -->
-        <div class="section">
-          <div class="section-title">Detailed Analysis</div>
-          <div class="section-body">
-            <div style="margin-bottom:12px">
-              <div style="font-weight:700;margin-bottom:4px;color:#374151">
-                Technical Reasoning
-              </div>
-              <div style="font-size:11px;color:#4b5563">
-                ${aiAnalysis.technical_reasoning}
-              </div>
-            </div>
-            <div>
-              <div style="font-weight:700;margin-bottom:4px;color:#374151">
-                Fundamental Reasoning
-              </div>
-              <div style="font-size:11px;color:#4b5563">
-                ${aiAnalysis.fundamental_reasoning}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Red Flags & Key Levels -->
-        <div class="section">
-          <div class="section-title">Risk Factors & Key Levels</div>
-          <div class="section-body">
-            <div class="two-col">
-              <div class="red-flags">
-                <div class="red-flags-title">⚠ Red Flags to Watch</div>
-                ${(aiAnalysis.red_flags || []).map(rf => 
-                  `<div class="red-flag-item">${rf}</div>`
-                ).join('')}
-              </div>
-              <div>
-                <div style="font-weight:700;margin-bottom:8px;color:#374151">
-                  Key Levels to Watch
-                </div>
-                <div class="key-levels">
-                  ${(aiAnalysis.key_levels_to_watch || []).map(kl => 
-                    `<div class="level-tag">${kl}</div>`
-                  ).join('')}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="disclaimer">
-          This analysis is generated by AI for educational purposes only and does not constitute 
-          financial advice. Past performance is not indicative of future results. 
-          Always do your own research before investing. StockSense | ${new Date().getFullYear()}
-        </div>
-      </body>
-      </html>
-    `;
-
-    // Create blob and open in new tab for printing/saving as PDF
-    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const printWindow = window.open(url, '_blank');
-    
-    printWindow.onload = () => {
-      setTimeout(() => {
-        printWindow.print();
-        URL.revokeObjectURL(url);
-      }, 500);
-    };
+    openPrintWindow(buildAiReportHtml(cleanSymbol, aiAnalysis));
   };
-
-  const analysisTypes = [
-    'Full Stock Analysis',
-    'Quick Trade Setup',
-    'Risk Assessment',
-    'Fundamental Deep Dive'
-  ];
 
   const handleSearch = async () => {
     if (!symbol.trim()) return;
-    
+
     let formattedSymbol = symbol.trim().toUpperCase();
     if (!formattedSymbol.endsWith('.NS') && !formattedSymbol.endsWith('.BO')) {
       formattedSymbol += '.NS';
     }
-    
+
     setCleanSymbol(formattedSymbol);
     setAiLoading(true);
     setErrorMsg(null);
@@ -451,7 +107,7 @@ const AIAnalysis = () => {
 
       // 3. Request AI Analysis
       const payload = {
-        quote: {}, 
+        quote: {},
         technical: techData,
         fundamental: fundData,
         news: [],
@@ -460,275 +116,272 @@ const AIAnalysis = () => {
         analysis_type: typeMap[analysisType] || 'full'
       };
 
-      console.log('Sending analysis_type:', analysisType);
       const aiRes = await api.post(`/ai/analyze/${formattedSymbol}`, payload);
       setAiAnalysis(aiRes.data.analysis);
-      
+
     } catch (e) {
       console.error(e);
-      setErrorMsg("Failed to generate AI analysis. Check console or verify the symbol.");
+      setErrorMsg("Failed to generate AI analysis. Check the symbol and try again.");
     } finally {
       setAiLoading(false);
     }
   };
 
+  const setup = aiAnalysis?.trade_setup;
+
   return (
-    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header & Search */}
-      <div className="bg-surface-850 border border-surface-800 rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <BrainCircuit className="text-emerald-400 w-8 h-8" />
-          <h1 className="text-2xl font-bold text-white">Standalone AI Analysis</h1>
-        </div>
+    <div className="p-4 sm:p-6 max-w-[1400px] mx-auto space-y-5">
+      <PageHeader
+        title="AI Analysis"
+        subtitle="Technical and fundamental data, read together and summarised into a trade view."
+        icon={BrainCircuit}
+        actions={aiAnalysis && (
+          <Button variant="secondary" icon={Download} onClick={handleExportPDF}>
+            Export PDF
+          </Button>
+        )}
+      />
 
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1 relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="text-gray-400" size={18} />
-            </div>
-            <input
-              type="text"
-              className="w-full bg-surface-900 border border-surface-700 text-white rounded-lg pl-10 pr-4 py-3 focus:border-emerald-500 focus:outline-none transition-colors"
-              placeholder="Enter symbol (e.g. RELIANCE)"
-              value={symbol}
-              onChange={(e) => setSymbol(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            />
-          </div>
-          <button
+      {/* ── Query ───────────────────────────────────────────────────────── */}
+      <Card>
+        <div className="flex flex-col md:flex-row gap-3">
+          <Input
+            size="lg"
+            icon={Search}
+            className="flex-1"
+            aria-label="Stock symbol"
+            placeholder="Enter a symbol, e.g. RELIANCE"
+            value={symbol}
+            onChange={(e) => setSymbol(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          />
+          <Button
+            variant="primary"
+            size="lg"
             onClick={handleSearch}
+            loading={aiLoading}
             disabled={!symbol.trim() || aiLoading}
-            className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
           >
-            Generate Analysis
-          </button>
+            Generate analysis
+          </Button>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-3">Analysis Focus:</label>
-          <div className="flex flex-wrap gap-3">
-            {analysisTypes.map((type) => (
-              <button
+        <fieldset className="mt-4">
+          <legend className="text-2xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+            Analysis focus
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {ANALYSIS_TYPES.map((type) => (
+              <Button
                 key={type}
+                size="sm"
+                variant={analysisType === type ? 'secondary' : 'ghost'}
+                aria-pressed={analysisType === type}
                 onClick={() => setAnalysisType(type)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  analysisType === type
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
-                    : 'bg-surface-900 text-gray-400 border border-surface-700 hover:border-surface-600 hover:text-gray-200'
-                }`}
+                className={cn(
+                  analysisType === type && 'border-brand-500/50 text-brand-400',
+                )}
               >
                 {type}
-              </button>
+              </Button>
             ))}
           </div>
-        </div>
-      </div>
+        </fieldset>
+      </Card>
 
       {errorMsg && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg flex items-center">
-          <AlertTriangle size={18} className="mr-2" /> {errorMsg}
+        <div role="alert" className="flex items-start gap-2 rounded-xl border border-down/30 bg-down/10 px-4 py-3">
+          <AlertTriangle size={15} className="mt-0.5 shrink-0 text-down" aria-hidden="true" />
+          <p className="text-sm text-down">{errorMsg}</p>
         </div>
       )}
 
-      {/* AI Analysis Result Area */}
-      <div className="bg-surface-850 border border-surface-800 rounded-xl p-6 min-h-[400px]">
-        {aiLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-emerald-400">
-            <BrainCircuit className="animate-pulse w-16 h-16 mb-4" />
-            <p className="text-lg font-medium">Claude is analyzing market data for {cleanSymbol}...</p>
-            <p className="text-sm text-gray-500 mt-2">Focus: {analysisType}</p>
+      {/* ── Result ──────────────────────────────────────────────────────── */}
+      {aiLoading ? (
+        <Card>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Spinner size="lg" className="text-brand-400" />
+            <p className="text-sm font-medium text-gray-200 mt-4">
+              Analysing {cleanSymbol}
+            </p>
+            {/* Was a pulsing brain icon with no indication of what was happening
+                or how long a run takes. */}
+            <p className="text-xs text-gray-500 mt-1.5 max-w-sm leading-relaxed">
+              Reading technical indicators, then fundamentals, then asking the model
+              for a {analysisType.toLowerCase()}. This usually takes 10–30 seconds.
+            </p>
           </div>
-        ) : aiAnalysis ? (
-          <div>
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={handleExportPDF}
-                className="flex items-center gap-2 px-4 py-2 bg-surface-900 border border-surface-800 text-gray-300 rounded-xl hover:bg-surface-800 hover:text-white transition-colors text-sm font-medium"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Export PDF
-              </button>
-            </div>
-            <div id="ai-analysis-content" className="space-y-8 animate-fade-in">
-              {/* Top Hero Section */}
-            <div className="flex flex-col md:flex-row gap-6 items-start">
-              <div className="bg-gradient-to-br from-[#161b22] to-[#0d1117] border border-[#10b981]/40 p-6 rounded-xl flex-1 w-full relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#10b981] opacity-5 rounded-bl-full pointer-events-none" />
-                <h2 className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">AI Verdict ({cleanSymbol})</h2>
-                <div className="text-3xl font-bold text-white mb-4">{aiAnalysis.verdict}</div>
-                <p className="text-gray-300 leading-relaxed">{aiAnalysis.summary}</p>
-              </div>
-
-              <div className="bg-surface-900 border border-surface-800 p-6 rounded-xl w-full md:w-64 flex flex-col items-center justify-center">
-                <div className="relative w-24 h-24 mb-2">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                    <path className="text-[#30363d]" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path className="text-[#10b981]" strokeDasharray={`${aiAnalysis.confidence}, 100`} strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xl font-bold text-white font-mono">{aiAnalysis.confidence}%</span>
-                  </div>
+        </Card>
+      ) : !aiAnalysis ? (
+        <Card>
+          <EmptyState
+            icon={BrainCircuit}
+            title="No analysis yet"
+            description="Enter a symbol above and pick a focus to generate a report."
+          />
+        </Card>
+      ) : (
+        <div className="space-y-5">
+          {/* Verdict */}
+          <Card>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xs font-semibold uppercase tracking-wider text-gray-500">
+                    Verdict
+                  </span>
+                  <Badge variant="brand">{cleanSymbol.replace('.NS', '')}</Badge>
                 </div>
-                <div className="text-sm text-gray-400">Confidence Score</div>
+                <h2 className={cn(
+                  'text-2xl font-semibold mt-1.5',
+                  verdictTone(aiAnalysis.verdict) === 'up' ? 'text-up'
+                    : verdictTone(aiAnalysis.verdict) === 'down' ? 'text-down'
+                    : 'text-gray-100',
+                )}>
+                  {aiAnalysis.verdict}
+                </h2>
+                <p className="text-sm text-gray-400 mt-2.5 leading-relaxed">{aiAnalysis.summary}</p>
+              </div>
+              <div className="flex flex-col items-center gap-1.5 shrink-0">
+                <ConfidenceRing value={aiAnalysis.confidence} />
+                <span className="text-2xs uppercase tracking-wider text-gray-500">Confidence</span>
               </div>
             </div>
+          </Card>
 
-            {/* Trade Setup */}
-            {aiAnalysis.trade_setup && (
-              <motion.div
-                className="bg-surface-850 border border-surface-800 p-6 rounded-xl mt-6"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-              >
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center"><Target className="mr-2 text-[#10b981]" size={20} /> Proposed Swing Trade Setup</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div className="bg-surface-900 border border-surface-800 p-4 rounded-lg text-center">
-                    <div className="text-gray-500 text-xs mb-1">Entry Range</div>
-                    <div className="text-white font-mono font-bold">{aiAnalysis.trade_setup.entry}</div>
-                  </div>
-                  <div className="bg-surface-900 border border-[#ff1744]/30 p-4 rounded-lg text-center">
-                    <div className="text-gray-500 text-xs mb-1">Stop Loss</div>
-                    <div className="text-[#ff1744] font-mono font-bold">{aiAnalysis.trade_setup.stop_loss}</div>
-                    <div className="text-xs text-[#ff1744]/70 mt-1">({aiAnalysis.trade_setup.risk_percent} risk)</div>
-                  </div>
-                  <div className="bg-surface-900 border border-[#00c853]/30 p-4 rounded-lg text-center">
-                    <div className="text-gray-500 text-xs mb-1">Target 1</div>
-                    <div className="text-[#00c853] font-mono font-bold">{aiAnalysis.trade_setup.target_1}</div>
-                  </div>
-                  <div className="bg-surface-900 border border-[#00c853]/30 p-4 rounded-lg text-center">
-                    <div className="text-gray-500 text-xs mb-1">Target 2</div>
-                    <div className="text-[#00c853] font-mono font-bold">{aiAnalysis.trade_setup.target_2}</div>
-                  </div>
-                  <div className="bg-surface-900 border border-surface-800 p-4 rounded-lg text-center">
-                    <div className="text-gray-500 text-xs mb-1">Risk / Reward</div>
-                    <div className="text-[#10b981] font-mono font-bold">{aiAnalysis.trade_setup.risk_reward}</div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+          {/* Trade setup */}
+          {setup && (
+            <Card
+              title={
+                <span className="flex items-center gap-2">
+                  <Target size={12} className="text-brand-400" aria-hidden="true" />
+                  Proposed swing trade setup
+                </span>
+              }
+            >
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <MetricTile label="Entry" value={setup.entry} size="sm" align="center" className="font-mono" />
+                <MetricTile label="Stop loss" value={setup.stop_loss} sublabel={setup.risk_percent ? `${setup.risk_percent} risk` : undefined} tone="down" size="sm" align="center" className="font-mono" />
+                <MetricTile label="Target 1" value={setup.target_1} tone="up" size="sm" align="center" className="font-mono" />
+                <MetricTile label="Target 2" value={setup.target_2} tone="up" size="sm" align="center" className="font-mono" />
+                <MetricTile label="Risk / reward" value={setup.risk_reward} tone="brand" size="sm" align="center" className="font-mono" />
+              </div>
+            </Card>
+          )}
 
-            {/* Timeframes Grid */}
-            {aiAnalysis.timeframes && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-white">
-                  Analysis by Timeframe
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(aiAnalysis.timeframes).map(([tf, data]) => (
-                    <div key={tf} className="bg-surface-900 border border-surface-800 rounded-xl p-5">
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="text-white font-bold uppercase tracking-wider text-sm flex items-center gap-2">
-                          {tf === 'intraday' ? 'Intraday' :
-                           tf === 'swing' ? 'Swing (Days)' :
-                           tf === 'midterm' ? 'Midterm (Months)' :
-                           'Long Term (Years)'}
-                          {tf === 'swing' && data.setup_type && (
-                            <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30">
-                              {data.setup_type}
-                            </span>
-                          )}
-                        </h4>
-                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                          data.verdict?.includes('Take') || 
-                          data.verdict?.includes('Accumulate') ||
-                          data.verdict?.includes('Buy')
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : data.verdict?.includes('Avoid')
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                            : 'bg-gray-700 text-gray-300 border border-gray-600'
-                        }`}>
-                          {data.verdict}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-500 mb-2">
-                        Confidence: <span className="text-emerald-400 font-mono font-bold">
-                          {data.confidence}%
-                        </span>
-                        {data.holding_period && (
-                          <span className="ml-3">
-                            Hold: {data.holding_period}
-                          </span>
+          {/* Timeframes */}
+          {aiAnalysis.timeframes && (
+            <div className="space-y-3">
+              <h2 className="text-2xs font-semibold uppercase tracking-wider text-gray-500">
+                Analysis by timeframe
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(aiAnalysis.timeframes).map(([tf, data]) => (
+                  <Card key={tf} padding="md">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-semibold text-gray-100">
+                          {TIMEFRAME_LABELS[tf] || tf}
+                        </h3>
+                        {tf === 'swing' && data.setup_type && (
+                          <Badge variant="brand">{data.setup_type}</Badge>
                         )}
                       </div>
-                      {data.entry && (
-                        <div className="grid grid-cols-3 gap-2 mt-3 text-xs font-mono">
-                          <div className="bg-surface-850 rounded p-2 text-center">
-                            <div className="text-gray-500 mb-1">Entry</div>
-                            <div className="text-white">{data.entry}</div>
-                          </div>
-                          <div className="bg-surface-850 rounded p-2 text-center">
-                            <div className="text-gray-500 mb-1">SL</div>
-                            <div className="text-red-400">{data.stop_loss}</div>
-                          </div>
-                          <div className="bg-surface-850 rounded p-2 text-center">
-                            <div className="text-gray-500 mb-1">T1</div>
-                            <div className="text-emerald-400">{data.target_1}</div>
-                          </div>
-                        </div>
-                      )}
-                      <p className="text-gray-400 text-xs mt-3 leading-relaxed">
-                        {data.reasoning}
-                      </p>
+                      <Badge variant={verdictTone(data.verdict)} size="md">{data.verdict}</Badge>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* Deep Dive Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-[#00c853] font-bold mb-2 flex items-center"><TrendingUp className="mr-2" size={16} /> The Bull Case</h4>
-                  <p className="text-gray-300 text-sm leading-relaxed">{aiAnalysis.bull_case}</p>
-                </div>
-                <div>
-                  <h4 className="text-gray-300 font-bold mb-2">Technical Reasoning</h4>
-                  <p className="text-gray-400 text-sm leading-relaxed">{aiAnalysis.technical_reasoning}</p>
-                </div>
-                <div>
-                  <h4 className="text-gray-300 font-bold mb-2">Fundamental Reasoning</h4>
-                  <p className="text-gray-400 text-sm leading-relaxed">{aiAnalysis.fundamental_reasoning}</p>
-                </div>
-              </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-500 mt-2">
+                      <span>
+                        Confidence{' '}
+                        <span className="text-gray-300 font-mono tnum">{data.confidence}%</span>
+                      </span>
+                      {data.holding_period && <span>Hold {data.holding_period}</span>}
+                    </div>
 
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-[#ff1744] font-bold mb-2 flex items-center"><TrendingDown className="mr-2" size={16} /> The Bear Case</h4>
-                  <p className="text-gray-300 text-sm leading-relaxed">{aiAnalysis.bear_case}</p>
+                    {data.entry && (
+                      <div className="grid grid-cols-3 gap-2 mt-3">
+                        {[
+                          ['Entry', data.entry, 'text-gray-200'],
+                          ['Stop', data.stop_loss, 'text-down'],
+                          ['Target', data.target_1, 'text-up'],
+                        ].map(([label, value, tone]) => (
+                          <div key={label} className="rounded-lg bg-surface-950 border border-surface-800 px-2 py-1.5 text-center">
+                            <div className="text-2xs uppercase tracking-wider text-gray-500">{label}</div>
+                            <div className={cn('text-xs font-mono tnum mt-0.5', tone)}>{value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {data.reasoning && (
+                      <p className="text-xs text-gray-500 mt-3 leading-relaxed">{data.reasoning}</p>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Cases */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card padding="lg">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-up">
+                <TrendingUp size={15} aria-hidden="true" /> The bull case
+              </h3>
+              <p className="text-sm text-gray-400 mt-2 leading-relaxed">{aiAnalysis.bull_case}</p>
+
+              {aiAnalysis.technical_reasoning && (
+                <>
+                  <h4 className="text-2xs font-semibold uppercase tracking-wider text-gray-500 mt-5">Technical reasoning</h4>
+                  <p className="text-sm text-gray-400 mt-1.5 leading-relaxed">{aiAnalysis.technical_reasoning}</p>
+                </>
+              )}
+              {aiAnalysis.fundamental_reasoning && (
+                <>
+                  <h4 className="text-2xs font-semibold uppercase tracking-wider text-gray-500 mt-5">Fundamental reasoning</h4>
+                  <p className="text-sm text-gray-400 mt-1.5 leading-relaxed">{aiAnalysis.fundamental_reasoning}</p>
+                </>
+              )}
+            </Card>
+
+            <Card padding="lg">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-down">
+                <TrendingDown size={15} aria-hidden="true" /> The bear case
+              </h3>
+              <p className="text-sm text-gray-400 mt-2 leading-relaxed">{aiAnalysis.bear_case}</p>
+
+              {aiAnalysis.red_flags?.length > 0 && (
+                <div className="mt-5 rounded-xl border border-down/25 bg-down/[0.07] p-4">
+                  <h4 className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-down">
+                    <AlertTriangle size={12} aria-hidden="true" /> Red flags to watch
+                  </h4>
+                  <ul className="mt-2 space-y-1.5">
+                    {aiAnalysis.red_flags.map((rf, i) => (
+                      <li key={i} className="text-xs text-gray-400 leading-relaxed pl-3 relative">
+                        <span className="absolute left-0 top-1.5 w-1 h-1 rounded-full bg-down" aria-hidden="true" />
+                        {rf}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                {aiAnalysis.red_flags && aiAnalysis.red_flags.length > 0 && (
-                  <div className="bg-[#ff1744]/10 border border-[#ff1744]/30 rounded-lg p-4">
-                    <h4 className="text-[#ff1744] font-bold mb-2 flex items-center"><AlertTriangle className="mr-2" size={16} /> Red Flags to Watch</h4>
-                    <ul className="list-disc list-inside text-sm text-[#ff1744]/90 space-y-1">
-                      {aiAnalysis.red_flags.map((rf, i) => <li key={i}>{rf}</li>)}
-                    </ul>
-                  </div>
-                )}
-                <div>
-                  <h4 className="text-gray-300 font-bold mb-2">Key Levels to Watch</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {aiAnalysis.key_levels_to_watch?.map((kl, i) => (
-                      <span key={i} className="bg-surface-900 border border-surface-800 text-gray-300 text-xs px-2 py-1 rounded font-mono">{kl}</span>
+              )}
+
+              {aiAnalysis.key_levels_to_watch?.length > 0 && (
+                <>
+                  <h4 className="text-2xs font-semibold uppercase tracking-wider text-gray-500 mt-5">Key levels to watch</h4>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {aiAnalysis.key_levels_to_watch.map((kl, i) => (
+                      <Badge key={i} variant="outline" size="md" className="font-mono tnum">{kl}</Badge>
                     ))}
                   </div>
-                </div>
-              </div>
-            </div>
-            </div>
+                </>
+              )}
+            </Card>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <BrainCircuit size={48} className="mb-4 opacity-20" />
-            <p>Enter a symbol and click "Generate Analysis" to begin.</p>
-          </div>
-        )}
-      </div>
+
+          <Disclaimer />
+        </div>
+      )}
     </div>
   );
 };

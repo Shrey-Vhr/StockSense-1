@@ -34,9 +34,10 @@ backend/stocksense.db
 .DS_Store
 Thumbs.db
 
-# IDEs
+# IDEs / local agent tooling
 .vscode/
 .idea/
+.claude/
 *.suo
 *.ntvs*
 *.njsproj
@@ -55,3 +56,8 @@ backend/.env
 user_inputs.txt
 frontend/*.cjs
 frontend/temp.*
+
+# Screen recording for the write-up — 10MB+ binary, git keeps every version forever
+docs/*.mp4
+# Internal handoff notes, not project documentation
+docs/REDESIGN-CHANGELOG.md

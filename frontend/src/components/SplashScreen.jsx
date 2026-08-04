@@ -1,32 +1,34 @@
-import { Activity } from 'lucide-react';
+import { CandlestickChart } from 'lucide-react';
 
-const SplashScreen = () => {
-  return (
-    <div className="fixed inset-0 bg-[#0d1117] flex flex-col items-center justify-center z-[100]">
-      <div className="relative">
-        <Activity size={64} className="text-[#10b981] animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#10b981]/10 rounded-full animate-ping" />
-      </div>
-      
-      <h1 className="mt-8 text-3xl font-bold text-white tracking-wider">
-        STOCK<span className="text-[#10b981]">SENSE</span>
-      </h1>
-      
-      <div className="mt-4 text-gray-400 font-mono text-sm overflow-hidden whitespace-nowrap border-r-2 border-[#10b981] animate-[typing_2s_steps(30,end),blink_0.5s_step-end_infinite]">
-        Analyzing the market...
-      </div>
-      
-      <div className="mt-8 w-48 h-1 bg-[#161b22] rounded-full overflow-hidden">
-        <div className="h-full bg-[#10b981] animate-[load_2s_ease-in-out_forwards]" />
-      </div>
-      
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes typing { from { width: 0 } to { width: 170px } }
-        @keyframes blink { 50% { border-color: transparent } }
-        @keyframes load { 0% { width: 0% } 100% { width: 100% } }
-      `}} />
+/**
+ * Boot splash. Timing is unchanged — App.jsx still dismisses it after 2500ms.
+ *
+ * The keyframes used to be injected with dangerouslySetInnerHTML and consumed
+ * via arbitrary `animate-[typing_2s_steps(30,end),...]` classes. They now live
+ * in index.css alongside every other keyframe, which also means the global
+ * prefers-reduced-motion rule covers them.
+ */
+const SplashScreen = () => (
+  <div
+    role="status"
+    aria-label="Loading StockSense"
+    className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-surface-950"
+  >
+    <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 shadow-lg">
+      <CandlestickChart size={26} className="text-white" strokeWidth={2.25} aria-hidden="true" />
     </div>
-  );
-};
+
+    <h1 className="mt-5 text-xl font-semibold tracking-tight text-gray-100">
+      StockSense
+    </h1>
+    <p className="mt-1 text-2xs font-medium uppercase tracking-[0.2em] text-gray-500">
+      AI Terminal
+    </p>
+
+    <div className="mt-6 w-40 h-0.5 rounded-full bg-surface-800 overflow-hidden">
+      <div className="h-full rounded-full bg-brand-400 animate-splash-load" />
+    </div>
+  </div>
+);
 
 export default SplashScreen;
