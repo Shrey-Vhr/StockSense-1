@@ -315,7 +315,7 @@ const Screener = () => {
     <div className="p-4 sm:p-6 max-w-[1400px] mx-auto space-y-5">
       <PageHeader
         title="Stock Screener"
-        subtitle="Define your own conditions across 35+ technical and fundamental indicators."
+        subtitle="Define your own conditions across 40 technical and fundamental indicators."
         icon={SlidersHorizontal}
         actions={
           <>

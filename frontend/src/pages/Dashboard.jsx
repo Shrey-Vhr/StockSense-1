@@ -341,7 +341,7 @@ const Dashboard = () => {
               <span className="text-sm font-semibold text-gray-100">Build your own screen</span>
             </div>
             <p className="text-xs text-gray-400 mt-2.5 leading-relaxed">
-              Filter 2,100+ NSE stocks across 35+ technical and fundamental indicators.
+              Filter 2,100+ NSE stocks across 40 technical and fundamental indicators.
             </p>
             <span className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-brand-400">
               Launch screener

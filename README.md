@@ -19,23 +19,87 @@ StockSense screens 2,100+ NSE-listed stocks against technical and fundamental fi
 
 ## Demo
 
-> **Add screenshots here.** Drop 2–3 screenshots of the running app into a `docs/` folder and reference them like:
->
-> ```markdown
-> ![Dashboard](docs/dashboard.png)
-> ![AI Analysis](docs/ai-analysis.png)
-> ```
+**Market overview** — live index cards, trending stocks with sparklines, top movers and
+sentiment-tagged headlines.
+
+![Dashboard](docs/01-dashboard.png)
+
+**AI analysis** — a verdict with confidence, a proposed swing setup, and the reasoning
+behind it.
+
+![AI verdict and trade setup](docs/08-ai-verdict.png)
+
+**AI levels drawn on the chart** — entry, stop loss and three targets rendered directly
+onto the candles.
+
+![AI trade levels on chart](docs/14-ai-levels-on-chart.png)
+
+**Stock detail** — candlesticks with EMA 20/50/200, volume, and tabs for technicals,
+fundamentals, institutional activity, news and AI analysis.
+
+![Stock detail](docs/02-stock-detail.png)
+
+**Screener** — 40 technical and fundamental conditions across 2,100+ NSE stocks, streamed
+over SSE with a live progress readout.
+
+![Screener running](docs/06-screener-running.png)
+
+<details>
+<summary>More screens</summary>
+
+**Bull and bear cases, with red flags called out explicitly.**
+
+![Bull and bear case](docs/10-ai-bull-bear.png)
+
+**Multi-timeframe verdicts** — intraday, swing, midterm and long term, each with its own
+entry, stop and target.
+
+![Analysis by timeframe](docs/09-ai-timeframes.png)
+
+**Technical snapshot and detected chart patterns.**
+
+![Technicals](docs/11-technicals.png)
+
+**Fundamental analysis** — ratios, growth, shareholding pattern.
+
+![Fundamentals](docs/12-fundamentals.png)
+
+**Fundamental score card** with strengths and weaknesses.
+
+![Fundamental score card](docs/13-fundamental-score.png)
+
+**Sector heatmap** — click a sector to open a pre-filtered screener.
+
+![Sector performance](docs/07-sectors.png)
+
+**Index analysis** — India VIX, market breadth, FII/DII flows.
+
+![Index detail](docs/03-index.png)
+
+**ETF analysis** — NAV premium/discount, expense ratio, SIP guidance.
+
+![ETF detail](docs/04-etf.png)
+
+**News, grouped by sentiment.**
+
+![News](docs/05-news.png)
+
+**Sign in.**
+
+![Login](docs/15-login.png)
+
+</details>
 
 ---
 
 ## Features
 
-- **Multi-Condition Screener** — Scans 2,100+ NSE stocks across 30+ indicators (EMA crossovers, RSI, MACD, ADX, Bollinger Bands, volume ratios) plus fundamental filters (P/E, P/B, ROE, debt-to-equity, revenue growth) and institutional activity (smart money score, promoter trends, bulk deals). Results stream in real-time via SSE with a live progress bar.
+- **Multi-Condition Screener** — Scans 2,100+ NSE stocks across 40 indicators (EMA crossovers, RSI, MACD, ADX, Bollinger Bands, volume ratios) plus fundamental filters (P/E, P/B, ROE, debt-to-equity, revenue growth) and institutional activity (smart money score, promoter trends, bulk deals). Results stream in real-time via SSE with a live progress bar.
 - **AI-Powered Analysis** — Aggregates technical, fundamental, and news data into a structured prompt sent to Claude / Gemini. Returns bull/bear cases, swing trade setups (entry, target, stop loss), risk factors, and multi-timeframe verdicts — all rendered in a formatted report.
 - **Interactive Charts** — TradingView Lightweight Charts with candlestick data, EMA overlays, and AI-generated trade levels (entry/target/SL) drawn directly on the chart.
 - **Live Market Data** — Angel One SmartAPI WebSocket connection for real-time prices during market hours, with automatic yfinance fallback for after-hours and weekends.
 - **Sector Heatmap** — Visual grid of sector performance with color-coded gains/losses. Click any sector to jump to a pre-filtered screener view.
-- **Chart Pattern Detection** — Scans recent candlesticks for 15+ patterns (Doji, Hammer, Engulfing, Morning/Evening Star, Three White Soldiers, etc.) with confidence scores and bullish/bearish classification.
+- **Chart Pattern Detection** — Scans recent candlesticks for 16 patterns (Doji, Hammer, Engulfing, Morning/Evening Star, Three White Soldiers, etc.) with confidence scores and bullish/bearish classification.
 - **Stock Deep Dive** — Dedicated detail page with tabs for Technical Snapshot (EMA levels, RSI, MACD, ADX, Stochastic RSI, ATR, OBV), Fundamental Analysis (key ratios, growth metrics, shareholding breakdown, score card), and full AI Analysis.
 - **Portfolio Tracker** — Track holdings, monitor real-time P&L, and get AI-driven rebalancing suggestions.
 - **Smart Alerts** — Set price-based alerts on any stock; a background checker polls prices and triggers desktop notifications via the browser Notification API.
@@ -204,9 +268,9 @@ StockSense/
 │   │   └── news.py                # Market news feed
 │   ├── services/                  # Core business logic
 │   │   ├── ai_service.py          # Claude/Gemini prompt engineering & response parsing
-│   │   ├── screener_service.py    # 2,100+ stock screening engine (30+ indicators)
+│   │   ├── screener_service.py    # 2,100+ stock screening engine (40 indicators)
 │   │   ├── technical_analysis.py  # EMA, RSI, MACD, ADX, Bollinger, ATR, OBV
-│   │   ├── pattern_service.py     # Candlestick pattern detection (15+ patterns)
+│   │   ├── pattern_service.py     # Candlestick pattern detection (16 patterns)
 │   │   ├── market_data.py         # Price data fetching & caching
 │   │   ├── institutional_service.py # NSE scraping for shareholding & bulk deals
 │   │   ├── index_etf_analysis.py  # Index/ETF analysis with FII/DII flows
