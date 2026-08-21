@@ -95,7 +95,7 @@ entry, stop and target.
 ## Features
 
 - **Multi-Condition Screener** — Scans 2,100+ NSE stocks across 40 indicators (EMA crossovers, RSI, MACD, ADX, Bollinger Bands, volume ratios) plus fundamental filters (P/E, P/B, ROE, debt-to-equity, revenue growth) and institutional activity (smart money score, promoter trends, bulk deals). Results stream in real-time via SSE with a live progress bar.
-- **AI-Powered Analysis** — Aggregates technical, fundamental, and news data into a structured prompt sent to Claude / Gemini. Returns bull/bear cases, swing trade setups (entry, target, stop loss), risk factors, and multi-timeframe verdicts — all rendered in a formatted report.
+- **AI-Powered Analysis** — Aggregates technical, fundamental, and news data into a structured prompt sent to Claude. Returns bull/bear cases, swing trade setups (entry, target, stop loss), risk factors, and multi-timeframe verdicts — all rendered in a formatted report.
 - **Interactive Charts** — TradingView Lightweight Charts with candlestick data, EMA overlays, and AI-generated trade levels (entry/target/SL) drawn directly on the chart.
 - **Live Market Data** — Angel One SmartAPI WebSocket connection for real-time prices during market hours, with automatic yfinance fallback for after-hours and weekends.
 - **Sector Heatmap** — Visual grid of sector performance with color-coded gains/losses. Click any sector to jump to a pre-filtered screener view.
@@ -116,13 +116,17 @@ entry, stop and target.
 | **Frontend** | React 18, Vite, Zustand, Tailwind CSS, Framer Motion, Lightweight Charts |
 | **Backend** | FastAPI, SQLAlchemy (SQLite), APScheduler, Pandas |
 | **Market Data** | Angel One SmartAPI (primary), yfinance (fallback) |
-| **AI** | Anthropic Claude, Google Gemini, Groq (sentiment) |
+| **AI** | Anthropic Claude (analysis), Groq (news sentiment) |
 | **Technical Analysis** | pandas-ta, custom pattern detection engine |
 | **Data Sources** | NSE (institutional data, bulk deals), RSS feeds, NewsAPI |
 
 ---
 
 ## Architecture
+
+> For the full picture — request lifecycle, every service's responsibility, the
+> database schema, and how the four AI analysis types differ — see
+> **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -137,8 +141,8 @@ entry, stop and target.
 │                                                         │
 │  ┌──────────┐  ┌──────────────┐  ┌───────────────────┐  │
 │  │ Screener │  │ AI Service   │  │ Market Data       │  │
-│  │ Engine   │  │ (Claude /    │  │ (Angel One /      │  │
-│  │ (2100+)  │  │  Gemini)     │  │  yfinance)        │  │
+│  │ Engine   │  │ (Claude)     │  │ (Angel One /      │  │
+│  │ (2100+)  │  │              │  │  yfinance)        │  │
 │  └──────────┘  └──────────────┘  └───────────────────┘  │
 │  ┌──────────┐  ┌──────────────┐  ┌───────────────────┐  │
 │  │ Technical│  │ Pattern      │  │ News + Sentiment  │  │
@@ -162,7 +166,7 @@ entry, stop and target.
 - **Python 3.10–3.13.** Not 3.14 — `pandas-ta` depends on `numba`, which has no wheel for
   3.14 yet and fails to build from source.
 - Node.js 18+
-- An Anthropic or Gemini API key (for AI analysis features)
+- An Anthropic API key (for AI analysis features)
 
 ### 1. Clone the repo
 
@@ -201,8 +205,7 @@ placeholders and anything shorter than 32 characters. Generate one:
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-You also need at least one AI provider key (`ANTHROPIC_API_KEY` or `GEMINI_API_KEY`) for
-the analysis features. Everything else is optional — the app falls back to yfinance for
+You also need `ANTHROPIC_API_KEY` for the analysis features. Everything else is optional — the app falls back to yfinance for
 market data and RSS for news.
 
 See [Environment Variables](#environment-variables) below for what each key does.
@@ -244,8 +247,8 @@ Create a `.env` file in the project root (see `.env.example`):
 
 | Variable | Required | Description |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Yes* | Claude API key for AI analysis |
-| `GEMINI_API_KEY` | Yes* | Gemini API key (alternative to Claude) |
+| `ANTHROPIC_API_KEY` | Yes | Claude API key. Required for every AI feature |
+| `GEMINI_API_KEY` | No | Reserved. The key is read into config but no code path calls Gemini today |
 | `GROQ_API_KEY` | No | Groq API key for news sentiment analysis |
 | `ANGEL_ONE_API_KEY` | No | Angel One SmartAPI key for live market data |
 | `ANGEL_ONE_CLIENT_ID` | No | Angel One client ID |
@@ -255,7 +258,8 @@ Create a `.env` file in the project root (see `.env.example`):
 | `SECRET_KEY` | Yes | JWT signing secret. Must be 32+ characters — the app refuses to start otherwise. Generate one with `python -c "import secrets; print(secrets.token_urlsafe(48))"` |
 | `DATABASE_URL` | No | Database URL (defaults to SQLite) |
 
-*At least one AI provider key is required for the analysis features to work.
+AI analysis requires `ANTHROPIC_API_KEY`. Everything else is optional — the app falls
+back to yfinance for market data and RSS for news.
 
 ---
 
@@ -279,7 +283,7 @@ StockSense/
 │   │   ├── watchlist.py           # Watchlist management
 │   │   └── news.py                # Market news feed
 │   ├── services/                  # Core business logic
-│   │   ├── ai_service.py          # Claude/Gemini prompt engineering & response parsing
+│   │   ├── ai_service.py          # Claude prompt engineering & response parsing
 │   │   ├── screener_service.py    # 2,100+ stock screening engine (40 indicators)
 │   │   ├── technical_analysis.py  # EMA, RSI, MACD, ADX, Bollinger, ATR, OBV
 │   │   ├── pattern_service.py     # Candlestick pattern detection (16 patterns)
