@@ -8,6 +8,23 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+# The prompt asks for one of three swing setup labels, but nothing enforced it:
+# whatever string the model returned was rendered verbatim as a Badge in the UI
+# (AIAnalysis.jsx:287, StockDetail.jsx:1577). The keys below are lowercased
+# forms accepted on input - including the shorter wording the system prompt used
+# to ask for - and the values are the single canonical spelling.
+#
+# Note this validates the *label*, not the claim behind it. Nothing here checks
+# that a "Breakout with Volume" actually had volume expansion.
+ALLOWED_SETUP_TYPES = {
+    "pullback to ema 20/50": "Pullback to EMA 20/50",
+    "pullback":              "Pullback to EMA 20/50",
+    "breakout with volume":  "Breakout with Volume",
+    "breakout":              "Breakout with Volume",
+    "range bound":           "Range Bound",
+    "rangebound":            "Range Bound",
+}
+
 class AIService:
     @staticmethod
     def _call_claude(system_prompt: str, user_prompt: str, model="claude-sonnet-4-6"):
@@ -74,7 +91,8 @@ class AIService:
             "Use the `red_flags` array to output specific warning types for the frontend (e.g., Institutional Selling, Revenue Decline, Overvaluation). "
             "For SWING trades, heavily weight the Daily Trend (EMA 20/50) and Relative Strength vs Nifty. Ignore long-term fundamental valuation for the swing entry trigger. "
             "If ADX is below 20 (choppy market) OR Relative Strength is negative (underperforming Nifty), automatically give the Swing verdict as 'Wait' or 'Avoid' regardless of how good the fundamentals are. "
-            "Ensure the JSON output for timeframes.swing includes a new field called setup_type (e.g., 'Pullback', 'Breakout', 'Range Bound'). "
+            "Ensure the JSON output for timeframes.swing includes a field called setup_type, whose value must be exactly one of "
+            "'Pullback to EMA 20/50', 'Breakout with Volume' or 'Range Bound' - no other string, and no variation in wording. "
             "Always respond in valid JSON format only."
         )
         
@@ -242,7 +260,7 @@ Respond in this exact JSON:
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
-      "setup_type": "Pullback/Breakout/Range Bound",
+      "setup_type": "Pullback to EMA 20/50 | Breakout with Volume | Range Bound",
       "holding_period": "X-Y days",
       "entry": "price",
       "stop_loss": "price",
@@ -295,7 +313,7 @@ SWING TRADING PARAMETERS (7-20 days):
 - Volatility (ATR): {atr}
 
 SWING SETUP LOGIC:
-1. Setup Type: Classify this swing setup as either "Pullback to EMA 20/50", "Breakout with Volume", or "Range Bound".
+1. Setup Type: Classify this swing setup as exactly one of "Pullback to EMA 20/50", "Breakout with Volume", or "Range Bound". Reproduce the chosen label verbatim.
 2. Stop Loss Calculation: Use a volatility-based stop loss. SL = Entry - (1.5 * ATR) OR recent swing low, whichever is tighter. Do not use wide support levels for swing SL.
 3. Target Calculation: Target must be at least 1:2 Risk:Reward based on the ATR stop loss.
 
@@ -339,7 +357,7 @@ Respond in this exact JSON:
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
-      "setup_type": "Pullback/Breakout/Range Bound",
+      "setup_type": "Pullback to EMA 20/50 | Breakout with Volume | Range Bound",
       "holding_period": "X-Y days",
       "entry": "price",
       "stop_loss": "price",
@@ -423,7 +441,7 @@ Respond in this exact JSON:
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
-      "setup_type": "Pullback/Breakout/Range Bound",
+      "setup_type": "Pullback to EMA 20/50 | Breakout with Volume | Range Bound",
       "holding_period": "weeks",
       "entry": "price",
       "stop_loss": "price",
@@ -484,7 +502,7 @@ SWING TRADING PARAMETERS (7-20 days):
 - Volatility (ATR): {atr}
 
 SWING SETUP LOGIC:
-1. Setup Type: Classify this swing setup as either "Pullback to EMA 20/50", "Breakout with Volume", or "Range Bound".
+1. Setup Type: Classify this swing setup as exactly one of "Pullback to EMA 20/50", "Breakout with Volume", or "Range Bound". Reproduce the chosen label verbatim.
 2. Stop Loss Calculation: Use a volatility-based stop loss. SL = Entry - (1.5 * ATR) OR recent swing low, whichever is tighter. Do not use wide support levels for swing SL.
 3. Target Calculation: Target must be at least 1:2 Risk:Reward based on the ATR stop loss.
 
@@ -524,7 +542,7 @@ Respond in this exact JSON:
     "swing": {{
       "verdict": "Take/Avoid/Wait",
       "confidence": 0-100,
-      "setup_type": "Pullback/Breakout/Range Bound",
+      "setup_type": "Pullback to EMA 20/50 | Breakout with Volume | Range Bound",
       "holding_period": "X-Y days",
       "entry": "price",
       "stop_loss": "price",
@@ -556,7 +574,42 @@ Respond in this exact JSON:
   }}
 }}"""
 
-        return await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt)
+        result = await asyncio.to_thread(AIService._call_claude, system_prompt, user_prompt)
+        return AIService._validate_setup_type(symbol, result)
+
+    @staticmethod
+    def _validate_setup_type(symbol: str, result: dict) -> dict:
+        """Normalise timeframes.swing.setup_type to the canonical spelling, and
+        drop it entirely if the model returned something outside the enum.
+
+        Dropping rather than substituting a fallback is deliberate: both
+        consumers already guard on `data.setup_type &&`, so the badge simply
+        does not render. A wrong label is worse than no label.
+        """
+        if not isinstance(result, dict) or "error" in result:
+            return result
+
+        timeframes = result.get("timeframes")
+        if not isinstance(timeframes, dict):
+            return result
+        swing = timeframes.get("swing")
+        if not isinstance(swing, dict) or "setup_type" not in swing:
+            return result
+
+        raw = swing.get("setup_type")
+        canonical = ALLOWED_SETUP_TYPES.get(str(raw).strip().lower())
+        if canonical is None:
+            logger.warning(
+                f"setup_type off-enum | {symbol} | got {raw!r} | "
+                f"allowed {sorted(set(ALLOWED_SETUP_TYPES.values()))} | dropping"
+            )
+            swing.pop("setup_type", None)
+        elif canonical != raw:
+            logger.info(f"setup_type normalised | {symbol} | {raw!r} -> {canonical!r}")
+            swing["setup_type"] = canonical
+        else:
+            logger.info(f"setup_type on-enum | {symbol} | {raw!r}")
+        return result
 
     @staticmethod
     async def analyze_portfolio(holdings: list):
