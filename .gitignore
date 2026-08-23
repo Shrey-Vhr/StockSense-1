@@ -61,3 +61,8 @@ frontend/temp.*
 docs/*.mp4
 # Internal handoff notes, not project documentation
 docs/REDESIGN-CHANGELOG.md
+
+# Any log file, anywhere. A vendor library (SmartApi) wrote date-wise logs
+# containing API keys and login bodies; those reached git before anyone noticed.
+*.log
+logs/

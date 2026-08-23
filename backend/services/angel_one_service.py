@@ -1,7 +1,21 @@
+import logging
 import pyotp
 import time
+import logzero
 from SmartApi import SmartConnect
 from config import settings
+
+# SmartApi/smartConnect.py:134 calls `logzero.logfile(log_path, ...)` on import,
+# which writes date-wise files to backend/logs/. On any failed request logzero
+# records the *whole* request — headers included — so those files ended up
+# holding the API key, session Bearer tokens, and the login body with the
+# password and TOTP in plain text. They were committed to git before anyone
+# noticed and had to be purged from history.
+#
+# Passing None detaches the file handler, so nothing is written to disk. Errors
+# still surface on the console via the root logger.
+logzero.logfile(None)
+logzero.loglevel(logging.CRITICAL)
 
 class AngelOneService:
   def __init__(self):

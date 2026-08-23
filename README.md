@@ -190,6 +190,16 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### 2b. Install the git hooks
+
+```bash
+sh scripts/install-hooks.sh
+```
+
+Blocks log files, `.env`, databases and common API-key patterns from being
+committed. Hooks live in `.git/hooks/`, which git does not track, so they do not
+arrive with a clone and must be installed once.
+
 ### 3. Configure environment variables
 
 Copy the example env file and fill in your keys:

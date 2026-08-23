@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+# Blocks credentials and log files from being committed.
+#
+# This exists because SmartApi's client calls logzero.logfile() on init and
+# records whole failed requests — headers and bodies included. Those logs
+# carried the Angel One API key, session Bearer tokens, and the login body with
+# the password and TOTP. They were committed, later deleted, and had to be
+# purged from history: deleting a file does not remove it from earlier commits.
+#
+# Install:  scripts/install-hooks.sh   (or copy this file to .git/hooks/pre-commit)
+# Bypass:   git commit --no-verify     (should be rare — understand why first)
+
+fail=0
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# ── 1. Forbidden file types ────────────────────────────────────────────────
+for f in $staged; do
+  case "$f" in
+    *.log|*/logs/*|logs/*)
+      echo "BLOCKED  $f  — log files have leaked credentials before"; fail=1 ;;
+    .env|*/.env|.env.local|*/.env.local)
+      echo "BLOCKED  $f  — real env file (.env.example is fine)"; fail=1 ;;
+    *.db|*.sqlite|*.sqlite3)
+      echo "BLOCKED  $f  — database may hold user data and password hashes"; fail=1 ;;
+    *.pem|*.key|*.p12|*.pfx)
+      echo "BLOCKED  $f  — private key material"; fail=1 ;;
+  esac
+done
+
+# ── 2. Credential patterns in staged content ───────────────────────────────
+# Checked against the staged diff, so it catches secrets pasted into any file.
+#
+# This file is excluded from its own scan: the patterns below are literal
+# credential markers, so scanning this script would always match and make the
+# hook impossible to commit.
+diff_added=$(git diff --cached -U0 -- . ':(exclude)scripts/pre-commit' \
+             | grep '^+' | grep -v '^+++')
+
+check() {
+  # $1 = regex, $2 = human description
+  if printf '%s' "$diff_added" | grep -qiE "$1"; then
+    echo "BLOCKED  $2"
+    fail=1
+  fi
+}
+
+check "X-PrivateKey"                              "Angel One API key header (X-PrivateKey)"
+check "Bearer ey[A-Za-z0-9_-]{10,}"               "JWT bearer token"
+check "sk-ant-[A-Za-z0-9_-]{20,}"                 "Anthropic API key"
+check "gsk_[A-Za-z0-9]{30,}"                      "Groq API key"
+check "AIza[A-Za-z0-9_-]{30,}"                    "Google API key"
+check "['\"]password['\"][[:space:]]*:[[:space:]]*['\"][^'\"]{3,}" "hardcoded password value"
+check "['\"]totp['\"][[:space:]]*:[[:space:]]*['\"][^'\"]{3,}"     "hardcoded TOTP value"
+check "BEGIN [A-Z ]*PRIVATE KEY"                  "private key block"
+
+if [ "$fail" -ne 0 ]; then
+  cat <<'MSG'
+
+Commit refused.
+
+Unstage the offending file, or remove the secret and stage again.
+If a credential has already been committed anywhere, rotate it — removing it
+from the working tree does not remove it from history.
+
+To override (rarely correct):  git commit --no-verify
+MSG
+  exit 1
+fi
+
+exit 0
