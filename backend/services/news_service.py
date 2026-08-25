@@ -18,6 +18,12 @@ from typing import Optional, List, Dict
 logger = logging.getLogger(__name__)
 
 SENTIMENT_ENABLED = False
+
+# One constant for both the startup health check and the actual call. They were
+# two separate literals, so when the old model stopped being served the check
+# failed against the same dead model it was meant to guard - the outage was
+# silent and sentiment quietly fell back to Neutral for every article.
+SENTIMENT_MODEL = "openai/gpt-oss-20b"
 _groq_client = None
 
 import sys
@@ -65,9 +71,12 @@ def _initialize_groq():
     from groq import Groq
     client = Groq(api_key=api_key)
     test = client.chat.completions.create(
-      model="llama-3.1-8b-instant",
+      model=SENTIMENT_MODEL,
       messages=[{"role":"user","content":"Say OK"}],
-      max_tokens=5
+      # Not 5. Reasoning models (gpt-oss among them) spend completion tokens on
+      # an internal `reasoning` channel before emitting any `content`, so a tiny
+      # budget returns content='' with finish_reason='length' and no exception.
+      max_tokens=200
     )
     if test.choices[0].message.content:
       _groq_client = client
@@ -229,6 +238,19 @@ High — Price moved >2% or very significant news
 Medium — Notable but moderate impact
 Low — Minor or indirect impact
 
+SCORE rules — a 0-10 DIRECTIONAL scale. This is not a measure of
+how big the news is; that is what the impact field is for.
+0-2  Strongly bearish for the stock price
+3    Mildly bearish
+4-6  Neutral (use 5 when genuinely neutral)
+7    Mildly bullish
+8-10 Strongly bullish
+Every Positive headline must score 7 or above.
+Every Negative headline must score 3 or below.
+Never give a Positive headline a low score because the news is minor —
+a small piece of good news is Positive with Medium or Low impact and a
+score of 7, not a score of 1.
+
 Respond with valid JSON only. 
 Do not include any special characters,
 quotes within strings must be escaped.
@@ -236,7 +258,9 @@ Keep all text fields under 100 characters.
 
 Reply ONLY with valid JSON array, no markdown:
 [{{"index":1,"sentiment":"Negative","impact":"High",
-"score":2,"reason":"Stock tanked 9 percent"}}]
+"score":2,"reason":"Stock tanked 9 percent"}},
+{{"index":2,"sentiment":"Positive","impact":"Medium",
+"score":8,"reason":"Profit up 20 percent"}}]
 
 Analyze all {len(to_analyze)} headlines.
 Be decisive — avoid over-classifying as Neutral.
@@ -245,9 +269,11 @@ pick the directional one."""
 
   try:
     response = _groq_client.chat.completions.create(
-      model="llama-3.1-8b-instant",
+      model=SENTIMENT_MODEL,
       messages=[{"role":"user","content":prompt}],
-      max_tokens=1000,
+      # The JSON array for 10 headlines is ~500 tokens, but a reasoning model
+      # spends several hundred more thinking before it writes any of it.
+      max_tokens=4000,
       temperature=0.1
     )
     text = response.choices[0].message.content.strip()
