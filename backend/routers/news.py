@@ -22,9 +22,9 @@ except Exception as e:
 router = APIRouter()
 
 @router.get("/stock/{symbol}")
-async def get_stock_news_endpoint(symbol: str, company_name: str = Query(..., description="Company name used for better news matching"), limit: int = 20):
+async def get_stock_news_endpoint(symbol: str, company_name: str = Query(..., description="Company name used for better news matching"), limit: int = 20, refresh: bool = False):
     try:
-        result = await get_stock_news(symbol, company_name, limit)
+        result = await get_stock_news(symbol, company_name, limit, force_refresh=refresh)
         return result
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))

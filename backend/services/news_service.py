@@ -81,8 +81,11 @@ print(f"📊 Sentiment enabled: {SENTIMENT_ENABLED}")
 
 # Cache: symbol -> (result, timestamp)
 _sentiment_cache: Dict = {}
-_sentiment_cache = {}
-SENTIMENT_CACHE_HOURS = 0
+# Was 0, which made `age_hours < SENTIMENT_CACHE_HOURS` impossible to satisfy:
+# get_cached_sentiment could never return a hit, so every call re-ran Groq.
+# 4 hours suits news that updates hourly at best. Only get_stock_news relies
+# on this - get_market_news is covered by its own @ttl_cache.
+SENTIMENT_CACHE_HOURS = 4
 
 def get_cached_sentiment(cache_key: str):
   if cache_key in _sentiment_cache:
@@ -336,15 +339,18 @@ def calculate_overall_sentiment(articles: list) -> dict:
 async def get_stock_news(
   symbol: str, 
   company_name: str, 
-  limit: int = 20
+  limit: int = 20,
+  force_refresh: bool = False
 ) -> dict:
   
   cache_key = f"news_{symbol}"
   
-  # Check cache first
-  cached = get_cached_sentiment(cache_key)
-  if cached:
-    return cached
+  # Check cache first. The Refresh button skips it - without this the button
+  # would be inert now that the cache actually works.
+  if not force_refresh:
+    cached = get_cached_sentiment(cache_key)
+    if cached:
+      return cached
   
   # Fetch news from all sources
   articles = []
@@ -475,13 +481,10 @@ async def get_market_news(limit: int = 15):
 
     articles = recent_articles[:limit]
     
-    # Add AI sentiment analysis with cache (using 'market' as symbol)
-    cached = get_cached_sentiment('news_market')
-    if cached:
-        return cached
-
+    # No sentiment cache here: @ttl_cache(30 min) above already short-circuits
+    # this whole function, and the sentiment cache stored the *article list*,
+    # so a 4h entry would have frozen market headlines for 4 hours too.
     articles = analyze_news_sentiment(articles, "the overall Indian stock market")
-    set_cached_sentiment('news_market', articles)
 
     return articles
 
