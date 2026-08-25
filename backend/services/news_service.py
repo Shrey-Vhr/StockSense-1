@@ -26,6 +26,15 @@ SENTIMENT_ENABLED = False
 SENTIMENT_MODEL = "openai/gpt-oss-20b"
 _groq_client = None
 
+# Why sentiment is off, when it is off. Read by /api/news/* so the UI can say
+# "sentiment unavailable" instead of showing every article as a confident
+# Neutral, which is what the fallback in analyze_news_sentiment produces.
+SENTIMENT_STATUS = {
+  "enabled": False,
+  "reason": "not initialised",
+  "model": SENTIMENT_MODEL,
+}
+
 import sys
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     try:
@@ -60,6 +69,7 @@ def _initialize_groq():
   
   if not api_key:
     print("❌ GROQ_API_KEY not found")
+    SENTIMENT_STATUS["reason"] = "GROQ_API_KEY is not set"
     return
   
   # Was printing the first 12 characters of the key on every startup. That is
@@ -81,12 +91,45 @@ def _initialize_groq():
     if test.choices[0].message.content:
       _groq_client = client
       SENTIMENT_ENABLED = True
+      SENTIMENT_STATUS.update(enabled=True, reason="ok")
       print("✅ Groq sentiment ENABLED")
+    else:
+      # Previously this branch did not exist: a falsy content left the flag
+      # False while printing neither success nor failure.
+      reason = (f"health check returned empty content "
+                f"(finish_reason={test.choices[0].finish_reason}) - if the model "
+                f"reasons before answering, max_tokens may be too low")
+      SENTIMENT_STATUS["reason"] = reason
+      print(f"❌ Groq {reason}")
   except Exception as e:
+    detail = str(e)
+    if "model_not_found" in detail or "does not exist" in detail:
+      reason = f"model {SENTIMENT_MODEL!r} is not served on this account"
+    elif "invalid_api_key" in detail or "401" in detail:
+      reason = "GROQ_API_KEY was rejected"
+    elif "rate_limit" in detail or "429" in detail:
+      reason = "rate limited during the startup health check"
+    else:
+      reason = f"health check raised: {detail[:200]}"
+    SENTIMENT_STATUS["reason"] = reason
     print(f"❌ Groq init failed: {e}")
 
 _initialize_groq()
 print(f"📊 Sentiment enabled: {SENTIMENT_ENABLED}")
+
+if not SENTIMENT_ENABLED:
+  # logger.warning, not print: the root logger sits at WARNING with no handler
+  # under `uvicorn main:app`, so INFO is invisible but this is not. Without it
+  # the only symptom is every article silently scoring Neutral.
+  logger.warning(
+    "NEWS SENTIMENT DISABLED - %s (model=%s). Every article will be "
+    "reported as Neutral/Low/score 5 until this is fixed.",
+    SENTIMENT_STATUS["reason"], SENTIMENT_MODEL,
+  )
+
+def sentiment_status() -> dict:
+  """Current sentiment availability, for the API to pass to the UI."""
+  return dict(SENTIMENT_STATUS)
 
 # Cache: symbol -> (result, timestamp)
 _sentiment_cache: Dict = {}
@@ -433,7 +476,8 @@ async def get_stock_news(
     'symbol': symbol,
     'company_name': company_name,
     'overall_sentiment': overall,
-    'articles': articles
+    'articles': articles,
+    'sentiment_available': SENTIMENT_ENABLED
   }
   
   # Cache the result

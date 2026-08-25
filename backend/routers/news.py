@@ -6,7 +6,8 @@ try:
   from services.news_service import (
     get_stock_news,
     get_market_news,
-    get_nse_filings
+    get_nse_filings,
+    sentiment_status
   )
 except Exception as e:
   print(f"News service error: {e}")
@@ -18,6 +19,8 @@ except Exception as e:
     return []
   async def get_nse_filings(*args, **kwargs):
     return []
+  def sentiment_status():
+    return {"enabled": False, "reason": err_msg, "model": None}
 
 router = APIRouter()
 
@@ -33,7 +36,8 @@ async def get_stock_news_endpoint(symbol: str, company_name: str = Query(..., de
 async def get_market_news_endpoint(limit: int = 10):
     try:
         news = await get_market_news(limit)
-        return {"articles": news}
+        # Additive: existing consumers read .articles and are unaffected.
+        return {"articles": news, "sentiment_available": sentiment_status()["enabled"]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

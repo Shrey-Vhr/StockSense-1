@@ -93,6 +93,9 @@ const StockDetail = () => {
   const [fundData, setFundData] = useState(null);
   const [news, setNews] = useState([]);
   const [sentiment, setSentiment] = useState(null);
+  // Defaults true so the warning only ever appears on a response that
+  // explicitly said sentiment was unavailable, never while loading.
+  const [sentimentAvailable, setSentimentAvailable] = useState(true);
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -208,7 +211,7 @@ const StockDetail = () => {
 
   useEffect(() => {
     // Reset state on symbol change
-    setQuote(null); setStockPrice(null); setTechData(null); setFundData(null); setNews([]); setSentiment(null); setAiAnalysis(null); setErrorMsg(null);
+    setQuote(null); setStockPrice(null); setTechData(null); setFundData(null); setNews([]); setSentiment(null); setSentimentAvailable(true); setAiAnalysis(null); setErrorMsg(null);
     setHistoricalData(null); setChartLoading(true);
     setActiveTab('technical');
     fetchInitialData();
@@ -233,6 +236,7 @@ const StockDetail = () => {
       const res = await api.get(url);
       setNews(res.data.articles || []);
       if (res.data.overall_sentiment) setSentiment(res.data.overall_sentiment);
+      setSentimentAvailable(res.data.sentiment_available !== false);
     } catch (e) {
       console.error('Failed to fetch news', e);
     } finally {
@@ -1316,8 +1320,14 @@ const StockDetail = () => {
         {activeTab === 'news' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-100 flex items-center">
+              <h2 className="text-xl font-bold text-gray-100 flex items-center gap-2">
                 News & Sentiment
+                {!sentimentAvailable && (
+                  <Badge variant="warn" icon={AlertTriangle}
+                         title="The sentiment engine is unavailable, so every article below is reported as Neutral. Check the backend log for the reason.">
+                    Sentiment unavailable
+                  </Badge>
+                )}
               </h2>
               <Button variant="secondary" size="sm" icon={RefreshCw} onClick={() => fetchNews(true)}>
                 Refresh

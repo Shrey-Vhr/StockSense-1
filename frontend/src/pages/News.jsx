@@ -21,6 +21,10 @@ const News = () => {
   // Declared above the effect that calls it, and memoised on the store setters
   // (which zustand keeps stable), so the dependency list can be honest without
   // the fetch identity churning every render.
+  // Grouping below is entirely sentiment-driven, so if the engine is down every
+  // article lands in NEUTRAL. Say so rather than presenting that as a finding.
+  const [sentimentAvailable, setSentimentAvailable] = useState(true);
+
   const fetchNews = useCallback(async () => {
     setLoading('news', true);
     setError('');
@@ -29,6 +33,8 @@ const News = () => {
       if (res.data?.articles) {
         setMarketNews(res.data.articles);
       }
+      // Only false on a response that explicitly said so, never while loading.
+      setSentimentAvailable(res.data?.sentiment_available !== false);
     } catch (e) {
       console.error(e);
       // The page previously swallowed this entirely: a failed fetch left the
@@ -71,9 +77,17 @@ const News = () => {
         subtitle="Headlines across the Indian market, grouped by sentiment."
         icon={Newspaper}
         actions={
-          <Button variant="secondary" icon={RefreshCw} onClick={fetchNews} loading={loading}>
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            {!sentimentAvailable && (
+              <Badge variant="warn" icon={AlertTriangle}
+                     title="The sentiment engine is unavailable, so every article is grouped as Neutral. Check the backend log for the reason.">
+                Sentiment unavailable
+              </Badge>
+            )}
+            <Button variant="secondary" icon={RefreshCw} onClick={fetchNews} loading={loading}>
+              Refresh
+            </Button>
+          </div>
         }
       />
 
