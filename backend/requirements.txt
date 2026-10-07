@@ -6,7 +6,7 @@ starlette==1.7.0
 uvicorn[standard]==0.48.0
 sqlalchemy==2.0.50
 websockets==16.0
-yfinance==1.4.1
+yfinance==1.7.0
 smartapi-python==1.5.5
 # Requires Python <= 3.13: pulls numba, which has no 3.14 wheel.
 pandas-ta==0.4.71b0
