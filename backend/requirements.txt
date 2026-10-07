@@ -10,7 +10,7 @@ yfinance==1.4.1
 smartapi-python==1.5.5
 # Requires Python <= 3.13: pulls numba, which has no 3.14 wheel.
 pandas-ta==0.4.71b0
-pandas==3.0.3
+pandas==3.0.6
 numpy==2.4.6
 anthropic==0.105.2
 groq==1.4.0
