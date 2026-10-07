@@ -47,6 +47,12 @@ const Register = () => {
       setError('Passwords do not match');
       return;
     }
+    // Mirrors the backend rule in routers/auth.py so the user hears it before
+    // a round trip.
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -225,7 +231,8 @@ const Register = () => {
                     autoComplete="new-password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    placeholder="Choose a password"
+                    placeholder="At least 8 characters"
+                    minLength={8}
                     required
                     className="pr-11"
                     {...p}

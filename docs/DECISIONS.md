@@ -241,13 +241,48 @@ browser/print settings.
 **Unverified:** Whether browser-only export was chosen for privacy, dependency
 removal, cost, or implementation speed.
 
+## ADR-012: Hardening for a public source release
+
+**Status:** Evidenced.
+
+**Context.** Before publishing the repository, an external review and a
+re-check against the code found cross-user data access, unbounded paid and
+expensive endpoints, and leakage of internals. The project still targets a
+single local process, so fixes are deliberately dependency-free.
+
+**Decisions.**
+- Ownership: saved_screeners gained user_id (init_db adds it to old
+  databases); deleting a watchlist stock joins to Watchlist and checks the
+  owner; pattern scans use uuid4 ids and an owner map kept out of responses.
+- Abuse limits: rate_limit.py is an in-memory sliding window used for login
+  (10/min/IP), register (5/h/IP), AI (10/min/user, shared with portfolio
+  AI review) and screener (5/min/user). At most two screener runs execute at
+  once server-wide; one pattern scan per user. AI bodies, holdings, screener
+  conditions and limits are size-capped.
+- Auth: is_active is enforced at login and on every token; passwords must be
+  8-128 characters. Errors are returned as plain strings the UI can render.
+- Information leakage: HTTP errors no longer include str(e); the detail goes
+  to the server log. The live TOTP is no longer printed. The unused anonymous
+  /ws socket was deleted.
+- AI integrity: scraped headlines are flattened, truncated and placed inside
+  untrusted-data tags that the system prompt says never carry instructions.
+- Angel One: login is skipped when credentials are blank, and stops after the
+  broker rejects them, because every quote lookup used to retry the login and
+  Angel One locks an account after five bad attempts.
+- Supply chain: Python dependencies pinned with ==, pip-audit and npm audit
+  run in CI with gitleaks, Dependabot opens update PRs.
+
+**Consequences.** Limits reset on restart and are per process; JWTs are still
+in localStorage without revocation. Both are acceptable locally and listed in
+SECURITY.md as work required before any hosted deployment.
+
 ## Open questions that must remain open
 
 1. Why SQLite, Angel One, Groq, the 1.5 ATR multiplier, and the 4% fallback
    were chosen.
 2. Whether Gemini, GLM-5.2, OpenAI, or other models were evaluated.
 3. Any reproducible screener performance baseline or target.
-4. Whether shared saved screeners are intentional; code currently makes them
-   shared, but no rationale exists.
+4. ~~Whether shared saved screeners are intentional.~~ Resolved by ADR-012:
+   they are now per user.
 5. Data-license/retention rules for current scraping and unauthenticated price
    socket fan-out.

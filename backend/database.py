@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from config import settings
 
@@ -27,3 +27,12 @@ def init_db():
     from models.screener import SavedScreener
     
     Base.metadata.create_all(bind=engine)
+
+    # create_all never alters an existing table, so databases created before
+    # saved_screeners had an owner need the column added by hand.
+    cols = {c["name"] for c in inspect(engine).get_columns("saved_screeners")}
+    if "user_id" not in cols:
+        with engine.begin() as conn:
+            conn.execute(text(
+                "ALTER TABLE saved_screeners ADD COLUMN user_id INTEGER REFERENCES users(id)"
+            ))

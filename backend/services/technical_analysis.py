@@ -388,7 +388,9 @@ class TechnicalAnalysisService:
             momentum_macd = TechnicalAnalysisService.calculate_macd(df)
             momentum_adx = TechnicalAnalysisService.calculate_adx(df)
         except Exception as e:
-            return {"error": f"Failed to calculate technicals: {str(e)}"}
+            # Returned to the browser, so only the console gets the detail.
+            print(f"Technical calculation failed: {e!r}")
+            return {"error": "Failed to calculate technicals"}
         
         # Calculate overall score out of 100
         score = 50 # Neutral start

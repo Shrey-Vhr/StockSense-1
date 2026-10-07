@@ -107,7 +107,8 @@ Protection is not a single global policy:
   EventSource cannot attach Authorization.
 - Portfolio, watchlist, alerts, and selected auth endpoints inject
   current_user individually.
-- Root /, /api/angel-one/status, and root /ws heartbeat are public.
+- Root / and /api/angel-one/status are public. The anonymous root /ws
+  heartbeat was removed (ADR-012): nothing used it.
 
 Therefore the historical statement that the whole API is behind auth is
 overbroad.
@@ -240,9 +241,9 @@ delivery. There is no email/push provider, durable delivery queue, or retry.
 
 | Module/group | Responsibility | Dependencies/caveat |
 |---|---|---|
-| routers/auth.py | Registration, login, profile, JWT. | bcrypt, PyJWT, user models; is_active is stored but not checked. |
+| routers/auth.py | Registration, login, profile, JWT. | bcrypt, PyJWT, user models; inactive users are refused; login/register are IP rate-limited. |
 | routers/stocks.py | Dashboard, search, quote/history/fundamentals, price socket. | yfinance/broadcaster/Angel; socket lacks auth. |
-| routers/analysis.py | Analysis APIs and pattern scans. | Services; in-memory scans. |
+| routers/analysis.py | Analysis APIs and pattern scans. | Services; in-memory scans with random ids, owner checks, one running scan per user, 1h eviction. |
 | routers/screener.py | Catalogue, batch/SSE screen, saved configurations. | ScreenerEngine/auth; saved data global. |
 | routers/news.py | News and filings. | Import-error fallback hides service import failure as empty data. |
 | routers/ai.py | Claude stock/portfolio/indicator APIs. | Adds institutional data. |
@@ -266,7 +267,7 @@ router query convention, not a global tenant layer.
 
 | Table | Columns and actual purpose |
 |---|---|
-| users | id PK, unique indexed email, password_hash, optional name, created_at, is_active. is_active is currently unused. |
+| users | id PK, unique indexed email, password_hash, optional name, created_at, is_active. Inactive users cannot log in and their tokens are rejected. |
 | user_preferences | user_id PK/FK, default_watchlist, JSON notification_settings, theme. Model default light; registration writes dark. |
 | stock_cache | symbol PK, name, sector, industry, market_cap, last_updated. Reference/cache table. |
 | price_history | composite symbol/date PK, OHLC, volume. No reviewed runtime writer. |
@@ -277,7 +278,7 @@ router query convention, not a global tenant layer.
 | watchlists | id, user_id FK, name. |
 | watchlist_stocks | id, watchlist_id FK, plain string symbol, added_at, notes. |
 | alerts | id, user_id FK, symbol FK, type, string condition, value, triggered/notified flags, created_at. |
-| saved_screeners | id, name, description, JSON-text conditions, sorting, timestamps. No user_id: globally shared. |
+| saved_screeners | id, name, description, JSON-text conditions, sorting, timestamps, user_id FK. Scoped per user; init_db adds the column to older databases, where pre-existing rows stay NULL and invisible. |
 
 ## 9. Architectural debt
 

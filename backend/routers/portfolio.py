@@ -11,6 +11,7 @@ from models.portfolio import Portfolio, Holding, Trade
 from routers.auth import get_current_user
 from services.market_data import YFinanceService
 from services.ai_service import AIService
+from rate_limit import by_user
 
 router = APIRouter()
 
@@ -211,7 +212,8 @@ async def get_performance(db: Session = Depends(get_db), current_user: User = De
         "monthly_pnl": total_cur * 0.08
     }
 
-@router.post("/ai-review")
+# Shares the "ai" budget with routers/ai.py: it is the same Anthropic spend.
+@router.post("/ai-review", dependencies=[Depends(by_user("ai", 10, 60))])
 async def ai_review(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     port = get_user_portfolio(db, current_user.id)
     holdings = db.query(Holding).filter(Holding.portfolio_id == port.id).all()

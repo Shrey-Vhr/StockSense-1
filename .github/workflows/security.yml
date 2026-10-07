@@ -1,0 +1,54 @@
+name: Security checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly, so a newly published advisory against a pinned version is noticed
+    # even when nobody is pushing.
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Secret scan (full history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  python-deps:
+    name: pip-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # pandas-ta pulls numba, which has no 3.14 wheel.
+          python-version: "3.12"
+      - run: pip install pip-audit
+      - run: pip-audit -r backend/requirements.txt
+
+  npm-deps:
+    name: npm audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Fails on high/critical advisories in what ships to the browser. Build
+      # tooling (Vite, Tailwind) is reported by Dependabot instead; see the
+      # README's limitations table.
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm audit signatures

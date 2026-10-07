@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base, init_db
 
@@ -96,35 +96,9 @@ app.include_router(
 def read_root():
     return {"message": "Welcome to StockSense API"}
 
-from services.websocket_service import manager
-import json
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-  await websocket.accept()
-  try:
-    while True:
-      try:
-        data = await asyncio.wait_for(
-          websocket.receive_text(),
-          timeout=30.0
-        )
-        await websocket.send_json({
-          "type": "pong",
-          "status": "connected"
-        })
-      except asyncio.TimeoutError:
-        await websocket.send_json({"type": "ping"})
-      except Exception:
-        break
-  except Exception as e:
-    print(f"WS error: {e}")
-  finally:
-    try:
-      await websocket.close()
-    except:
-      pass
-
+# There used to be an anonymous /ws ping-pong socket here. Nothing in the
+# frontend connected to it, and it accepted any caller and held the connection
+# open indefinitely, so it was only ever a way to tie up server connections.
 
 @app.get("/api/angel-one/status")
 def get_angel_one_status():

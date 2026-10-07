@@ -2,6 +2,9 @@ from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconn
 from typing import List, Optional
 from services.market_data import YFinanceService
 from services.websocket_service import manager
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -205,8 +208,9 @@ async def get_stock_quote(symbol: str):
         quote = await YFinanceService.get_stock_quote(symbol)
         quote = fix_nan_stocks(quote)
         return quote
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    except Exception:
+        logger.exception("Quote failed for %s", symbol)
+        raise HTTPException(status_code=404, detail="Quote is unavailable for this symbol")
 
 @router.get("/history/{symbol}")
 async def get_stock_history(

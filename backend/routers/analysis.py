@@ -1,7 +1,16 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from pydantic import BaseModel, Field
+from typing import Annotated, List, Literal
 import asyncio
+import logging
 import math
 import json
+import time
+import uuid
+
+from routers.auth import get_current_user
+
+logger = logging.getLogger(__name__)
 
 def fix_nan(obj):
   if isinstance(obj, float):
@@ -15,8 +24,12 @@ def fix_nan(obj):
   return obj
 
 # Store scan results in memory
-_scan_results = {}
 _scan_status = {}
+# scan_id -> {'user_id', 'finished_at'}. Kept apart from _scan_status so the
+# owner never appears in the polling response.
+_scan_owner = {}
+# Finished scans are dropped after an hour so the dicts cannot grow forever.
+SCAN_TTL_SECONDS = 3600
 from services.technical_analysis import TechnicalAnalysisService
 
 router = APIRouter()
@@ -32,8 +45,9 @@ async def get_technical_analysis(symbol: str):
         return snapshot
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Technical analysis failed: {str(e)}")
+    except Exception:
+        logger.exception("Technical analysis failed for %s", symbol)
+        raise HTTPException(status_code=500, detail="Technical analysis failed. See server logs.")
 
 from services.fundamental_analysis import get_fundamental_data
 
@@ -53,10 +67,9 @@ async def get_fundamental_analysis(symbol: str, refresh: bool = False):
         return data
     except HTTPException:
         raise
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Fundamental analysis failed: {str(e)}")
+    except Exception:
+        logger.exception("Fundamental analysis failed for %s", symbol)
+        raise HTTPException(status_code=500, detail="Fundamental analysis failed. See server logs.")
 
 @router.get("/index/{symbol:path}")
 async def get_index_analysis_endpoint(symbol: str):
@@ -86,10 +99,11 @@ async def get_institutional_activity(symbol: str, refresh: bool = False):
     return data
   except HTTPException:
     raise
-  except Exception as e:
+  except Exception:
+    logger.exception("Institutional data failed for %s", symbol)
     raise HTTPException(
       status_code=404,
-      detail=str(e)
+      detail="Institutional data is unavailable for this symbol"
     )
 
 @router.get("/market-pulse")
@@ -200,23 +214,48 @@ async def get_pattern_analysis(symbol: str):
     result = fix_nan(result)
     return result
     
-  except Exception as e:
+  except Exception:
+    logger.exception("Pattern analysis failed for %s", symbol)
     raise HTTPException(
       status_code=500,
-      detail=str(e)
+      detail="Pattern analysis failed. See server logs."
     )
+
+class PatternScanRequest(BaseModel):
+  patterns: List[Annotated[str, Field(max_length=64)]] = Field(default_factory=list, max_length=50)
+  scope: Literal['nifty50', 'all'] = 'nifty50'
+
+
+def _evict_old_scans():
+  cutoff = time.time() - SCAN_TTL_SECONDS
+  for sid in [s for s, info in _scan_owner.items()
+              if info['finished_at'] and info['finished_at'] < cutoff]:
+    _scan_owner.pop(sid, None)
+    _scan_status.pop(sid, None)
+
 
 @router.post("/patterns/scan")
 async def start_pattern_scan(
-  request: dict,
-  background_tasks: BackgroundTasks
+  body: PatternScanRequest,
+  background_tasks: BackgroundTasks,
+  current_user = Depends(get_current_user)
 ):
-  patterns_to_find = request.get(
-    'patterns', []
-  )
-  scan_scope = request.get('scope', 'nifty50')
-  scan_id = str(int(__import__('time').time()))
-  
+  _evict_old_scans()
+
+  # Each scan walks the whole universe with a pause per stock, so one at a time
+  # per user is plenty; more would only queue up upstream requests.
+  if any(info['user_id'] == current_user.id and info['finished_at'] is None
+         for info in _scan_owner.values()):
+    raise HTTPException(
+      status_code=429,
+      detail="You already have a scan running. Wait for it to finish."
+    )
+
+  # Random, not a timestamp: a timestamp is guessable, and two scans started
+  # in the same second used to overwrite each other.
+  scan_id = uuid.uuid4().hex
+  _scan_owner[scan_id] = {'user_id': current_user.id, 'finished_at': None}
+
   # Initialize scan status
   _scan_status[scan_id] = {
     'status': 'running',
@@ -225,26 +264,43 @@ async def start_pattern_scan(
     'current_stock': '',
     'results': []
   }
-  
+
   # Start background scan
   background_tasks.add_task(
-    run_pattern_scan,
+    _run_scan_guarded,
     scan_id,
-    patterns_to_find,
-    scan_scope
+    body.patterns,
+    body.scope
   )
-  
+
   return {'scan_id': scan_id}
 
 
 @router.get("/patterns/scan/{scan_id}")
-async def get_scan_status(scan_id: str):
-  if scan_id not in _scan_status:
+async def get_scan_status(
+  scan_id: str,
+  current_user = Depends(get_current_user)
+):
+  owner = _scan_owner.get(scan_id)
+  # Another user's scan answers exactly like a missing one.
+  if owner is None or owner['user_id'] != current_user.id:
     raise HTTPException(
       status_code=404,
       detail="Scan not found"
     )
   return _scan_status[scan_id]
+
+
+async def _run_scan_guarded(scan_id: str, patterns_to_find: list, scope: str):
+  # Always mark the scan finished, even if it crashes outright. Otherwise the
+  # one-running-scan-per-user rule would lock that user out until a restart.
+  try:
+    await run_pattern_scan(scan_id, patterns_to_find, scope)
+  except Exception:
+    logger.exception("Pattern scan %s failed", scan_id)
+    _scan_status[scan_id]['status'] = 'completed'
+  finally:
+    _scan_owner[scan_id]['finished_at'] = time.time()
 
 
 async def run_pattern_scan(

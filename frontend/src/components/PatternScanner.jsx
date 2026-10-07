@@ -136,7 +136,10 @@ const PatternScanner = () => {
       console.error("Scan start error:", e);
       setScanning(false);
       // The failure used to be silent: the button simply stopped spinning.
-      setError("Could not start the scan. Please try again.");
+      // Show the server's reason when it is a plain message (e.g. "you already
+      // have a scan running"); validation errors arrive as a list, so skip those.
+      const detail = e.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Could not start the scan. Please try again.");
     }
   };
 

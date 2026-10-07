@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from database import Base
 
@@ -7,6 +7,9 @@ class SavedScreener(Base):
     __tablename__ = "saved_screeners"
 
     id = Column(Integer, primary_key=True, index=True)
+    # Owner. Rows saved before this column existed are NULL and visible to
+    # nobody, which is the safe default for data whose owner is unknown.
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     name = Column(String, nullable=False)
     description = Column(String, default="")
     conditions = Column(Text, nullable=False)       # JSON-serialised list of condition dicts

@@ -10,6 +10,7 @@ from pydantic import BaseModel, EmailStr
 from database import get_db
 from models.user import User, UserPreferences
 from config import settings
+from rate_limit import by_ip
 
 router = APIRouter()
 
@@ -54,7 +55,9 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     
     user = db.query(User).filter(User.email == email).first()
-    if user is None:
+    # A deactivated account must stop working immediately, including any
+    # token it was issued before deactivation.
+    if user is None or not user.is_active:
         raise credentials_exception
     return user
 
@@ -68,6 +71,13 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     name: str
+
+# Checked in the handler rather than with Field(min_length=...): a validation
+# failure there returns detail as a list, and the Register page renders detail
+# as text. These return a plain string it can show directly.
+MIN_PASSWORD = 8
+MAX_PASSWORD = 128   # bounds the request; bcrypt itself only reads 72 bytes
+MAX_NAME = 100
 
 class UserResponse(BaseModel):
     id: int
@@ -84,8 +94,20 @@ class ProfileUpdate(BaseModel):
 
 # --- Endpoints ---
 
-@router.post("/register", response_model=UserResponse)
+@router.post(
+    "/register",
+    response_model=UserResponse,
+    dependencies=[Depends(by_ip("register", 5, 3600))],
+)
 async def register(user: UserCreate, db: Session = Depends(get_db)):
+    if not MIN_PASSWORD <= len(user.password) <= MAX_PASSWORD:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Password must be between {MIN_PASSWORD} and {MAX_PASSWORD} characters",
+        )
+    if not user.name.strip() or len(user.name) > MAX_NAME:
+        raise HTTPException(status_code=400, detail=f"Name must be 1-{MAX_NAME} characters")
+
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -107,10 +129,16 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     
     return new_user
 
-@router.post("/login", response_model=Token)
+# 10 attempts a minute per IP: plenty for a person mistyping, far too slow for
+# guessing passwords.
+@router.post(
+    "/login",
+    response_model=Token,
+    dependencies=[Depends(by_ip("login", 10, 60))],
+)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
+    if not user or not user.is_active or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -149,6 +177,8 @@ async def update_profile(
     db: Session = Depends(get_db)
 ):
     if profile_data.name:
+        if len(profile_data.name) > MAX_NAME:
+            raise HTTPException(status_code=400, detail=f"Name must be at most {MAX_NAME} characters")
         current_user.name = profile_data.name
     
     if profile_data.theme:

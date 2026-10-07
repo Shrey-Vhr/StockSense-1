@@ -107,8 +107,10 @@ class YFinanceService:
                     "avg_52w": avg_52w
                 }
                 
-        except Exception as e:
-            return {"error": str(e)}
+        except Exception:
+            # This dict is returned to the browser, so the detail stays in the log.
+            logger.exception("Quote fetch failed for %s", symbol)
+            return {"error": "Quote unavailable"}
 
     @staticmethod
     async def get_stock_quote(symbol: str):

@@ -210,9 +210,12 @@ def remove_stock_from_watchlist(
   db: Session = Depends(get_db),
   current_user = Depends(get_current_user)
 ):
-  ws = db.query(WatchlistStock).filter(
+  # Join to the parent so ownership is part of the lookup. Without it, anyone
+  # who knew or guessed both ids could delete from another user's watchlist.
+  ws = db.query(WatchlistStock).join(Watchlist).filter(
     WatchlistStock.id == stock_id,
-    WatchlistStock.watchlist_id == watchlist_id
+    WatchlistStock.watchlist_id == watchlist_id,
+    Watchlist.user_id == current_user.id
   ).first()
   
   if not ws:

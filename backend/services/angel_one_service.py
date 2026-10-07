@@ -24,8 +24,23 @@ class AngelOneService:
     self.feed_token = None
     self.last_login = None
     self.is_connected = False
-  
+    # Set when Angel One rejects the credentials themselves (wrong MPIN, bad
+    # key), as opposed to a stale TOTP. Every quote lookup calls
+    # ensure_logged_in(), so without this a wrong password was retried on each
+    # page load, and Angel One locks the account after five bad attempts.
+    self.credentials_rejected = False
+
   def login(self):
+    if self.credentials_rejected:
+      return False
+    # Angel One is optional (.env.example); without credentials there is
+    # nothing to try, and a doomed attempt still counts against the account.
+    if not all(str(v).strip() for v in (
+        settings.ANGEL_ONE_API_KEY, settings.ANGEL_ONE_CLIENT_ID,
+        settings.ANGEL_ONE_PASSWORD, settings.ANGEL_ONE_TOTP_SECRET)):
+      print("Angel One credentials not configured; using yfinance.")
+      self.credentials_rejected = True
+      return False
     max_retries = 3
     
     for attempt in range(max_retries):
@@ -44,8 +59,10 @@ class AngelOneService:
         totp_obj = pyotp.TOTP(
           settings.ANGEL_ONE_TOTP_SECRET
         )
+        # Never log the code itself: anyone reading the console could use it
+        # for the rest of its 30-second window.
         totp = totp_obj.now()
-        print(f"[Attempt {attempt+1}] TOTP: {totp}")
+        print(f"[Attempt {attempt+1}] Logging in to Angel One...")
         
         # Login
         data = self.api.generateSession(
@@ -67,8 +84,11 @@ class AngelOneService:
                 f"{data.get('message', '')}")
           
           # AB1050 = invalid TOTP — retry
-          # Other errors — don't retry
+          # Other errors — don't retry, and don't try again until restart
           if error != 'AB1050':
+            self.credentials_rejected = True
+            print("Angel One rejected the credentials; not retrying until "
+                  "the server restarts. Check ANGEL_ONE_* in .env.")
             break
             
       except Exception as e:

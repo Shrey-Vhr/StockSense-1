@@ -171,8 +171,8 @@ entry, stop and target.
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/Shrey-Vhr/StockSense.git
-cd StockSense
+git clone https://github.com/Shrey-Vhr/StockSense-1.git
+cd StockSense-1
 ```
 
 ### 2. Backend setup
@@ -340,18 +340,21 @@ for public deployment**, and the following are known and deliberate:
 
 | | |
 |---|---|
-| **Most read endpoints are unauthenticated** | Only the routers holding personal data — portfolio, watchlist, alerts — require a token, and those are correctly scoped to the requesting user. The market-data, screener and AI routers are open. Locally that is fine; exposed to the internet it would let anyone spend your API credit. |
-| **No rate limiting** | Nothing throttles login attempts or the screener, which scans 2,100 stocks per run. |
-| **JWT in `localStorage`** | 7-day expiry with no server-side revocation — logging out clears the browser but the token stays valid until it expires. `httpOnly` cookies would be the fix. |
+| **JWT in `localStorage`** | 7-day expiry with no server-side revocation — logging out clears the browser but the token stays valid until it expires. `httpOnly` cookies plus a revocation list would be the fix for a hosted deployment. |
+| **In-memory rate limits** | Login, registration, AI, screener and pattern-scan limits live in process memory (`backend/rate_limit.py`): they reset on restart and are not shared between workers. Right for one local process; a hosted deployment would want Redis or a gateway. |
 | **CORS is pinned to localhost** | Deploying means adding real origins, and never `*` alongside `allow_credentials=True`. |
 | **SQLite** | Fine for one user; not intended for concurrent writers. |
 | **No CSP header** | Nothing sets one; it would need to come from whatever serves the built frontend. |
-| **2 moderate npm advisories** | An open redirect in `react-router` 6. The fix requires major bumps to both `react-router` (6 → 7) and `vite` (5 → 8), which is a larger change than the risk warrants for a local single-user app. Revisit alongside a deliberate dependency upgrade. |
+| **Dev-tool npm advisories** | `npm audit` still flags Vite 5 and Tailwind 3 (via esbuild, chokidar, micromatch). These run only on the developer's machine during `npm run dev`/`build` and are not in the shipped bundle. Clearing them needs the Vite 8 and Tailwind 4 major migrations. |
 
-What *is* covered: passwords are bcrypt-hashed, JWTs are HS256 with proper expiry
-handling, every user-data query is scoped by owner (no IDOR), all database access
-goes through the SQLAlchemy ORM, and no secrets have ever been committed — `.env`
-and the SQLite database are both gitignored.
+What *is* covered: every API router except auth requires a token; passwords are
+bcrypt-hashed and at least 8 characters; deactivated accounts are refused; every
+user-data query (portfolio, watchlists, alerts, saved screeners, pattern scans)
+is scoped by owner; login, registration and every route that spends API credit
+or scans the market are rate-limited and size-capped; error responses never echo
+internal exception text; news headlines are fenced off as untrusted text in AI
+prompts; all database access goes through the SQLAlchemy ORM; and Python
+dependencies are pinned and audited in CI. See [SECURITY.md](SECURITY.md).
 
 ---
 
