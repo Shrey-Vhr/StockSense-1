@@ -3,7 +3,7 @@
 # proposes bumps as pull requests.
 fastapi==0.136.3
 starlette==1.7.0
-uvicorn[standard]==0.48.0
+uvicorn[standard]==0.54.0
 sqlalchemy==2.0.50
 websockets==16.0
 yfinance==1.4.1
