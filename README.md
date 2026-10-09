@@ -4,7 +4,7 @@
 
 StockSense screens 2,100+ NSE-listed stocks against technical and fundamental filters, pulls in live market data via Angel One SmartAPI, and uses LLM-powered analysis to generate actionable trade setups — complete with entry points, targets, and stop losses.
 
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12--3.13-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688?logo=fastapi&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -163,8 +163,8 @@ entry, stop and target.
 
 ### Prerequisites
 
-- **Python 3.10–3.13.** Not 3.14 — `pandas-ta` depends on `numba`, which has no wheel for
-  3.14 yet and fails to build from source.
+- **Python 3.12 or 3.13.** The pinned `pandas-ta` needs 3.12+, and it depends on
+  `numba`, which has no wheel for 3.14 yet and fails to build from source.
 - Node.js 18+
 - An Anthropic API key (for AI analysis features)
 

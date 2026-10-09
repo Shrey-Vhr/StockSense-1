@@ -8,10 +8,10 @@ sqlalchemy==2.0.50
 websockets==16.0
 yfinance==1.4.1
 smartapi-python==1.5.5
-# Requires Python <= 3.13: pulls numba, which has no 3.14 wheel.
+# Requires Python 3.12 or 3.13: needs >= 3.12, and pulls numba, which has no 3.14 wheel.
 pandas-ta==0.4.71b0
 pandas==3.0.3
-numpy==2.4.6
+numpy==2.2.6  # numba 0.61.2 (required by pandas-ta) needs numpy < 2.3
 anthropic==0.105.2
 groq==1.4.0
 python-dotenv==1.2.2
