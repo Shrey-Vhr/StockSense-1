@@ -1,0 +1,108 @@
+name: README quick start
+
+# Follows the README's Getting Started steps on clean Windows and Linux
+# machines, then starts both servers and signs up a user. Catches setup
+# instructions that only work on the author's machine.
+on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - .env.example
+      - start.bat
+      - backend/requirements.txt
+      - frontend/package.json
+      - frontend/package-lock.json
+      - backend/main.py
+      - backend/config.py
+      - .github/workflows/quickstart.yml
+      - .github/scripts/smoke_test.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Linux, Python 3.12, Node 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7          # step 1: clone
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20                 # the README's minimum
+
+      - name: "Step 2: configure .env"
+        run: |
+          cp .env.example .env
+          KEY=$(python -c "import secrets; print(secrets.token_urlsafe(48))")
+          sed -i "s|^SECRET_KEY=.*|SECRET_KEY=$KEY|" .env
+
+      - name: "Step 3: backend setup"
+        run: |
+          cd backend
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: "Step 4: frontend setup"
+        run: |
+          cd frontend
+          npm install
+
+      - name: "Step 5: run the app"
+        run: |
+          (cd backend && source venv/bin/activate && nohup uvicorn main:app > ../backend.log 2>&1 &)
+          (cd frontend && nohup npm run dev > ../frontend.log 2>&1 &)
+          python .github/scripts/smoke_test.py
+
+      - name: Server logs
+        if: always()
+        run: tail -n 60 backend.log frontend.log || true
+
+  windows:
+    name: Windows, Python 3.13, Node 20
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: "Step 2: configure .env (Command Prompt)"
+        shell: cmd
+        run: |
+          copy .env.example .env
+          python -c "import secrets,re,pathlib; p=pathlib.Path('.env'); p.write_text(re.sub(r'(?m)^SECRET_KEY=.*$', 'SECRET_KEY='+secrets.token_urlsafe(48), p.read_text()))"
+
+      - name: "Step 3: backend setup (Command Prompt)"
+        shell: cmd
+        run: |
+          cd backend
+          python -m venv venv
+          call venv\Scripts\activate
+          pip install -r requirements.txt
+
+      - name: "Step 4: frontend setup"
+        shell: cmd
+        run: |
+          cd frontend
+          npm install
+
+      - name: "Step 5: run the app"
+        shell: pwsh
+        run: |
+          Start-Process -FilePath cmd -ArgumentList '/c', 'cd backend && venv\Scripts\activate && uvicorn main:app > ..\backend.log 2>&1'
+          Start-Process -FilePath cmd -ArgumentList '/c', 'cd frontend && npm run dev > ..\frontend.log 2>&1'
+          python .github/scripts/smoke_test.py
+
+      - name: Server logs
+        if: always()
+        shell: pwsh
+        run: Get-Content backend.log, frontend.log -Tail 60 -ErrorAction SilentlyContinue

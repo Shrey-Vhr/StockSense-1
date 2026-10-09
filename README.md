@@ -165,8 +165,12 @@ entry, stop and target.
 
 - **Python 3.12 or 3.13.** The pinned `pandas-ta` needs 3.12+, and it depends on
   `numba`, which has no wheel for 3.14 yet and fails to build from source.
-- Node.js 18+
-- An Anthropic API key (for AI analysis features)
+  Check with `python --version` (on Windows, `py -3.12` picks a specific version).
+- **Node.js 20+** (React Router 7 requires it). Check with `node --version`.
+- An Anthropic API key for the AI analysis features. Everything else works
+  without one.
+
+Every step below starts from the **project root** (the `StockSense-1` folder).
 
 ### 1. Clone the repo
 
@@ -175,22 +179,89 @@ git clone https://github.com/Shrey-Vhr/StockSense-1.git
 cd StockSense-1
 ```
 
-### 2. Backend setup
+### 2. Configure environment variables
+
+The `.env` file goes in the **project root**, not in `backend/`.
+
+```bash
+# macOS / Linux / Git Bash
+cp .env.example .env
+
+# Windows Command Prompt
+copy .env.example .env
+```
+
+Then open `.env` and set:
+
+- **`SECRET_KEY` (required).** The backend refuses to start without it, and
+  rejects placeholders and anything shorter than 32 characters. Generate one
+  and paste it in:
+
+  ```bash
+  python -c "import secrets; print(secrets.token_urlsafe(48))"
+  ```
+
+- **`ANTHROPIC_API_KEY`** for the AI features. Replace the `sk-ant-...`
+  placeholder with your key, or leave it as is to run without AI.
+
+Everything else is optional: leave the Angel One fields blank and the app uses
+yfinance for market data. See [Environment Variables](#environment-variables).
+
+### 3. Backend setup
 
 ```bash
 cd backend
 python -m venv venv
 
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
+# macOS / Linux / Git Bash
 source venv/bin/activate
+# Windows Command Prompt
+venv\Scripts\activate
 
 pip install -r requirements.txt
 ```
 
-### 2b. Install the git hooks
+### 4. Frontend setup
+
+From the project root, in a second terminal:
+
+```bash
+cd frontend
+npm install
+```
+
+No frontend `.env` is needed: the API address defaults to
+`http://localhost:8000/api`. Set `VITE_API_URL` in `frontend/.env` only if you
+run the backend somewhere else.
+
+### 5. Run the app
+
+**Option A — two terminals:**
+
+```bash
+# Terminal 1, from the project root
+cd backend
+source venv/bin/activate        # Windows: venv\Scripts\activate
+uvicorn main:app --reload
+
+# Terminal 2, from the project root
+cd frontend
+npm run dev
+```
+
+**Option B — Windows one-click** (after steps 1–4), from the project root:
+
+```bash
+start.bat
+```
+
+Open **http://localhost:5173** and create an account on the sign-up page. The
+API runs at **http://localhost:8000**. The database is a local SQLite file
+(`backend/stocksense.db`), created automatically on first start.
+
+### 6. Install the git hooks (contributors)
+
+From the project root (needs `sh`, which Git for Windows includes as Git Bash):
 
 ```bash
 sh scripts/install-hooks.sh
@@ -200,56 +271,9 @@ Blocks log files, `.env`, databases and common API-key patterns from being
 committed. Hooks live in `.git/hooks/`, which git does not track, so they do not
 arrive with a clone and must be installed once.
 
-### 3. Configure environment variables
+### 7. Run the tests
 
-Copy the example env file and fill in your keys:
-
-```bash
-cp .env.example .env
-```
-
-**`SECRET_KEY` is required** — the backend refuses to start without it, and rejects
-placeholders and anything shorter than 32 characters. Generate one:
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(48))"
-```
-
-You also need `ANTHROPIC_API_KEY` for the analysis features. Everything else is optional — the app falls back to yfinance for
-market data and RSS for news.
-
-See [Environment Variables](#environment-variables) below for what each key does.
-
-### 4. Frontend setup
-
-```bash
-cd frontend
-npm install
-```
-
-### 5. Run the app
-
-**Option A — Start both servers manually:**
-
-```bash
-# Terminal 1 (backend)
-cd backend
-uvicorn main:app --reload
-
-# Terminal 2 (frontend)
-cd frontend
-npm run dev
-```
-
-**Option B — Windows one-click:**
-
-```bash
-start.bat
-```
-
-The app will be running at **http://localhost:5173** with the API at **http://localhost:8000**.
-
-### 6. Run the tests
+From the project root, with the backend's virtual environment active:
 
 ```bash
 cd backend

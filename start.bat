@@ -14,6 +14,6 @@ start cmd /k "cd /d %~dp0frontend && npm run dev"
 ping 127.0.0.1 -n 9 > nul
 
 :: Open in browser
-start chrome http://localhost:5173
+start "" http://localhost:5173
 
 echo StockSense is running!

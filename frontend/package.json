@@ -10,6 +10,9 @@
     "url": "https://github.com/Shrey-Vhr/StockSense-1.git"
   },
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

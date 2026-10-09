@@ -234,7 +234,10 @@ const Screener = () => {
     (async () => {
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/screener/stream?conditions=${query}`,
+          // api.defaults.baseURL, not import.meta.env.VITE_API_URL directly:
+          // the axios client falls back to localhost when no frontend/.env
+          // exists, which is the case on a fresh clone.
+          `${api.defaults.baseURL}/screener/stream?conditions=${query}`,
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             signal: controller.signal,
