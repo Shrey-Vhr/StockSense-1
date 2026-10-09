@@ -33,8 +33,12 @@ jobs:
         with:
           # pandas-ta pulls numba, which has no 3.14 wheel.
           python-version: "3.12"
+      # Install exactly what the app runs with, then audit that environment.
+      # This also covers sub-dependencies, including Linux-only ones such as
+      # uvloop that a Windows dev machine never installs.
+      - run: pip install -r backend/requirements.txt
       - run: pip install pip-audit
-      - run: pip-audit -r backend/requirements.txt
+      - run: pip-audit --desc on
 
   npm-deps:
     name: npm audit
@@ -51,4 +55,7 @@ jobs:
       # tooling (Vite, Tailwind) is reported by Dependabot instead; see the
       # README's limitations table.
       - run: npm audit --omit=dev --audit-level=high
+      # Signature verification reads installed packages, so install first.
+      # --ignore-scripts: nothing from the registry gets to run code here.
+      - run: npm ci --ignore-scripts
       - run: npm audit signatures
