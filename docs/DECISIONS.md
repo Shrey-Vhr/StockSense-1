@@ -48,14 +48,13 @@ a query string would reach logs/browser history.
 seven-day token (auth.py:110-133); api.js stores it in localStorage and adds a
 Bearer header. main.py:82-88 and screener.py:51-141 implement the protection.
 
-**Qualification.** The commit title says the whole API is behind auth, but that
-is not literally current behavior. main.py:95, 102, and 129 expose public root,
-heartbeat socket, and Angel status. stocks.py:229-279 accepts the price socket
-without authenticating it.
+**Qualification.** The commit title says the whole API is behind auth. The
+exceptions are the public root and Angel status routes in main.py. The
+unauthenticated price socket and /ws heartbeat that once existed were
+removed (4cf4861, ADR-012).
 
 **Consequences.** JWTs have no refresh/revocation, logout is client-side, and
-localStorage expands XSS impact. The price socket is an unresolved auth/resource
-control gap.
+localStorage expands XSS impact.
 
 ## ADR-003: Angel One plus yfinance for market data
 
@@ -105,9 +104,8 @@ must remain unverified.
 **Current Performance Verification.** A benchmark executed in September 2026 confirms that the staged engine (`ScreenerEngine.run`) screens a full universe of 2,107 stocks in ~64.5s (with 1,338 passing the initial filter). This validates the performance of the current `asyncio.to_thread` and `asyncio.gather` implementation.
 
 **Consequences.** Upstream HTML/API changes and network variation directly
-affect results/runtime. Job/SSE state is not durable. Saved screeners are
-authenticated but globally shared because models/screener.py has no user_id and
-the router does not filter by owner.
+affect results/runtime. Job/SSE state is not durable. Saved screeners were
+once shared between users; ADR-012 made them per user.
 
 ## ADR-005: One structured Claude response schema across four analysis modes
 
@@ -284,5 +282,4 @@ SECURITY.md as work required before any hosted deployment.
 3. Any reproducible screener performance baseline or target.
 4. ~~Whether shared saved screeners are intentional.~~ Resolved by ADR-012:
    they are now per user.
-5. Data-license/retention rules for current scraping and unauthenticated price
-   socket fan-out.
+5. Data-license/retention rules for current scraping.

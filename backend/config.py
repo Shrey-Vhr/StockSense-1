@@ -1,6 +1,6 @@
 import os
 from pydantic import field_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env_path = os.path.join(BASE_DIR, ".env")
@@ -19,11 +19,14 @@ WEAK_SECRETS = {
 
 class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
-    GEMINI_API_KEY: str = ""
     ANGEL_ONE_API_KEY: str = ""
     ANGEL_ONE_CLIENT_ID: str = ""
     ANGEL_ONE_PASSWORD: str = ""
     ANGEL_ONE_TOTP_SECRET: str = ""
+    # Unused: nothing calls Gemini or NewsAPI. Kept only because settings
+    # reject unknown keys, so older .env files that still set them would
+    # otherwise stop the app from starting.
+    GEMINI_API_KEY: str = ""
     NEWSAPI_KEY: str = ""
     # Deliberately no default: this must come from the environment, and the
     # app should refuse to start rather than fall back to something guessable.
@@ -47,7 +50,6 @@ class Settings(BaseSettings):
             )
         return v
 
-    class Config:
-        env_file = env_path
+    model_config = SettingsConfigDict(env_file=env_path)
 
 settings = Settings()

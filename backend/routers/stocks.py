@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from services.market_data import YFinanceService
-from services.websocket_service import manager
 import logging
 
 logger = logging.getLogger(__name__)

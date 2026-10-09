@@ -124,7 +124,7 @@ overbroad.
 | RSS | Google News for stocks; Economic Times, Livemint, Business Standard, Financial Express market feeds. | No current NewsAPI call. NEWSAPI_KEY is settings-only. |
 | Anthropic | ai_service.py structured reports. | Sonnet deep analysis; Haiku auxiliary calls. |
 | Groq | news_service.py health check and batch sentiment. | Current model is openai/gpt-oss-20b, not llama-3.1-8b-instant. |
-| Gemini | No runtime call found. | GEMINI_API_KEY and google-generativeai are unused dependency/configuration debt. |
+| Gemini | No runtime call found. | google-generativeai was removed from requirements; GEMINI_API_KEY stays in config only so older .env files still load. |
 
 ## 5. Frontend structure
 
@@ -181,8 +181,8 @@ protocol.
    produce result/progress/summary frames. Screener.jsx buffers ReadableStream
    chunks because a network chunk can split an SSE frame.
 4. This staged funnel is the verified optimization architecture. A benchmark executed in September 2026 confirmed that it processes a full universe load (2,107 stocks) in ~64.5s (with 1,338 passing the initial filter).
-5. Saved screeners are authenticated but globally shared: the model has no
-   user_id and routers/screener.py:98/142 have no owner filter.
+5. Saved screeners are per user: the model has a user_id and every
+   saved-screener route filters on the requesting user (ADR-012).
 
 ### News and sentiment
 
@@ -242,7 +242,7 @@ delivery. There is no email/push provider, durable delivery queue, or retry.
 | Module/group | Responsibility | Dependencies/caveat |
 |---|---|---|
 | routers/auth.py | Registration, login, profile, JWT. | bcrypt, PyJWT, user models; inactive users are refused; login/register are IP rate-limited. |
-| routers/stocks.py | Dashboard, search, quote/history/fundamentals, price socket. | yfinance/broadcaster/Angel; socket lacks auth. |
+| routers/stocks.py | Dashboard, search, quote/history/fundamentals. | yfinance/Angel; behind router-level auth. The price socket was removed. |
 | routers/analysis.py | Analysis APIs and pattern scans. | Services; in-memory scans with random ids, owner checks, one running scan per user, 1h eviction. |
 | routers/screener.py | Catalogue, batch/SSE screen, saved configurations. | ScreenerEngine/auth; saved data global. |
 | routers/news.py | News and filings. | Import-error fallback hides service import failure as empty data. |
@@ -282,18 +282,20 @@ router query convention, not a global tenant layer.
 
 ## 9. Architectural debt
 
-1. No automated tests, migration system, structured observability, job queue,
-   or durable cache; scripts use live services.
+1. Automated tests cover the security layer only (backend/tests, run in CI);
+   market-data, screener and AI logic are untested. No migration system,
+   structured observability, job queue, or durable cache; scripts use live
+   services.
 2. SQLite, synchronous sessions, globals, in-memory caches/jobs, and
    background tasks make this single-process/local. Multiple workers would
    disagree about state and duplicate background work.
 3. Scraped/best-effort external services and broad exception handling can turn
    upstream failure into empty/default data.
-4. Price WebSocket auth and saved-screener isolation are real security/data
-   isolation defects. LocalStorage JWTs are exposed to same-origin XSS.
+4. LocalStorage JWTs are exposed to same-origin XSS and cannot be revoked;
+   rate limits are per process. Acceptable locally, see SECURITY.md.
 5. price_history and technical_snapshots have no evident writer.
 6. LLM trade fields are not financially validated. Rule-based pattern setup has
    a 4% fallback while risk/full prompts use ATR-based guidance.
 7. News sentiment has a known post-startup degradation blind spot.
-8. NEWSAPI_KEY, GEMINI_API_KEY, and google-generativeai are not active
-   integrations despite remaining in configuration/dependencies.
+8. NEWSAPI_KEY and GEMINI_API_KEY remain in config only for .env
+   compatibility; neither integration exists.

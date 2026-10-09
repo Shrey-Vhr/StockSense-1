@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
 from passlib.context import CryptContext
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from database import get_db
 from models.user import User, UserPreferences
@@ -84,9 +84,8 @@ class UserResponse(BaseModel):
     email: str
     name: str
     is_active: bool
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class ProfileUpdate(BaseModel):
     name: Optional[str] = None

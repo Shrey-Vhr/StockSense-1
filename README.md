@@ -104,7 +104,7 @@ entry, stop and target.
 - **Portfolio Tracker** — Track holdings, monitor real-time P&L, and get AI-driven rebalancing suggestions.
 - **Smart Alerts** — Set price-based alerts on any stock; a background checker polls prices and triggers desktop notifications via the browser Notification API.
 - **Index & ETF Analysis** — Dedicated views for Nifty 50, Sensex, and major ETFs with FII/DII flow data, market breadth, P/E valuation, and AI-generated market verdicts.
-- **News Feed with Sentiment** — Aggregates market news from RSS feeds and NewsAPI, with optional Groq-powered sentiment classification (bullish/bearish/neutral badges).
+- **News Feed with Sentiment** — Aggregates market news from Google News and publisher RSS feeds, with optional Groq-powered sentiment classification (bullish/bearish/neutral badges).
 - **Command Palette** — `Ctrl+K` to fuzzy search across all 2,100+ stocks instantly.
 
 ---
@@ -118,7 +118,7 @@ entry, stop and target.
 | **Market Data** | Angel One SmartAPI (primary), yfinance (fallback) |
 | **AI** | Anthropic Claude (analysis), Groq (news sentiment) |
 | **Technical Analysis** | pandas-ta, custom pattern detection engine |
-| **Data Sources** | NSE (institutional data, bulk deals), RSS feeds, NewsAPI |
+| **Data Sources** | NSE (institutional data, bulk deals), RSS feeds |
 
 ---
 
@@ -249,6 +249,20 @@ start.bat
 
 The app will be running at **http://localhost:5173** with the API at **http://localhost:8000**.
 
+### 6. Run the tests
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+The suite covers the security guarantees in [SECURITY.md](SECURITY.md): per-user
+data isolation, rate limits, input caps, account lockout, error hygiene and the
+Angel One retry guard. It uses a throwaway SQLite database and blank API keys,
+so it needs no `.env`, makes no paid API calls and never logs in to a broker.
+CI runs it on every push along with the frontend lint and build.
+
 ---
 
 ## Environment Variables
@@ -258,13 +272,11 @@ Create a `.env` file in the project root (see `.env.example`):
 | Variable | Required | Description |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | Yes | Claude API key. Required for every AI feature |
-| `GEMINI_API_KEY` | No | Reserved. The key is read into config but no code path calls Gemini today |
 | `GROQ_API_KEY` | No | Groq API key for news sentiment analysis |
 | `ANGEL_ONE_API_KEY` | No | Angel One SmartAPI key for live market data |
 | `ANGEL_ONE_CLIENT_ID` | No | Angel One client ID |
-| `ANGEL_ONE_PASSWORD` | No | Angel One password |
+| `ANGEL_ONE_PASSWORD` | No | Angel One login PIN (MPIN) |
 | `ANGEL_ONE_TOTP_SECRET` | No | Angel One TOTP secret for auto-login |
-| `NEWSAPI_KEY` | No | NewsAPI key for market news feed |
 | `SECRET_KEY` | Yes | JWT signing secret. Must be 32+ characters — the app refuses to start otherwise. Generate one with `python -c "import secrets; print(secrets.token_urlsafe(48))"` |
 | `DATABASE_URL` | No | Database URL (defaults to SQLite) |
 
@@ -278,9 +290,11 @@ back to yfinance for market data and RSS for news.
 ```
 StockSense/
 ├── backend/
-│   ├── main.py                    # FastAPI app entry point & WebSocket handler
+│   ├── main.py                    # FastAPI app entry point & startup tasks
 │   ├── config.py                  # Pydantic settings & env loading
 │   ├── database.py                # SQLAlchemy engine & session setup
+│   ├── rate_limit.py              # In-memory rate limiting for auth, AI & scans
+│   ├── tests/                     # Pytest suite for the security guarantees
 │   ├── models/                    # DB models (User, Stock, Alert, Portfolio, etc.)
 │   ├── routers/                   # API route handlers
 │   │   ├── auth.py                # JWT authentication (register/login)
@@ -300,7 +314,7 @@ StockSense/
 │   │   ├── market_data.py         # Price data fetching & caching
 │   │   ├── institutional_service.py # NSE scraping for shareholding & bulk deals
 │   │   ├── index_etf_analysis.py  # Index/ETF analysis with FII/DII flows
-│   │   ├── news_service.py        # RSS + NewsAPI aggregation with Groq sentiment
+│   │   ├── news_service.py        # RSS aggregation with Groq sentiment
 │   │   ├── angel_one_service.py   # Angel One SmartAPI integration
 │   │   ├── websocket_service.py   # Real-time price broadcasting
 │   │   └── alert_checker.py       # Background alert monitoring loop
@@ -326,8 +340,12 @@ StockSense/
 │   │   ├── store/                 # Zustand global state
 │   │   └── utils/                 # Axios API client
 │   └── package.json
+├── docs/                          # Architecture, decision records, screenshots
+├── scripts/                       # Pre-commit hook that blocks secrets & logs
+├── .github/                       # CI security checks & Dependabot
 ├── .env.example                   # Environment variable template
 ├── start.bat                      # One-click launcher (Windows)
+├── SECURITY.md                    # Security model & how to report issues
 └── README.md
 ```
 

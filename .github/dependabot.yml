@@ -13,6 +13,12 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # pandas-ta pins numba==0.61.2, which needs numpy < 2.3. Any newer numpy
+      # makes requirements.txt uninstallable; lift this when pandas-ta moves.
+      - dependency-name: "numpy"
+        versions: [">=2.3"]
+      # passlib 1.7.4 is unmaintained; keep bcrypt where it is known to work.
+      - dependency-name: "bcrypt"
 
   - package-ecosystem: npm
     directory: /frontend
