@@ -409,6 +409,20 @@ def _fetch_fundamental_values(symbol: str):
 # ---------------------------------------------------------------------------
 # Condition evaluation
 # ---------------------------------------------------------------------------
+def _as_number(val):
+    """float(val) for numbers and numeric strings; None for anything else."""
+    if isinstance(val, bool) or val is None:
+        return None
+    try:
+        f = float(val)
+    except (TypeError, ValueError):
+        return None
+    return None if (np.isnan(f) or np.isinf(f)) else f
+
+
+_NUMERIC_OPERATORS = {"greater_than", "less_than", "between", "crosses_above", "crosses_below"}
+
+
 def _evaluate_condition(condition: dict, today_vals: dict, yesterday_vals: dict) -> bool:
     """Return True if a single condition passes."""
     indicator = condition.get("indicator", "")
@@ -419,6 +433,22 @@ def _evaluate_condition(condition: dict, today_vals: dict, yesterday_vals: dict)
     current = today_vals.get(indicator)
     if current is None:
         return False
+
+    # Ordering comparisons need numbers on both sides. The API accepts text
+    # thresholds (equal_to needs them) and some indicators are text
+    # (promoter_trend), so a mismatch must fail the condition. It used to raise
+    # TypeError, which outside the per-stock try blocks failed the whole run.
+    if operator in _NUMERIC_OPERATORS:
+        current = _as_number(current)
+        threshold = _as_number(threshold)
+        if threshold2 is not None:
+            threshold2 = _as_number(threshold2)
+            if threshold2 is None:
+                return False
+        if current is None:
+            return False
+        prev = yesterday_vals.get(indicator)
+        yesterday_vals = {indicator: _as_number(prev)}
 
     if operator == "greater_than":
         return current > threshold if threshold is not None else False

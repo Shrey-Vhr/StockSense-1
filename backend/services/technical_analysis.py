@@ -72,29 +72,27 @@ class TechnicalAnalysisService:
         gains = delta.where(delta > 0, 0.0)
         losses = -delta.where(delta < 0, 0.0)
         
-        # First average using simple mean (seed value)
-        avg_gain = gains.iloc[:period].mean()
-        avg_loss = losses.iloc[:period].mean()
-        
+        # Seed with the simple mean of the first `period` changes. Element 0 of
+        # diff() is NaN, and where() turns it into a 0 gain and 0 loss, so the
+        # seed must start at 1. It used to start at 0, which averaged 13 real
+        # changes over 14 and then smoothed one step too many: the error fades
+        # over a year of bars, but short histories disagreed with TradingView.
+        avg_gain = gains.iloc[1:period + 1].mean()
+        avg_loss = losses.iloc[1:period + 1].mean()
+
         # Wilder's smoothing (same as TradingView)
-        wilder_gains = [avg_gain]
-        wilder_losses = [avg_loss]
-        
-        for i in range(period, len(closes)):
-            avg_gain = (wilder_gains[-1] * (period-1) + gains.iloc[i]) / period
-            avg_loss = (wilder_losses[-1] * (period-1) + losses.iloc[i]) / period
-            wilder_gains.append(avg_gain)
-            wilder_losses.append(avg_loss)
-        
-        # Calculate RSI
-        avg_gain_series = pd.Series(wilder_gains)
-        avg_loss_series = pd.Series(wilder_losses)
-        
-        rs = avg_gain_series / avg_loss_series.replace(0, 0.001)
-        rsi = 100 - (100 / (1 + rs))
-        
-        rsi_val = float(rsi.iloc[-1])
-        if pd.isna(rsi_val): return {"value": None, "signal": "Neutral"}
+        for i in range(period + 1, len(closes)):
+            avg_gain = (avg_gain * (period-1) + gains.iloc[i]) / period
+            avg_loss = (avg_loss * (period-1) + losses.iloc[i]) / period
+
+        if pd.isna(avg_gain) or pd.isna(avg_loss):
+            return {"value": None, "signal": "Neutral"}
+        if avg_loss == 0:
+            # Only gains is 100. No movement at all is no momentum either way:
+            # 50, not the 0 ("Oversold") the old divide-by-0.001 produced.
+            rsi_val = 100.0 if avg_gain > 0 else 50.0
+        else:
+            rsi_val = float(100 - (100 / (1 + avg_gain / avg_loss)))
         
         signal = "Neutral"
         if rsi_val > 70: signal = "Overbought"
