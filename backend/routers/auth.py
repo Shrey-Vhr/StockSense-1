@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -107,13 +108,17 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     if not user.name.strip() or len(user.name) > MAX_NAME:
         raise HTTPException(status_code=400, detail=f"Name must be 1-{MAX_NAME} characters")
 
-    db_user = db.query(User).filter(User.email == user.email).first()
+    # Emails are case-insensitive in practice. Without this, "A@x.com" and
+    # "a@x.com" registered as two accounts, and logging in with the wrong case
+    # failed.
+    email = user.email.lower()
+    db_user = db.query(User).filter(func.lower(User.email) == email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
+
     hashed_password = get_password_hash(user.password)
     new_user = User(
-        email=user.email,
+        email=email,
         password_hash=hashed_password,
         name=user.name
     )
@@ -136,7 +141,7 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     dependencies=[Depends(by_ip("login", 10, 60))],
 )
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == form_data.username).first()
+    user = db.query(User).filter(func.lower(User.email) == form_data.username.strip().lower()).first()
     if not user or not user.is_active or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -181,6 +186,8 @@ async def update_profile(
         current_user.name = profile_data.name
     
     if profile_data.theme:
+        if profile_data.theme not in ("dark", "light"):
+            raise HTTPException(status_code=400, detail="Theme must be 'dark' or 'light'")
         if not current_user.preferences:
             prefs = UserPreferences(user_id=current_user.id, theme=profile_data.theme)
             db.add(prefs)

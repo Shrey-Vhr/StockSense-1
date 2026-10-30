@@ -14,7 +14,7 @@ import {
   buildFundamentalsReportHtml,
 } from '../lib/pdfTemplates';
 import { Badge, Button, Disclaimer, Field, Input, Modal, Select, Spinner } from '../components/ui';
-import { verdictTone, formatChange } from '../lib/format';
+import { verdictTone, formatChange, safeUrl } from '../lib/format';
 import { requestNotificationPermission } from '../hooks/useNotifications';
 import MetricCard from '../components/stock/MetricCard';
 import QuickLevelsCard from '../components/stock/QuickLevelsCard';
@@ -447,10 +447,6 @@ const StockDetail = () => {
           const tvSymbol = `NSE:${baseSymbol}`;
           const finalUrl = `https://in.tradingview.com/chart/?symbol=${tvSymbol}`;
           
-          console.log('Original symbol:', cleanSymbol);
-          console.log('Generated TradingView symbol:', tvSymbol);
-          console.log('Final URL:', finalUrl);
-
           tvLink.href = finalUrl;
           tvLink.target = '_blank';
           
@@ -658,9 +654,6 @@ const StockDetail = () => {
               <Select value={alertType} onChange={(e) => setAlertType(e.target.value)} {...p}>
                 <option value="price_above">Price goes above</option>
                 <option value="price_below">Price goes below</option>
-                <option value="rsi_above">RSI goes above (overbought)</option>
-                <option value="rsi_below">RSI goes below (oversold)</option>
-                <option value="volume_spike">Volume spikes above (multiplier)</option>
               </Select>
             )}
           </Field>
@@ -1395,7 +1388,10 @@ const StockDetail = () => {
                                   border border-surface-800 mb-3
                                   hover:border-brand-500/50 
                                   transition-all cursor-pointer"
-                       onClick={() => window.open(article.url)}>
+                       onClick={() => {
+                         const href = safeUrl(article.url);
+                         if (href) window.open(href, '_blank', 'noopener,noreferrer');
+                       }}>
                     
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-xs text-brand-400 font-medium">

@@ -4,7 +4,6 @@ from typing import Annotated, List, Literal
 import asyncio
 import logging
 import math
-import json
 import time
 import uuid
 
@@ -58,7 +57,6 @@ async def get_fundamental_analysis(symbol: str, refresh: bool = False):
             from services.screener_in_service import _fundamental_cache
             if symbol in _fundamental_cache:
                 del _fundamental_cache[symbol]
-                print(f"🔄 Cache cleared for {symbol}")
 
         data = await asyncio.to_thread(get_fundamental_data, symbol)
         if not data or data.get("source") == "error":
@@ -121,7 +119,8 @@ async def get_market_pulse():
   
   results = []
   for idx in indices:
-    data = get_index_analysis(idx['symbol'])
+    # Blocking network calls: run them off the event loop.
+    data = await asyncio.to_thread(get_index_analysis, idx['symbol'])
     if data:
       data['name'] = idx['name']
       results.append(data)
@@ -139,8 +138,10 @@ async def get_pattern_analysis(symbol: str):
     )
     
     # Get technical data for context
-    tech = TechnicalAnalysisService.get_full_technical_snapshot(symbol)
-    
+    tech = await asyncio.to_thread(
+      TechnicalAnalysisService.get_full_technical_snapshot, symbol
+    )
+
     # Extract from nested structure
     trend_data = tech.get('trend', {})
     structure_data = tech.get('structure', {})
@@ -190,14 +191,9 @@ async def get_pattern_analysis(symbol: str):
       'Neutral'
     )
     
-    print(f"SR keys: {list(sr_data.keys())}")
-    print(f"Final: price={current_price} "
-          f"support={support} "
-          f"resistance={resistance} "
-          f"rsi={rsi} trend={trend}")
-    
     # Get pattern analysis
-    result = fetch_pattern_analysis(
+    result = await asyncio.to_thread(
+      fetch_pattern_analysis,
       symbol=symbol,
       current_price=current_price,
       support=support,
@@ -332,17 +328,21 @@ async def run_pattern_scan(
       _scan_status[scan_id]['progress'] = i + 1
       
       # Get technical data
-      tech = TechnicalAnalysisService.get_full_technical_snapshot(symbol)
+      # Blocking pandas/network work: keep it off the event loop, otherwise
+      # the whole API stalls for the length of the scan.
+      tech = await asyncio.to_thread(
+        TechnicalAnalysisService.get_full_technical_snapshot, symbol
+      )
       trend_data = tech.get('trend', {})
       structure_data = tech.get('structure', {})
       momentum_data = tech.get('momentum', {})
-      
+
       emas = trend_data.get('emas', {})
       current_price = float(
         structure_data.get('current_price') or
         emas.get('ema10') or 0
       )
-      
+
       sr_data = structure_data.get(
         'support_resistance', {}
       )
@@ -363,7 +363,8 @@ async def run_pattern_scan(
       trend = trend_data.get('status', 'Neutral')
       
       # Get patterns for this stock
-      pattern_result = get_pattern_analysis(
+      pattern_result = await asyncio.to_thread(
+        get_pattern_analysis,
         symbol=symbol,
         current_price=current_price,
         support=support,
@@ -371,7 +372,7 @@ async def run_pattern_scan(
         rsi=rsi,
         trend=trend
       )
-      
+
       found_patterns = pattern_result.get(
         'patterns', []
       )
@@ -402,17 +403,16 @@ async def run_pattern_scan(
         # Update results in real time
         _scan_status[scan_id]['results'] = results
         
-      print(f"[{i+1}/{total}] {symbol}: "
-            f"{len(matched)} patterns matched")
-      
+      logger.debug("[%s/%s] %s: %s patterns matched", i + 1, total, symbol, len(matched))
+
       # Small delay to not overwhelm APIs
       await asyncio.sleep(0.5)
       
-    except Exception as e:
-      print(f"⚠️ Scan error for {symbol}: {e}")
+    except Exception:
+      logger.warning("Scan error for %s", symbol, exc_info=True)
       _scan_status[scan_id]['progress'] = i + 1
       continue
-  
+
   _scan_status[scan_id]['status'] = 'completed'
   _scan_status[scan_id]['results'] = results
-  print(f"✅ Scan complete: {len(results)} matches")
+  logger.info("Pattern scan %s complete: %s matches", scan_id, len(results))

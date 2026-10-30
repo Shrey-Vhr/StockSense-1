@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+import asyncio
+import logging
 from datetime import date
-from pydantic import BaseModel
+from typing import Literal, Optional
+from pydantic import BaseModel, Field
 import yfinance as yf
 
 from database import get_db
@@ -13,28 +15,49 @@ from services.market_data import YFinanceService
 from services.ai_service import AIService
 from rate_limit import by_user
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
+
+# Quantities and prices must be positive and finite. A zero or negative price
+# used to reach the P&L maths, where it divided by zero.
+_Quantity = Field(gt=0, lt=1e12, allow_inf_nan=False)
+_Price = Field(gt=0, lt=1e9, allow_inf_nan=False)
 
 # --- Schemas ---
 class HoldingCreate(BaseModel):
-    symbol: str
-    quantity: float
-    avg_buy_price: float
-    buy_date: date = None
-    notes: str = None
+    symbol: str = Field(min_length=1, max_length=32)
+    quantity: float = _Quantity
+    avg_buy_price: float = _Price
+    buy_date: Optional[date] = None
+    notes: Optional[str] = Field(default=None, max_length=500)
 
 class HoldingUpdate(BaseModel):
-    quantity: float
-    avg_buy_price: float
+    quantity: float = _Quantity
+    avg_buy_price: float = _Price
 
 class TradeCreate(BaseModel):
-    symbol: str
-    trade_type: str
-    quantity: float
-    price: float
+    symbol: str = Field(min_length=1, max_length=32)
+    trade_type: Literal["BUY", "SELL", "buy", "sell"]
+    quantity: float = _Quantity
+    price: float = _Price
     date: date
-    
+
 # --- Helpers ---
+def normalize_symbol(symbol: str) -> str:
+    """Upper-cases and defaults to NSE, so "tcs" and "TCS.NS" are one holding."""
+    symbol = symbol.strip().upper()
+    if symbol.endswith((".NS", ".BO")) or symbol.startswith("^"):
+        return symbol
+    return symbol + ".NS"
+
+def _sector_for(symbol: str) -> str:
+    try:
+        return yf.Ticker(symbol).info.get("sector") or "General"
+    except Exception:
+        logger.warning("Sector lookup failed for %s", symbol)
+        return "General"
+
 def get_user_portfolio(db: Session, user_id: int) -> Portfolio:
     port = db.query(Portfolio).filter(Portfolio.user_id == user_id).first()
     if not port:
@@ -79,9 +102,10 @@ async def get_holdings(db: Session = Depends(get_db), current_user: User = Depen
 @router.post("/add")
 async def add_holding(holding: HoldingCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     port = get_user_portfolio(db, current_user.id)
-    
+    symbol = normalize_symbol(holding.symbol)
+
     # Check if exists
-    existing = db.query(Holding).filter(Holding.portfolio_id == port.id, Holding.symbol == holding.symbol).first()
+    existing = db.query(Holding).filter(Holding.portfolio_id == port.id, Holding.symbol == symbol).first()
     if existing:
         # Update avg price
         total_val = (existing.quantity * existing.avg_buy_price) + (holding.quantity * holding.avg_buy_price)
@@ -90,7 +114,7 @@ async def add_holding(holding: HoldingCreate, db: Session = Depends(get_db), cur
     else:
         new_holding = Holding(
             portfolio_id=port.id,
-            symbol=holding.symbol,
+            symbol=symbol,
             quantity=holding.quantity,
             avg_buy_price=holding.avg_buy_price,
             buy_date=holding.buy_date,
@@ -130,7 +154,7 @@ async def log_trade(trade: TradeCreate, db: Session = Depends(get_db), current_u
     
     new_trade = Trade(
         portfolio_id=port.id,
-        symbol=trade.symbol,
+        symbol=normalize_symbol(trade.symbol),
         trade_type=trade.trade_type.upper(),
         quantity=trade.quantity,
         price=trade.price,
@@ -189,11 +213,8 @@ async def get_performance(db: Session = Depends(get_db), current_user: User = De
             worst_pnl = pnl_pct
             worst_perf = {"symbol": h.symbol, "pnl_percent": pnl_pct}
             
-        try:
-            info = yf.Ticker(h.symbol).info
-            sector = info.get('sector', 'General')
-        except:
-            sector = 'General'
+        # yfinance blocks, so keep it off the event loop.
+        sector = await asyncio.to_thread(_sector_for, h.symbol)
         sector_alloc[sector] = sector_alloc.get(sector, 0) + cur
             
     total_pnl = total_cur - total_inv
@@ -207,9 +228,6 @@ async def get_performance(db: Session = Depends(get_db), current_user: User = De
         "best_performer": best_perf,
         "worst_performer": worst_perf,
         "sector_allocation": sector_alloc,
-        "daily_pnl": total_cur * 0.01, # Mock for now
-        "weekly_pnl": total_cur * 0.03,
-        "monthly_pnl": total_cur * 0.08
     }
 
 # Shares the "ai" budget with routers/ai.py: it is the same Anthropic spend.
@@ -233,7 +251,7 @@ async def ai_review(db: Session = Depends(get_db), current_user: User = Depends(
             "quantity": h.quantity,
             "avg_buy_price": h.avg_buy_price,
             "current_price": cp,
-            "pnl_percent": ((cp - h.avg_buy_price) / h.avg_buy_price) * 100
+            "pnl_percent": ((cp - h.avg_buy_price) / h.avg_buy_price) * 100 if h.avg_buy_price else 0
         })
         
     review = await AIService.analyze_portfolio(holdings_data)

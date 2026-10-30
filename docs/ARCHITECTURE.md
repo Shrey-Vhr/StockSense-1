@@ -117,7 +117,7 @@ overbroad.
 
 | System | Current use | Important limitation |
 |---|---|---|
-| Angel One SmartAPI | angel_one_service.py performs TOTP login, quote/token lookup; angel_one_websocket.py receives ticks. | Startup tries it and quote behavior falls back to yfinance. Vendor file logging is disabled at import because it once leaked credentials. |
+| Angel One SmartAPI | angel_one_service.py performs TOTP login, quote/token lookup; angel_one_websocket.py can open the broker tick feed, but no browser-facing socket exists (the anonymous `/ws` route was removed), so ticks are not shown in the UI. | Startup tries it and quote behavior falls back to yfinance. Vendor file logging is disabled at import because it once leaked credentials. |
 | yfinance | market_data.py, technical/index/ETF services, screener bulk OHLC, portfolio prices, universe/sector scripts. | It is direct source for many paths, not merely an after-hours fallback. |
 | Screener.in | screener_in_service.py scrapes ratios, peers, quarterly/annual data, shareholding. | HTML parsing and process-local caching are brittle. |
 | NSE | institutional data, deals, filings, equity-universe CSV. | Browser-like headers/cookies; failure commonly becomes empty/fallback data. |

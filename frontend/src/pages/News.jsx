@@ -5,7 +5,7 @@ import useStore from '../store/useStore';
 import { Badge, Button, EmptyState, PageHeader } from '../components/ui';
 import { SkeletonBox } from '../components/Skeleton';
 import { cn } from '../lib/cn';
-import { decodeEntities, timeAgo } from '../lib/format';
+import { decodeEntities, safeUrl, timeAgo } from '../lib/format';
 
 /** Sections in reading order, with the tone their heading and count use. */
 const SECTIONS = [
@@ -135,7 +135,7 @@ const News = () => {
                 {articles.map((news, i) => (
                   <a
                     key={`${key}-${i}`}
-                    href={news.url}
+                    href={safeUrl(news.url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(

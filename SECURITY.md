@@ -40,6 +40,10 @@ protections below are sized for that. If you host it on the internet, read
 - **Prompt-injection hardening.** Scraped news headlines are flattened,
   truncated and wrapped in untrusted-data tags. The model is told never to
   follow instructions found inside them.
+- **Untrusted text in the browser.** News links are opened only if they are
+  http(s). The printable AI, technical and fundamental reports HTML-escape every
+  model- or scraper-supplied value and carry a `script-src 'none'` policy,
+  because they open as `blob:` pages that share the app's origin.
 - **Secrets.** `.env`, databases and log files are gitignored. The Angel One
   library's request logging, which once wrote credentials to disk, is
   disabled, and one-time codes are never printed.

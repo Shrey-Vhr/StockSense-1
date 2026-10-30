@@ -151,7 +151,10 @@ class AngelOneService:
           'change_percent': ((float(ltp_data['ltp']) - 
                              float(ltp_data['close'])) / 
                              float(ltp_data['close'])) * 100,
-          'volume': int(ltp_data.get('tradingSymbol', 0)),
+          # ltpData carries no volume. This used to int() the trading symbol
+          # ("SBIN-EQ"), which raised on every call and sent every quote to
+          # the yfinance fallback.
+          'volume': 0,
           'source': 'angel_one'
         }
     except Exception as e:

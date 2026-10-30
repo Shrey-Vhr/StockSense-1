@@ -3,13 +3,16 @@ import pandas as pd
 import numpy as np
 import time
 import asyncio
+import re
 from functools import wraps
 import logging
 
-import logging
-
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Shapes yfinance accepts ("7d", "1y", "ytd", "15m", "1wk"). Anything else is
+# rejected before it reaches the network or becomes a cache key.
+_PERIOD_RE = re.compile(r"^(\d{1,3}(d|wk|mo|y)|ytd|max)$")
+_INTERVAL_RE = re.compile(r"^\d{1,2}(m|h|d|wk|mo)$")
 
 from services.angel_one_service import angel_one
 
@@ -17,6 +20,8 @@ _history_cache = {}
 _CACHE_TTL = 300  # 5 minutes
 
 # Simple TTLCache decorator
+_CACHE_MAX_ENTRIES = 512
+
 def ttl_cache(ttl_seconds):
     cache = {}
     def decorator(func):
@@ -29,7 +34,17 @@ def ttl_cache(ttl_seconds):
                 if now - timestamp < ttl_seconds:
                     return result
             result = await func(*args, **kwargs)
-            cache[key] = (result, now)
+            # Empty results mean the upstream call failed (they are what the
+            # except-branches return). Caching them pinned a transient yfinance
+            # error for the full TTL: a day, for fundamentals.
+            if result:
+                if len(cache) >= _CACHE_MAX_ENTRIES:
+                    # Keys include caller-supplied symbols, so bound the size.
+                    for stale in [k for k, (_, ts) in cache.items() if now - ts >= ttl_seconds]:
+                        del cache[stale]
+                    if len(cache) >= _CACHE_MAX_ENTRIES:
+                        cache.pop(next(iter(cache)))
+                cache[key] = (result, now)
             return result
         return wrapper
     return decorator
@@ -128,6 +143,8 @@ class YFinanceService:
     @staticmethod
     @ttl_cache(ttl_seconds=15 * 60) # 15 minutes cache
     async def get_historical_data(symbol: str, period: str = "1y", interval: str = "1d"):
+        if not _PERIOD_RE.match(period) or not _INTERVAL_RE.match(interval):
+            return []
         if not symbol.endswith(".NS") and not symbol.endswith(".BO") and not symbol.startswith("^"):
             symbol = f"{symbol}.NS"
         try:
@@ -138,7 +155,6 @@ class YFinanceService:
                 if cache_key in _history_cache:
                     cached_data, cached_time = _history_cache[cache_key]
                     if now - cached_time < _CACHE_TTL:
-                        print(f"[CACHE HIT] {symbol} history")
                         return cached_data
 
                 ticker = yf.Ticker(symbol)
@@ -152,7 +168,7 @@ class YFinanceService:
                     except Exception as e:
                         if 'rate' in str(e).lower() or 'too many' in str(e).lower():
                             wait = 2 ** attempt
-                            print(f"Rate limited, waiting {wait}s...")
+                            logger.warning("Rate limited fetching %s, waiting %ss", symbol, wait)
                             time.sleep(wait)
                         else:
                             raise

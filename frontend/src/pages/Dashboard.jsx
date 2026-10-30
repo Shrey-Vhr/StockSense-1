@@ -12,7 +12,7 @@ import {
   Table, TBody, Tr, Td,
 } from '../components/ui';
 import { cn } from '../lib/cn';
-import { formatNumber, formatCurrency, formatChange, direction, displaySymbol, decodeEntities } from '../lib/format';
+import { formatNumber, formatCurrency, formatChange, direction, displaySymbol, decodeEntities, safeUrl } from '../lib/format';
 
 const AnimatedPrice = ({ value }) => {
   const animated = useCountUp(value, 800, 2);
@@ -305,7 +305,7 @@ const Dashboard = () => {
                   return (
                     <li key={i} className="py-3 first:pt-0 last:pb-0">
                       <a
-                        href={news.url}
+                        href={safeUrl(news.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group block"

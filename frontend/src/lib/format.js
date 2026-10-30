@@ -147,6 +147,22 @@ export function decodeEntities(text) {
 }
 
 /**
+ * Returns `url` only if it is an http(s) link, otherwise `undefined`.
+ *
+ * Article links come from third-party RSS feeds. Left unchecked, a
+ * `javascript:` URL in a feed would run script in this origin when clicked.
+ */
+export function safeUrl(url) {
+  if (typeof url !== 'string') return undefined;
+  try {
+    const { protocol } = new URL(url);
+    return protocol === 'https:' || protocol === 'http:' ? url : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Relative time for recent items, falling back to an absolute date past a week.
  * "3h ago" tells you more about a headline than "Jul 31, 2026".
  */

@@ -97,12 +97,12 @@ entry, stop and target.
 - **Multi-Condition Screener** — Scans 2,100+ NSE stocks across 40 indicators (EMA crossovers, RSI, MACD, ADX, Bollinger Bands, volume ratios) plus fundamental filters (P/E, P/B, ROE, debt-to-equity, revenue growth) and institutional activity (smart money score, promoter trends, bulk deals). Results stream in real-time via SSE with a live progress bar.
 - **AI-Powered Analysis** — Aggregates technical, fundamental, and news data into a structured prompt sent to Claude. Returns bull/bear cases, swing trade setups (entry, target, stop loss), risk factors, and multi-timeframe verdicts — all rendered in a formatted report.
 - **Interactive Charts** — TradingView Lightweight Charts with candlestick data, EMA overlays, and AI-generated trade levels (entry/target/SL) drawn directly on the chart.
-- **Live Market Data** — Angel One SmartAPI WebSocket connection for real-time prices during market hours, with automatic yfinance fallback for after-hours and weekends.
+- **Market Data** — yfinance by default. With Angel One SmartAPI credentials configured, stock quotes and the Nifty 50 / Bank Nifty index cards come from the broker's last-traded price instead, falling back to yfinance when a lookup fails. The frontend polls for fresh quotes every few seconds; there is no streaming WebSocket feed to the browser yet.
 - **Sector Heatmap** — Visual grid of sector performance with color-coded gains/losses. Click any sector to jump to a pre-filtered screener view.
 - **Chart Pattern Detection** — Scans recent candlesticks for 16 patterns (Doji, Hammer, Engulfing, Morning/Evening Star, Three White Soldiers, etc.) with confidence scores and bullish/bearish classification.
 - **Stock Deep Dive** — Dedicated detail page with tabs for Technical Snapshot (EMA levels, RSI, MACD, ADX, Stochastic RSI, ATR, OBV), Fundamental Analysis (key ratios, growth metrics, shareholding breakdown, score card), and full AI Analysis.
-- **Portfolio Tracker** — Track holdings, monitor real-time P&L, and get AI-driven rebalancing suggestions.
-- **Smart Alerts** — Set price-based alerts on any stock; a background checker polls prices and triggers desktop notifications via the browser Notification API.
+- **Portfolio Tracker** — Track holdings, monitor P&L against current prices, and get AI-driven rebalancing suggestions.
+- **Price Alerts** — Set "price goes above / below" alerts on any stock; a background checker polls prices every minute and the browser shows a desktop notification (the tab must be open, and notification permission granted).
 - **Index & ETF Analysis** — Dedicated views for Nifty 50, Sensex, and major ETFs with FII/DII flow data, market breadth, P/E valuation, and AI-generated market verdicts.
 - **News Feed with Sentiment** — Aggregates market news from Google News and publisher RSS feeds, with optional Groq-powered sentiment classification (bullish/bearish/neutral badges).
 - **Command Palette** — `Ctrl+K` to fuzzy search across all 2,100+ stocks instantly.
@@ -134,7 +134,7 @@ entry, stop and target.
 │  Dashboard · Screener · Stock Detail · AI Analysis      │
 │  Portfolio · Watchlist · News · Index/ETF · Alerts       │
 └──────────────┬──────────────────────┬───────────────────┘
-               │ REST + SSE           │ WebSocket
+               │ REST + SSE           │ (planned: WebSocket)
                ▼                      ▼
 ┌─────────────────────────────────────────────────────────┐
 │                   FastAPI Backend                        │
@@ -283,7 +283,8 @@ python -m pytest
 
 The suite covers the security guarantees in [SECURITY.md](SECURITY.md): per-user
 data isolation, rate limits, input caps, account lockout, error hygiene and the
-Angel One retry guard. It uses a throwaway SQLite database and blank API keys,
+Angel One retry guard, plus regression tests for input validation, symbol
+normalisation and cache behaviour. It uses a throwaway SQLite database and blank API keys,
 so it needs no `.env`, makes no paid API calls and never logs in to a broker.
 CI runs it on every push along with the frontend lint and build.
 
@@ -340,7 +341,7 @@ StockSense/
 │   │   ├── index_etf_analysis.py  # Index/ETF analysis with FII/DII flows
 │   │   ├── news_service.py        # RSS aggregation with Groq sentiment
 │   │   ├── angel_one_service.py   # Angel One SmartAPI integration
-│   │   ├── websocket_service.py   # Real-time price broadcasting
+│   │   ├── websocket_service.py   # Broker feed + polling fallback (no browser socket yet)
 │   │   └── alert_checker.py       # Background alert monitoring loop
 │   ├── data/
 │   │   └── nse_stocks.json        # Universe of 2,100+ NSE stock symbols
