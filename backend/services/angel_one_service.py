@@ -21,7 +21,6 @@ class AngelOneService:
   def __init__(self):
     self.api = None
     self.auth_token = None
-    self.feed_token = None
     self.last_login = None
     self.is_connected = False
     # Set when Angel One rejects the credentials themselves (wrong MPIN, bad
@@ -73,7 +72,6 @@ class AngelOneService:
         
         if data['status']:
           self.auth_token = data['data']['jwtToken']
-          self.feed_token = self.api.getfeedToken()
           self.last_login = time.time()
           self.is_connected = True
           print("Angel One login successful!")

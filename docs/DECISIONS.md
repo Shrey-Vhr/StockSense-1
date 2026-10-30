@@ -61,10 +61,10 @@ localStorage expands XSS impact.
 **Status:** Partial.
 
 **Current mechanism.** main.py attempts Angel One login on startup.
-angel_one_service.py owns TOTP session, quote and token operations;
-angel_one_websocket.py consumes broker ticks. market_data.py supplies yfinance
-quotes, history, fundamentals, market overview, sectors, and batch screen data.
-websocket_service.py starts broker connectivity and a polling fallback.
+angel_one_service.py owns TOTP session, quote and token operations.
+market_data.py supplies yfinance quotes, history, fundamentals, market overview,
+sectors, and batch screen data. The broker tick WebSocket and its polling
+fallback were removed: they broadcast to a socket list no browser ever joined.
 
 **Why.** main.py explicitly prints that yfinance is used when Angel connection
 fails, demonstrating availability fallback intent. However yfinance is also a

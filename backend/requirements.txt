@@ -28,6 +28,8 @@ email-validator==2.3.0
 feedparser==6.0.14
 pyotp==2.10.0
 logzero==1.7.0
+# Not used by StockSense directly, but SmartApi/__init__.py imports its
+# websocket module unconditionally and the package does not declare it.
 websocket-client==1.9.2
 beautifulsoup4==4.15.0
 lxml==6.1.3

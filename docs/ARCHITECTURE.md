@@ -15,7 +15,7 @@ analysis. It does not place broker orders.
 | Entry | Actual role |
 |---|---|
 | start.bat | Starts backend\\venv with uvicorn on 127.0.0.1:8000, waits using ping, starts Vite, opens Chrome. It assumes that venv and Chrome exist. |
-| backend/main.py | Creates tables, builds FastAPI, mounts routers, starts broker/socket/scheduler/alert work. |
+| backend/main.py | Creates tables, builds FastAPI, mounts routers, starts the scheduler and alert work. |
 | frontend/src/main.jsx | React root under StrictMode. |
 | frontend/src/App.jsx | Browser routes, protected shell, toasts, notifications, reduced-motion configuration. |
 | backend/scripts | Manual maintenance/diagnostics, not tests. |
@@ -44,7 +44,7 @@ flowchart TB
   subgraph API["FastAPI: backend/main.py"]
     Auth["auth router: bcrypt + JWT HS256"]
     Routers["stocks | analysis | screener | news | portfolio | watchlist | alerts | ai"]
-    Runtime["lifespan: Angel login, socket service, scheduler, alert task"]
+    Runtime["lifespan: Angel login, scheduler, alert task"]
     Services["service layer"]
     DB[("SQLite / SQLAlchemy")]
     Auth --> DB
@@ -53,7 +53,7 @@ flowchart TB
     Runtime --> Services
   end
   subgraph External["External systems used right now"]
-    Angel["Angel One: login, quotes, token lookup, broker socket"]
+    Angel["Angel One: login, quotes, token lookup"]
     YF["yfinance: history, quotes, index/ETF, batch OHLC"]
     Screen["Screener.in: scraped fundamentals, peers, results"]
     NSE["NSE: institutional data, filings, equity CSV"]
@@ -86,12 +86,11 @@ request-scoped session and calls Base.metadata.create_all(). There is no
 migration tool; create_all creates absent tables but does not migrate an
 existing schema.
 
-main.py calls init_db twice: at import (line 18) and in lifespan (line 28).
-This is redundant but usually harmless. Lifespan then attempts Angel login,
-starts price services, configures APScheduler via
-screener_service.setup_scheduler(), and creates start_alert_checker() with
-asyncio.create_task (lines 26-47). It does not cancel/tear down that task,
-scheduler, or broker socket on shutdown.
+main.py calls init_db once, at import. Lifespan then attempts Angel login (off
+the event loop), configures APScheduler via screener_service.setup_scheduler(),
+and starts start_alert_checker() as a task, which it cancels on shutdown. There
+is no live price feed: the browser polls REST endpoints, and triggered alerts
+reach it through /api/alerts/triggered.
 
 Authentication is email/password plus bcrypt and a seven-day HS256 JWT.
 auth.py:110-133 stores email in sub. The client keeps the token in
@@ -117,7 +116,7 @@ overbroad.
 
 | System | Current use | Important limitation |
 |---|---|---|
-| Angel One SmartAPI | angel_one_service.py performs TOTP login, quote/token lookup; angel_one_websocket.py can open the broker tick feed, but no browser-facing socket exists (the anonymous `/ws` route was removed), so ticks are not shown in the UI. | Startup tries it and quote behavior falls back to yfinance. Vendor file logging is disabled at import because it once leaked credentials. |
+| Angel One SmartAPI | angel_one_service.py performs TOTP login, quote/token lookup. There is no tick feed: the broker WebSocket client and the browser-facing `/ws` route were both removed, since nothing in the UI consumed them. | Startup tries it and quote behavior falls back to yfinance. Vendor file logging is disabled at import because it once leaked credentials. |
 | yfinance | market_data.py, technical/index/ETF services, screener bulk OHLC, portfolio prices, universe/sector scripts. | It is direct source for many paths, not merely an after-hours fallback. |
 | Screener.in | screener_in_service.py scrapes ratios, peers, quarterly/annual data, shareholding. | HTML parsing and process-local caching are brittle. |
 | NSE | institutional data, deals, filings, equity-universe CSV. | Browser-like headers/cookies; failure commonly becomes empty/fallback data. |

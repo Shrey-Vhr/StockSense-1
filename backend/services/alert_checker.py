@@ -4,8 +4,6 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from models.alerts import Alert
 from services.market_data import YFinanceService
-from services.websocket_service import manager
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -68,13 +66,9 @@ async def check_alerts():
                 triggered_notifications.append(notification)
                 
         if triggered_notifications:
+            # The browser picks these up by polling /api/alerts/triggered
+            # (hooks/useNotifications.js), which marks them notified.
             db.commit()
-            
-            # Broadcast to UI via WebSockets
-            await manager.broadcast(json.dumps({
-                "type": "alerts_triggered",
-                "data": triggered_notifications
-            }))
             logger.info(f"Triggered {len(triggered_notifications)} alerts.")
             
     finally:

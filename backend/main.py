@@ -19,7 +19,6 @@ logging.getLogger('peewee').setLevel(
 # Create DB tables (if they don't exist yet)
 init_db()
 
-from services.websocket_service import start_websocket_services
 from services.screener_service import setup_scheduler
 from services.alert_checker import start_alert_checker
 from services.angel_one_service import angel_one
@@ -34,9 +33,6 @@ async def lifespan(app: FastAPI):
         print("Angel One connected successfully!")
     else:
         print("Angel One connection failed, using yfinance fallback")
-
-    # Startup: Start background tasks
-    await start_websocket_services()
 
     # Initialize APScheduler
     setup_scheduler()

@@ -133,9 +133,9 @@ entry, stop and target.
 │                    React Frontend                       │
 │  Dashboard · Screener · Stock Detail · AI Analysis      │
 │  Portfolio · Watchlist · News · Index/ETF · Alerts       │
-└──────────────┬──────────────────────┬───────────────────┘
-               │ REST + SSE           │ (planned: WebSocket)
-               ▼                      ▼
+└───────────────────────────┬─────────────────────────────┘
+                            │ REST + SSE (JWT)
+                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │                   FastAPI Backend                        │
 │                                                         │
@@ -281,10 +281,13 @@ pip install -r requirements-dev.txt
 python -m pytest
 ```
 
-The suite covers the security guarantees in [SECURITY.md](SECURITY.md): per-user
-data isolation, rate limits, input caps, account lockout, error hygiene and the
-Angel One retry guard, plus regression tests for input validation, symbol
-normalisation and cache behaviour. It uses a throwaway SQLite database and blank API keys,
+The suite has two halves. `test_security.py` and `test_regressions.py` cover the
+guarantees in [SECURITY.md](SECURITY.md): per-user data isolation, rate limits,
+input caps, account lockout, error hygiene, the Angel One retry guard, input
+validation, symbol normalisation and cache behaviour. `test_analysis.py` checks
+the analysis logic on synthetic price data: RSI against Wilder's worked example,
+trend, MACD, Bollinger and support/resistance readings, candlestick and
+double-top detection, trade-setup levels, and every screener operator. It uses a throwaway SQLite database and blank API keys,
 so it needs no `.env`, makes no paid API calls and never logs in to a broker.
 CI runs it on every push along with the frontend lint and build.
 
@@ -319,7 +322,7 @@ StockSense/
 │   ├── config.py                  # Pydantic settings & env loading
 │   ├── database.py                # SQLAlchemy engine & session setup
 │   ├── rate_limit.py              # In-memory rate limiting for auth, AI & scans
-│   ├── tests/                     # Pytest suite for the security guarantees
+│   ├── tests/                     # Pytest: security guarantees + analysis logic
 │   ├── models/                    # DB models (User, Stock, Alert, Portfolio, etc.)
 │   ├── routers/                   # API route handlers
 │   │   ├── auth.py                # JWT authentication (register/login)
@@ -341,7 +344,6 @@ StockSense/
 │   │   ├── index_etf_analysis.py  # Index/ETF analysis with FII/DII flows
 │   │   ├── news_service.py        # RSS aggregation with Groq sentiment
 │   │   ├── angel_one_service.py   # Angel One SmartAPI integration
-│   │   ├── websocket_service.py   # Broker feed + polling fallback (no browser socket yet)
 │   │   └── alert_checker.py       # Background alert monitoring loop
 │   ├── data/
 │   │   └── nse_stocks.json        # Universe of 2,100+ NSE stock symbols
