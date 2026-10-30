@@ -1,6 +1,9 @@
 from fastapi import APIRouter, HTTPException, Path, Query
 from services.market_data import YFinanceService
+import asyncio
+import html
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -51,25 +54,50 @@ async def get_top_losers(n: int = Query(10, le=50)):
 async def get_most_active(n: int = Query(10, le=50)):
     return await YFinanceService.get_most_active(n)
 
+async def _latest_headline(client, symbol: str):
+    """A recent Google News headline for `symbol`, or None."""
+    try:
+        res = await client.get(
+            "https://news.google.com/rss/search",
+            # params, not an f-string: symbols like M&M would break the query.
+            params={"q": f"{symbol.replace('.NS', '')} NSE stock",
+                    "hl": "en-IN", "gl": "IN", "ceid": "IN:en"},
+        )
+        if res.status_code != 200:
+            return None
+        titles = re.findall(r'<item>.*?<title>(.*?)</title>', res.text, re.DOTALL)
+        if len(titles) > 1:
+            return html.unescape(titles[1])[:60].strip() or None
+    except Exception:
+        return None
+    return None
+
+
 @router.get("/trending")
-async def get_trending_stocks(n: int = Query(8, le=20)):
+async def get_trending_stocks(n: int = Query(8, ge=1, le=20)):
     import httpx
 
     try:
-        # Get most active stocks as base
-        most_active = await YFinanceService.get_most_active(20)
+        # Both read the same cached batch of quotes, so fetch them together.
+        most_active, top_gainers = await asyncio.gather(
+            YFinanceService.get_most_active(20),
+            YFinanceService.get_top_gainers(20),
+        )
         if not most_active:
             return []
-        
-        # Get top gainers for cross-reference
-        top_gainers = await YFinanceService.get_top_gainers(20)
         gainer_symbols = {s['symbol'] for s in top_gainers}
-        
-        # Load news headlines from Groq for context
-        # Use existing news service if available
+
+        # One headline lookup per stock, all at once. These ran one after
+        # another with a 5s timeout each, so the panel could take 40s to fill.
+        picks = most_active[:n]
+        async with httpx.AsyncClient(timeout=5) as client:
+            headlines = await asyncio.gather(
+                *(_latest_headline(client, s.get('symbol', '')) for s in picks)
+            )
+
         trending_results = []
-        
-        for stock in most_active[:n]:
+
+        for stock, headline in zip(picks, headlines):
             symbol = stock.get('symbol', '')
             price = stock.get('price', 0)
             change_pct = stock.get('change_percent', 0)
@@ -98,21 +126,8 @@ async def get_trending_stocks(n: int = Query(8, le=20)):
             if not reasons:
                 reasons.append("High market activity")
             
-            # Try to get news reason
-            try:
-                base_symbol = symbol.replace('.NS', '')
-                async with httpx.AsyncClient(timeout=5) as client:
-                    news_url = f"https://news.google.com/rss/search?q={base_symbol}+NSE+stock&hl=en-IN&gl=IN&ceid=IN:en"
-                    res = await client.get(news_url)
-                    if res.status_code == 200 and '<title>' in res.text:
-                        import re
-                        titles = re.findall(r'<item>.*?<title>(.*?)</title>', res.text, re.DOTALL)
-                        if titles and len(titles) > 1:
-                            headline = titles[1][:60].strip()
-                            if headline:
-                                reasons = [headline + "..."]
-            except Exception:
-                pass
+            if headline:
+                reasons = [headline + "..."]
 
             trending_results.append({
                 "symbol": symbol,

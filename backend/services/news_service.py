@@ -1,5 +1,4 @@
 # Trigger uvicorn reload
-import os
 import json
 import time
 import re
@@ -45,28 +44,13 @@ if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
 def _initialize_groq():
   global SENTIMENT_ENABLED, _groq_client
   
-  api_key = os.environ.get('GROQ_API_KEY', '').strip()
-  
-  if not api_key:
-    try:
-      from config import settings
-      api_key = getattr(settings, 'GROQ_API_KEY', '').strip()
-    except:
-      pass
-  
-  if not api_key:
-    try:
-      env_path = os.path.join(
-        os.path.dirname(__file__), '..', '.env'
-      )
-      with open(env_path, 'r') as f:
-        for line in f:
-          if line.startswith('GROQ_API_KEY='):
-            api_key = line.split('=', 1)[1].strip()
-            break
-    except:
-      pass
-  
+  # The same source as every other setting: environment variables first, then
+  # the project-root .env (config.py). This used to fall back to parsing
+  # backend/.env by hand, a second config file nothing else reads, which also
+  # meant a blank GROQ_API_KEY in the environment could not switch Groq off.
+  from config import settings
+  api_key = (settings.GROQ_API_KEY or '').strip()
+
   if not api_key:
     print("❌ GROQ_API_KEY not found")
     SENTIMENT_STATUS["reason"] = "GROQ_API_KEY is not set"
