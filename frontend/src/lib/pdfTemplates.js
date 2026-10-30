@@ -16,9 +16,20 @@
  * This block was duplicated identically in all three export handlers.
  */
 export function openPrintWindow(content) {
-  const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+  // The report is a blob: URL, which runs with this app's origin (and its
+  // localStorage token). The templates escape every interpolated value, and
+  // this policy forbids scripts outright in case one ever slips through.
+  const csp = '<meta http-equiv="Content-Security-Policy" content="script-src \'none\'; object-src \'none\'">';
+  const hardened = content.replace(/<head>/i, `<head>${csp}`);
+  const blob = new Blob([hardened], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const printWindow = window.open(url, '_blank');
+
+  // Null when the browser blocked the popup.
+  if (!printWindow) {
+    URL.revokeObjectURL(url);
+    return false;
+  }
 
   printWindow.onload = () => {
     setTimeout(() => {
@@ -26,9 +37,30 @@ export function openPrintWindow(content) {
       URL.revokeObjectURL(url);
     }, 500);
   };
+  return true;
 }
 
-export function buildAiReportHtml(cleanSymbol, aiAnalysis) {
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
+/**
+ * Returns a copy of `value` with every string HTML-escaped.
+ *
+ * The templates below interpolate model output and scraped fundamentals
+ * straight into markup. Both can carry attacker-influenced text (a headline
+ * can steer the model), so nothing reaches a template unescaped.
+ */
+export function escapeDeep(value) {
+  if (typeof value === 'string') return value.replace(/[&<>"']/g, (c) => HTML_ESCAPES[c]);
+  if (Array.isArray(value)) return value.map(escapeDeep);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, escapeDeep(v)]));
+  }
+  return value;
+}
+
+export function buildAiReportHtml(rawSymbol, rawAnalysis) {
+  const cleanSymbol = escapeDeep(rawSymbol);
+  const aiAnalysis = escapeDeep(rawAnalysis);
   return `
       <!DOCTYPE html>
       <html>
@@ -412,7 +444,9 @@ export function buildAiReportHtml(cleanSymbol, aiAnalysis) {
   `;
 }
 
-export function buildTechnicalsReportHtml(cleanSymbol, techData) {
+export function buildTechnicalsReportHtml(rawSymbol, rawTechData) {
+  const cleanSymbol = escapeDeep(rawSymbol);
+  const techData = escapeDeep(rawTechData);
   return `
       <!DOCTYPE html>
       <html>
@@ -665,7 +699,9 @@ export function buildTechnicalsReportHtml(cleanSymbol, techData) {
   `;
 }
 
-export function buildFundamentalsReportHtml(cleanSymbol, fundData) {
+export function buildFundamentalsReportHtml(rawSymbol, rawFundData) {
+  const cleanSymbol = escapeDeep(rawSymbol);
+  const fundData = escapeDeep(rawFundData);
   return `
       <!DOCTYPE html>
       <html>

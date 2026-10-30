@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine, Base, init_db
+from database import init_db
 
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # Suppress noisy yfinance error logs
 logging.getLogger('yfinance').setLevel(
@@ -24,12 +26,10 @@ from services.angel_one_service import angel_one
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database
-    init_db()
-    
-    # Login to Angel One
+    # Login to Angel One. login() blocks (network calls, and a 31s wait between
+    # TOTP retries), so keep it off the event loop.
     print("Connecting to Angel One SmartAPI...")
-    success = angel_one.login()
+    success = await asyncio.to_thread(angel_one.login)
     if success:
         print("Angel One connected successfully!")
     else:
@@ -37,14 +37,15 @@ async def lifespan(app: FastAPI):
 
     # Startup: Start background tasks
     await start_websocket_services()
-    
+
     # Initialize APScheduler
     setup_scheduler()
-    
-    # Start looping checkers
-    asyncio.create_task(start_alert_checker())
+
+    # Start looping checkers. Held in a variable: the event loop only keeps a
+    # weak reference to tasks, so an unreferenced one can be garbage collected.
+    alert_task = asyncio.create_task(start_alert_checker())
     yield
-    # Shutdown logic if any
+    alert_task.cancel()
 
 app = FastAPI(title="StockSense API", lifespan=lifespan)
 
@@ -100,7 +101,7 @@ def read_root():
 # frontend connected to it, and it accepted any caller and held the connection
 # open indefinitely, so it was only ever a way to tie up server connections.
 
-@app.get("/api/angel-one/status")
+@app.get("/api/angel-one/status", dependencies=_authed)
 def get_angel_one_status():
     return {
         "connected": angel_one.is_connected,

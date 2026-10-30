@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
+from fastapi import APIRouter, HTTPException, Path, Query
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,7 +28,12 @@ except Exception as e:
 router = APIRouter()
 
 @router.get("/stock/{symbol}")
-async def get_stock_news_endpoint(symbol: str, company_name: str = Query(..., description="Company name used for better news matching"), limit: int = 20, refresh: bool = False):
+async def get_stock_news_endpoint(
+    symbol: str = Path(max_length=32),
+    company_name: str = Query(..., max_length=120, description="Company name used for better news matching"),
+    limit: int = Query(20, ge=1, le=50),
+    refresh: bool = False,
+):
     try:
         result = await get_stock_news(symbol, company_name, limit, force_refresh=refresh)
         return result
@@ -38,7 +42,7 @@ async def get_stock_news_endpoint(symbol: str, company_name: str = Query(..., de
         raise HTTPException(status_code=404, detail="News is unavailable for this symbol")
 
 @router.get("/market")
-async def get_market_news_endpoint(limit: int = 10):
+async def get_market_news_endpoint(limit: int = Query(10, ge=1, le=50)):
     try:
         news = await get_market_news(limit)
         # Additive: existing consumers read .articles and are unaffected.
@@ -48,7 +52,7 @@ async def get_market_news_endpoint(limit: int = 10):
         raise HTTPException(status_code=500, detail="Market news failed. See server logs.")
 
 @router.get("/filings/{symbol}")
-async def get_nse_filings_endpoint(symbol: str):
+async def get_nse_filings_endpoint(symbol: str = Path(max_length=32)):
     try:
         filings = await get_nse_filings(symbol)
         return {"symbol": symbol, "filings": filings}

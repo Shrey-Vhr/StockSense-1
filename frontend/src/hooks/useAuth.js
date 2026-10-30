@@ -1,8 +1,17 @@
 import { create } from 'zustand';
 import api from '../utils/api';
 
+// A corrupt "user" entry must not stop the app from loading.
+function readStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user')) || null;
+  } catch {
+    return null;
+  }
+}
+
 export const useAuth = create((set) => ({
-  user: JSON.parse(localStorage.getItem('user')) || null,
+  user: readStoredUser(),
   token: localStorage.getItem('token') || null,
   isAuthenticated: !!localStorage.getItem('token'),
   isLoading: false,

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel, Field
+from typing import Literal
 
 from database import get_db
 from models.user import User
@@ -10,11 +10,16 @@ from routers.auth import get_current_user
 
 router = APIRouter()
 
+# Only the types services/alert_checker.py actually evaluates. The API used to
+# accept RSI, volume and breakout alerts too, which were saved and then never
+# fired.
+MAX_ACTIVE_ALERTS = 100
+
 class AlertCreate(BaseModel):
-    symbol: str
-    alert_type: str # "price_above", "price_below", "rsi_above", "rsi_below", "volume_spike", "breakout"
-    value: float
-    notify_via: str = "browser"
+    symbol: str = Field(min_length=1, max_length=32)
+    alert_type: Literal["price_above", "price_below"]
+    value: float = Field(gt=0, lt=1e9, allow_inf_nan=False)
+    notify_via: str = Field(default="browser", max_length=16)
 
 @router.get("")
 async def get_alerts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -22,8 +27,17 @@ async def get_alerts(db: Session = Depends(get_db), current_user: User = Depends
 
 @router.post("")
 async def create_alert(alert: AlertCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    active = db.query(Alert).filter(
+        Alert.user_id == current_user.id, Alert.is_triggered == False
+    ).count()
+    if active >= MAX_ACTIVE_ALERTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"You can have at most {MAX_ACTIVE_ALERTS} active alerts",
+        )
+
     # Clean symbol
-    symbol = alert.symbol.upper()
+    symbol = alert.symbol.strip().upper()
     if not symbol.endswith('.NS') and not symbol.endswith('.BO'):
         symbol += '.NS'
         

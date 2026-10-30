@@ -66,7 +66,7 @@ export function useNotifications() {
           };
         });
       } catch (e) {
-        console.log("Alert check error:", e);
+        console.error("Alert check error:", e);
       }
     };
 

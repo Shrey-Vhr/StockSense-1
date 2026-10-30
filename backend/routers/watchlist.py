@@ -1,23 +1,31 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
+import logging
 import yfinance as yf
 
 from database import get_db
 from models.watchlist import Watchlist, WatchlistStock
 from routers.auth import get_current_user
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
+
+# Generous for a personal app, but bounded so one account cannot fill the
+# database or make a single request fan out to thousands of quote lookups.
+MAX_WATCHLISTS = 25
+MAX_STOCKS_PER_WATCHLIST = 100
 
 
 class CreateWatchlistRequest(BaseModel):
-  name: str
+  name: str = Field(min_length=1, max_length=100)
 
 
 class AddStockRequest(BaseModel):
-  symbol: str
-  notes: Optional[str] = ""
+  symbol: str = Field(min_length=1, max_length=32)
+  notes: Optional[str] = Field(default="", max_length=500)
 
 
 # GET /watchlists — get all watchlists for user
@@ -47,9 +55,15 @@ def create_watchlist(
   db: Session = Depends(get_db),
   current_user = Depends(get_current_user)
 ):
+  count = db.query(Watchlist).filter(Watchlist.user_id == current_user.id).count()
+  if count >= MAX_WATCHLISTS:
+    raise HTTPException(
+      status_code=400,
+      detail=f"You can have at most {MAX_WATCHLISTS} watchlists"
+    )
   wl = Watchlist(
     user_id=current_user.id,
-    name=body.name
+    name=body.name.strip()
   )
   db.add(wl)
   db.commit()
@@ -125,10 +139,11 @@ def get_watchlist_stocks(
           sparkline = hist['Close'].tolist() if not hist.empty else []
           # Ensure JSON serializable floats
           sparkline = [round(float(x), 2) for x in sparkline]
-      except:
+      except Exception:
           sparkline = []
           
-    except:
+    except Exception:
+      logger.warning("Quote lookup failed for %s", ws.symbol)
       price = 0
       change_pct = 0
       sparkline = []
@@ -171,23 +186,29 @@ def add_stock_to_watchlist(
       detail="Watchlist not found"
     )
   
-  # Check if already in watchlist
+  # Clean the symbol first, then check for a duplicate. The check used to run
+  # on the raw input, so "tcs" slipped past an existing "TCS.NS".
+  symbol = body.symbol.strip().upper()
+  if not symbol.endswith('.NS'):
+    symbol = symbol + '.NS'
+
   existing = db.query(WatchlistStock).filter(
     WatchlistStock.watchlist_id == watchlist_id,
-    WatchlistStock.symbol == body.symbol
+    WatchlistStock.symbol == symbol
   ).first()
-  
+
   if existing:
     raise HTTPException(
       status_code=400,
       detail="Stock already in watchlist"
     )
-  
-  # Clean symbol
-  symbol = body.symbol.upper()
-  if not symbol.endswith('.NS'):
-    symbol = symbol + '.NS'
-  
+
+  if len(wl.stocks) >= MAX_STOCKS_PER_WATCHLIST:
+    raise HTTPException(
+      status_code=400,
+      detail=f"A watchlist can hold at most {MAX_STOCKS_PER_WATCHLIST} stocks"
+    )
+
   ws = WatchlistStock(
     watchlist_id=watchlist_id,
     symbol=symbol,

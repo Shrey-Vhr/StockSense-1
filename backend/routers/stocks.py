@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
+from fastapi import APIRouter, HTTPException, Path, Query
 from services.market_data import YFinanceService
 import logging
 
@@ -32,8 +31,8 @@ async def get_market_overview():
             
         return []
         
-    except Exception as e:
-        print(f"Market overview error: {e}")
+    except Exception:
+        logger.exception("Market overview failed")
         return []
 
 @router.get("/sector-performance")
@@ -54,10 +53,8 @@ async def get_most_active(n: int = Query(10, le=50)):
 
 @router.get("/trending")
 async def get_trending_stocks(n: int = Query(8, le=20)):
-    import asyncio
     import httpx
-    import os
-    
+
     try:
         # Get most active stocks as base
         most_active = await YFinanceService.get_most_active(20)
@@ -114,9 +111,9 @@ async def get_trending_stocks(n: int = Query(8, le=20)):
                             headline = titles[1][:60].strip()
                             if headline:
                                 reasons = [headline + "..."]
-            except:
+            except Exception:
                 pass
-            
+
             trending_results.append({
                 "symbol": symbol,
                 "name": stock.get('name', symbol.replace('.NS', '')),
@@ -129,8 +126,8 @@ async def get_trending_stocks(n: int = Query(8, le=20)):
         
         return trending_results
         
-    except Exception as e:
-        print(f"Trending error: {e}")
+    except Exception:
+        logger.exception("Trending failed")
         return []
 
 ETF_LIST = [
@@ -164,7 +161,7 @@ INDEX_LIST = [
 ]
 
 @router.get("/search")
-async def search_stocks(q: str):
+async def search_stocks(q: str = Query(max_length=64)):
     import json
     import os
     q = q.upper()
@@ -188,7 +185,7 @@ async def search_stocks(q: str):
         return {"query": q, "results": []}
 
 @router.get("/quote/{symbol}")
-async def get_stock_quote(symbol: str):
+async def get_stock_quote(symbol: str = Path(max_length=32)):
     try:
         import math
 
@@ -213,9 +210,9 @@ async def get_stock_quote(symbol: str):
 
 @router.get("/history/{symbol}")
 async def get_stock_history(
-    symbol: str, 
-    period: str = Query("1y"), 
-    interval: str = Query("1d")
+    symbol: str = Path(max_length=32),
+    period: str = Query("1y", max_length=8),
+    interval: str = Query("1d", max_length=8)
 ):
     history = await YFinanceService.get_historical_data(symbol, period, interval)
     if not history:
@@ -223,7 +220,7 @@ async def get_stock_history(
     return {"symbol": symbol, "history": history}
 
 @router.get("/fundamentals/{symbol}")
-async def get_stock_fundamentals(symbol: str):
+async def get_stock_fundamentals(symbol: str = Path(max_length=32)):
     fundamentals = await YFinanceService.get_fundamentals(symbol)
     if not fundamentals:
         raise HTTPException(status_code=404, detail="Fundamentals not found")
