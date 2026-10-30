@@ -52,8 +52,7 @@ jobs:
         with:
           node-version: 22
       # Fails on high/critical advisories in what ships to the browser. Build
-      # tooling (Vite, Tailwind) is reported by Dependabot instead; see the
-      # README's limitations table.
+      # tooling is covered by Dependabot alerts.
       - run: npm audit --omit=dev --audit-level=high
       # Signature verification reads installed packages, so install first.
       # --ignore-scripts: nothing from the registry gets to run code here.

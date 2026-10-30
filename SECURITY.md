@@ -60,8 +60,6 @@ These are deliberate for a local, single-user app:
 - Rate limits are kept in process memory. They reset on restart and are not
   shared between workers.
 - CORS allows only localhost origins. No Content-Security-Policy header is set.
-- `npm audit` reports advisories in Vite 5 and Tailwind 3. These are build and
-  dev-server tools that are not shipped to the browser.
 
 ## Before hosting it
 

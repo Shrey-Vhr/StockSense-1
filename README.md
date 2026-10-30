@@ -166,7 +166,7 @@ entry, stop and target.
 - **Python 3.12 or 3.13.** The pinned `pandas-ta` needs 3.12+, and it depends on
   `numba`, which has no wheel for 3.14 yet and fails to build from source.
   Check with `python --version` (on Windows, `py -3.12` picks a specific version).
-- **Node.js 20+** (React Router 7 requires it). Check with `node --version`.
+- **Node.js 20.19+ or 22.12+** (Vite 8 requires it). Check with `node --version`.
 - An Anthropic API key for the AI analysis features. Everything else works
   without one.
 
@@ -388,7 +388,6 @@ for public deployment**, and the following are known and deliberate:
 | **CORS is pinned to localhost** | Deploying means adding real origins, and never `*` alongside `allow_credentials=True`. |
 | **SQLite** | Fine for one user; not intended for concurrent writers. |
 | **No CSP header** | Nothing sets one; it would need to come from whatever serves the built frontend. |
-| **Dev-tool npm advisories** | `npm audit` still flags Vite 5 and Tailwind 3 (via esbuild, chokidar, micromatch). These run only on the developer's machine during `npm run dev`/`build` and are not in the shipped bundle. Clearing them needs the Vite 8 and Tailwind 4 major migrations. |
 
 What *is* covered: every API router except auth requires a token; passwords are
 bcrypt-hashed and at least 8 characters; deactivated accounts are refused; every
