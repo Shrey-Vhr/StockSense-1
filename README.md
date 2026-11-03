@@ -6,7 +6,7 @@ StockSense screens 2,100+ NSE-listed stocks against technical and fundamental fi
 
 ![Python](https://img.shields.io/badge/Python-3.12--3.13-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688?logo=fastapi&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.162-009688?logo=fastapi&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 > **Not investment advice.** StockSense is a personal engineering project, built to
