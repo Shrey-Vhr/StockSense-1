@@ -165,7 +165,7 @@ entry, stop and target.
 
 - **Python 3.12 or 3.13.** The pinned `pandas-ta` needs 3.12+, and it depends on
   `numba`, which has no wheel for 3.14 yet and fails to build from source.
-  Check with `python --version` (on Windows, `py -3.12` picks a specific version).
+  Having 3.14 installed as well is fine; step 3 shows how to pick 3.12.
 - **Node.js 20.19+ or 22.12+** (Vite 8 requires it). Check with `node --version`.
 - An Anthropic API key for the AI analysis features. Everything else works
   without one.
@@ -209,17 +209,29 @@ yfinance for market data. See [Environment Variables](#environment-variables).
 
 ### 3. Backend setup
 
+Create the virtual environment with Python **3.12 or 3.13** by name. Plain
+`python -m venv venv` uses whatever your default Python is, and if that is 3.14
+the install below fails on `numba` and the backend cannot start.
+
 ```bash
 cd backend
-python -m venv venv
 
-# macOS / Linux / Git Bash
-source venv/bin/activate
-# Windows Command Prompt
+# Windows
+py -3.12 -m venv venv
 venv\Scripts\activate
 
+# macOS / Linux / Git Bash
+python3.12 -m venv venv
+source venv/bin/activate
+
+python --version                 # must print 3.12.x or 3.13.x
 pip install -r requirements.txt
 ```
+
+If `py -3.12` or `python3.12` is not found, install Python 3.12 from
+[python.org](https://www.python.org/downloads/) (it can sit alongside a newer
+Python). If you already made a venv with the wrong version, delete the
+`backend/venv` folder and run these steps again.
 
 ### 4. Frontend setup
 
