@@ -203,6 +203,8 @@ Then open `.env` and set:
 
 - **`ANTHROPIC_API_KEY`** for the AI features. Replace the `sk-ant-...`
   placeholder with your key, or leave it as is to run without AI.
+- **`GROQ_API_KEY`** (optional) for news sentiment tags. Without it every
+  headline shows as Neutral.
 
 Everything else is optional: leave the Angel One fields blank and the app uses
 yfinance for market data. See [Environment Variables](#environment-variables).
@@ -213,25 +215,37 @@ Create the virtual environment with Python **3.12 or 3.13** by name. Plain
 `python -m venv venv` uses whatever your default Python is, and if that is 3.14
 the install below fails on `numba` and the backend cannot start.
 
+**Windows** (Command Prompt or PowerShell):
+
 ```bash
 cd backend
-
-# Windows
 py -3.12 -m venv venv
 venv\Scripts\activate
-
-# macOS / Linux / Git Bash
-python3.12 -m venv venv
-source venv/bin/activate
-
-python --version                 # must print 3.12.x or 3.13.x
+python --version
 pip install -r requirements.txt
 ```
 
-If `py -3.12` or `python3.12` is not found, install Python 3.12 from
-[python.org](https://www.python.org/downloads/) (it can sit alongside a newer
-Python). If you already made a venv with the wrong version, delete the
-`backend/venv` folder and run these steps again.
+**macOS / Linux / Git Bash:**
+
+```bash
+cd backend
+python3.12 -m venv venv
+source venv/bin/activate
+python --version
+pip install -r requirements.txt
+```
+
+`python --version` must print 3.12.x or 3.13.x before you run `pip install`.
+Python 3.13 works too: use `py -3.13` or `python3.13` instead.
+
+- If `py -3.12` or `python3.12` is not found, install Python 3.12 from
+  [python.org](https://www.python.org/downloads/). It can sit alongside a newer
+  Python.
+- If PowerShell refuses to run `venv\Scripts\activate` ("running scripts is
+  disabled"), run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or
+  use Command Prompt instead.
+- If you already made a venv with the wrong version, delete the `backend/venv`
+  folder and run these steps again.
 
 ### 4. Frontend setup
 
@@ -247,6 +261,9 @@ No frontend `.env` is needed: the API address defaults to
 run the backend somewhere else.
 
 ### 5. Run the app
+
+Use **one** of the two options below, not both: each starts its own backend on
+port 8000, and the second one fails because the port is taken.
 
 **Option A — two terminals:**
 
@@ -269,7 +286,18 @@ start.bat
 
 Open **http://localhost:5173** and create an account on the sign-up page. The
 API runs at **http://localhost:8000**. The database is a local SQLite file
-(`backend/stocksense.db`), created automatically on first start.
+(`backend/stocksense.db`), created automatically on first start. To stop, press
+Ctrl+C in each terminal (or close the two windows `start.bat` opened).
+
+#### Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| The page loads but every panel is empty, and the browser console shows `ERR_CONNECTION_REFUSED` for `:8000` | The backend is not running. Check its terminal for an error. The usual cause is a venv built with the wrong Python, so `pip install` failed: redo step 3. |
+| `[WinError 10013]` or "address already in use" when starting the backend | Something is already on port 8000, usually a backend you started earlier. Stop it with Ctrl+C, or close its window, and start again. |
+| The backend exits with a `SECRET_KEY` error | `.env` is missing, not in the project root, or the key is under 32 characters. See step 2. |
+| `npm install` warns `EBADENGINE`, or `npm run dev` fails at once | Node is older than 20.19. Upgrade Node. |
+| You land on the sign-in page with an account you made before | Each clone has its own database. Register again. |
 
 ### 6. Install the git hooks (contributors)
 
@@ -299,9 +327,11 @@ input caps, account lockout, error hygiene, the Angel One retry guard, input
 validation, symbol normalisation and cache behaviour. `test_analysis.py` checks
 the analysis logic on synthetic price data: RSI against Wilder's worked example,
 trend, MACD, Bollinger and support/resistance readings, candlestick and
-double-top detection, trade-setup levels, and every screener operator. It uses a throwaway SQLite database and blank API keys,
-so it needs no `.env`, makes no paid API calls and never logs in to a broker.
-CI runs it on every push along with the frontend lint and build.
+double-top detection, trade-setup levels, and every screener operator.
+
+The tests use a throwaway SQLite database and blank API keys, so they need no
+`.env`, make no paid API calls and never log in to a broker. CI runs them on
+every push along with the frontend lint and build.
 
 ---
 
