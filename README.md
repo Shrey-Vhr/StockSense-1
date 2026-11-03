@@ -301,13 +301,18 @@ Ctrl+C in each terminal (or close the two windows `start.bat` opened).
 
 ### 6. Install the git hooks (contributors)
 
-From the project root (needs `sh`, which Git for Windows includes as Git Bash):
+From the project root:
 
 ```bash
+# macOS / Linux / Git Bash
 sh scripts/install-hooks.sh
+
+# Windows PowerShell or Command Prompt (no `sh` there; this is all the script does)
+copy scripts\pre-commit .git\hooks\pre-commit
 ```
 
-Blocks log files, `.env`, databases and common API-key patterns from being
+The hook then runs on every commit, whichever terminal you commit from. It
+blocks log files, `.env`, databases and common API-key patterns from being
 committed. Hooks live in `.git/hooks/`, which git does not track, so they do not
 arrive with a clone and must be installed once.
 
