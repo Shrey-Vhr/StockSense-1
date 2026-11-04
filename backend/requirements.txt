@@ -20,9 +20,9 @@ passlib[bcrypt]==1.7.4
 # Pinned explicitly: passlib 1.7.4 is unmaintained and newer bcrypt releases
 # changed behaviour it relies on.
 bcrypt==4.0.1
-python-multipart==0.0.32
-pydantic==2.14.1
-pydantic-settings==2.16.1
+python-multipart==0.0.33
+pydantic==2.14.2
+pydantic-settings==2.16.2
 apscheduler==3.11.3
 email-validator==2.3.0
 feedparser==6.0.14
